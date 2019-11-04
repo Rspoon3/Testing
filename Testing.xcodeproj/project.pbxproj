@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94631B03236E315B00E851CD /* DeviceKit in Frameworks */ = {isa = PBXBuildFile; productRef = 94631B02236E315B00E851CD /* DeviceKit */; };
 		9476EE67231567BD00C85AF9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE66231567BD00C85AF9 /* AppDelegate.swift */; };
 		9476EE69231567BD00C85AF9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE68231567BD00C85AF9 /* SceneDelegate.swift */; };
 		9476EE6B231567BD00C85AF9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE6A231567BD00C85AF9 /* ContentView.swift */; };
@@ -15,6 +16,7 @@
 		9476EE73231567BF00C85AF9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */; };
 		9476EE7E231567BF00C85AF9 /* TestingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE7D231567BF00C85AF9 /* TestingTests.swift */; };
 		9476EE89231567BF00C85AF9 /* TestingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE88231567BF00C85AF9 /* TestingUITests.swift */; };
+		94863B01234FC90200D8F1AC /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = 94863B00234FC90200D8F1AC /* Charts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +58,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94863B01234FC90200D8F1AC /* Charts in Frameworks */,
+				94631B03236E315B00E851CD /* DeviceKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,6 +156,10 @@
 			dependencies = (
 			);
 			name = Testing;
+			packageProductDependencies = (
+				94863B00234FC90200D8F1AC /* Charts */,
+				94631B02236E315B00E851CD /* DeviceKit */,
+			);
 			productName = Testing;
 			productReference = 9476EE63231567BD00C85AF9 /* Testing.app */;
 			productType = "com.apple.product-type.application";
@@ -224,6 +232,10 @@
 				Base,
 			);
 			mainGroup = 9476EE5A231567BD00C85AF9;
+			packageReferences = (
+				94863AFF234FC90200D8F1AC /* XCRemoteSwiftPackageReference "Charts" */,
+				94631B01236E315B00E851CD /* XCRemoteSwiftPackageReference "DeviceKit" */,
+			);
 			productRefGroup = 9476EE64231567BD00C85AF9 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -594,6 +606,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		94631B01236E315B00E851CD /* XCRemoteSwiftPackageReference "DeviceKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devicekit/DeviceKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.3.0;
+			};
+		};
+		94863AFF234FC90200D8F1AC /* XCRemoteSwiftPackageReference "Charts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/danielgindi/Charts.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		94631B02236E315B00E851CD /* DeviceKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94631B01236E315B00E851CD /* XCRemoteSwiftPackageReference "DeviceKit" */;
+			productName = DeviceKit;
+		};
+		94863B00234FC90200D8F1AC /* Charts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94863AFF234FC90200D8F1AC /* XCRemoteSwiftPackageReference "Charts" */;
+			productName = Charts;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9476EE5B231567BD00C85AF9 /* Project object */;
 }
