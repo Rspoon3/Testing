@@ -18,6 +18,15 @@
           "revision": "4a1c9aa580ae1db763791015e119c4331c95ad02",
           "version": "2.3.0"
         }
+      },
+      {
+        "package": "LBTATools",
+        "repositoryURL": "https://github.com/bhlvoong/LBTATools.git",
+        "state": {
+          "branch": null,
+          "revision": "efa5d19b6b5378a4f01a3ac7f293a52fb90ab23b",
+          "version": "1.0.12"
+        }
       }
     ]
   },

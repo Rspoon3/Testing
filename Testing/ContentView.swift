@@ -2,103 +2,28 @@
 //  ContentView.swift
 //  Testing
 //
-//  Created by Richard Witherspoon on 8/27/19.
+//  Created by Richard Witherspoon on 11/4/19.
 //  Copyright © 2019 Richard Witherspoon. All rights reserved.
 //
 
 import SwiftUI
-import DeviceKit
-import MessageUI
+import LBTATools
 
 struct ContentView: View {
-    let radius : CGFloat = 10
-    @State private var move = false
-    private let mailComposeDelegate = MailDelegate()
-    private let email = "richardwitherspoon3@gmail.com"
-    private let twitter = "rspoon_3"
-
+    @State private var show = false
     var body: some View {
-        VStack(alignment: .leading, spacing: 40){
-            HStack{
-                Text("Thank you for reaching out to me. I would love any feedback you have. Bug? I can fix that. Feature request? Sure why not. Let me know.")
-                    .multilineTextAlignment(.leading)
-                Spacer()
+        NavigationView {
+            Button(action: {
+                self.show.toggle()
+            }) {
+                Text("See All")
+            }.sheet(isPresented: $show) {
+                PhotosGridVC()
             }
-            VStack(alignment: .leading, spacing : 10){
-                Button(action: {
-                    self.openTwitter()
-                }) {
-                    Text("@\(twitter)")
-                        .font(.headline)
-                }
-                Button(action: {
-                    self.presentMailCompose()
-                }) {
-                    Text(email)
-                        .font(.headline)
-                }
-                Button(action: {
-                    self.openWebsite()
-                }) {
-                    Text("rsw3.xyz")
-                        .font(.headline)
-                }
-            }
-            Spacer()
-                .multilineTextAlignment(.leading)
-                .padding()
-            Spacer()
         }
-        .padding()
-        .navigationBarTitle("Contact")
     }
 }
 
-extension ContentView {
-    private class MailDelegate: NSObject, MFMailComposeViewControllerDelegate {
-        func mailComposeController(_ controller: MFMailComposeViewController,
-                                   didFinishWith result: MFMailComposeResult,
-                                   error: Error?) {
-            
-            controller.dismiss(animated: true)
-        }
-    }
-
-    private func presentMailCompose() {
-        guard MFMailComposeViewController.canSendMail() else {
-            return
-        }
-        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        let systemVersion = UIDevice.current.systemVersion
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        let vc = UIApplication.shared.keyWindow?.rootViewController
-        let composeVC = MFMailComposeViewController()
-        composeVC.mailComposeDelegate = mailComposeDelegate
-
-        composeVC.setToRecipients([email])
-        composeVC.setSubject("Body Insights Feedback")
-        composeVC.setMessageBody("\n\n\n\n\n\n\n\n\nPhone Model: \(Device.current)\niOS Version: \(systemVersion) \nApp Version: \(version!) \nApp Build: \(appVersion!)", isHTML: false)
-        
-        vc?.present(composeVC, animated: true)
-    }
-    
-    func openWebsite() {
-        if let url = URL(string: "https://rsw3.xyz") {
-            UIApplication.shared.open(url)
-        }
-    }
-    
-    fileprivate func openTwitter() {
-        let appURL = URL(string: "twitter://user?screen_name=\(twitter)")!
-        let webURL = URL(string: "https://twitter.com/\(twitter)")!
-        
-        if UIApplication.shared.canOpenURL(appURL as URL) {
-            UIApplication.shared.open(appURL)
-        } else {
-            UIApplication.shared.open(webURL)
-        }
-    }
-}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
@@ -106,3 +31,73 @@ struct ContentView_Previews: PreviewProvider {
     }
 }
 
+
+
+
+
+class PhotoGridCell: LBTAListCell<String> {
+    
+    override var item: String! {
+        didSet {
+            imageView.image = UIImage(named: item)
+        }
+    }
+    
+    let imageView = UIImageView(image: UIImage(named: "avatar1"), contentMode: .scaleAspectFill)
+    
+    override func setupViews() {
+        backgroundColor = .yellow
+    }
+}
+
+class PhotosGridController: LBTAListController<PhotoGridCell, String>, UICollectionViewDelegateFlowLayout {
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        collectionView.backgroundColor = .lightGray
+        
+        self.items = ["avatar1", "story_photo1", "story_photo2", "avatar1", "avatar1", "story_photo1", "story_photo2", "avatar1"]
+    }
+    
+    let cellSpacing: CGFloat = 4
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+
+        if self.items.count > 4 {
+            let width = (view.frame.width - 3 * cellSpacing) / 2
+            return .init(width: width, height: width)
+        }
+        
+        let width = (view.frame.width - 4 * cellSpacing) / 3
+        
+        return .init(width: width, height: width)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return cellSpacing
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return .init(top: 0, left: cellSpacing, bottom: 0, right: cellSpacing)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return cellSpacing
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print(indexPath.row)
+        self.items.remove(at: indexPath.row)
+    }
+    
+}
+
+struct PhotosGridVC: UIViewControllerRepresentable {
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<PhotosGridVC>) -> UIViewController {
+        return PhotosGridController()
+    }
+    
+    func updateUIViewController(_ uiViewController: PhotosGridVC.UIViewControllerType, context: UIViewControllerRepresentableContext<PhotosGridVC>) {
+    }
+}
