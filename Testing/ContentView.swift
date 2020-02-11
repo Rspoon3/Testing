@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import Vision
 
 struct ContentView : View {
     var body : some View{
