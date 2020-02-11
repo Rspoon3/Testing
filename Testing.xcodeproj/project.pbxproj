@@ -3,12 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		945EFFE92370A1D900719FB5 /* LBTATools in Frameworks */ = {isa = PBXBuildFile; productRef = 945EFFE82370A1D900719FB5 /* LBTATools */; };
-		94631B03236E315B00E851CD /* DeviceKit in Frameworks */ = {isa = PBXBuildFile; productRef = 94631B02236E315B00E851CD /* DeviceKit */; };
 		9476EE67231567BD00C85AF9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE66231567BD00C85AF9 /* AppDelegate.swift */; };
 		9476EE69231567BD00C85AF9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE68231567BD00C85AF9 /* SceneDelegate.swift */; };
 		9476EE6B231567BD00C85AF9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE6A231567BD00C85AF9 /* ContentView.swift */; };
@@ -17,7 +15,6 @@
 		9476EE73231567BF00C85AF9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */; };
 		9476EE7E231567BF00C85AF9 /* TestingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE7D231567BF00C85AF9 /* TestingTests.swift */; };
 		9476EE89231567BF00C85AF9 /* TestingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE88231567BF00C85AF9 /* TestingUITests.swift */; };
-		94863B01234FC90200D8F1AC /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = 94863B00234FC90200D8F1AC /* Charts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,9 +56,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94863B01234FC90200D8F1AC /* Charts in Frameworks */,
-				945EFFE92370A1D900719FB5 /* LBTATools in Frameworks */,
-				94631B03236E315B00E851CD /* DeviceKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,8 +100,8 @@
 			isa = PBXGroup;
 			children = (
 				9476EE66231567BD00C85AF9 /* AppDelegate.swift */,
-				9476EE68231567BD00C85AF9 /* SceneDelegate.swift */,
 				9476EE6A231567BD00C85AF9 /* ContentView.swift */,
+				9476EE68231567BD00C85AF9 /* SceneDelegate.swift */,
 				9476EE6C231567BF00C85AF9 /* Assets.xcassets */,
 				9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */,
 				9476EE74231567BF00C85AF9 /* Info.plist */,
@@ -159,9 +153,6 @@
 			);
 			name = Testing;
 			packageProductDependencies = (
-				94863B00234FC90200D8F1AC /* Charts */,
-				94631B02236E315B00E851CD /* DeviceKit */,
-				945EFFE82370A1D900719FB5 /* LBTATools */,
 			);
 			productName = Testing;
 			productReference = 9476EE63231567BD00C85AF9 /* Testing.app */;
@@ -236,9 +227,6 @@
 			);
 			mainGroup = 9476EE5A231567BD00C85AF9;
 			packageReferences = (
-				94863AFF234FC90200D8F1AC /* XCRemoteSwiftPackageReference "Charts" */,
-				94631B01236E315B00E851CD /* XCRemoteSwiftPackageReference "DeviceKit" */,
-				945EFFE72370A1D900719FB5 /* XCRemoteSwiftPackageReference "LBTATools" */,
 			);
 			productRefGroup = 9476EE64231567BD00C85AF9 /* Products */;
 			projectDirPath = "";
@@ -610,51 +598,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		945EFFE72370A1D900719FB5 /* XCRemoteSwiftPackageReference "LBTATools" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/bhlvoong/LBTATools.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.12;
-			};
-		};
-		94631B01236E315B00E851CD /* XCRemoteSwiftPackageReference "DeviceKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/devicekit/DeviceKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.3.0;
-			};
-		};
-		94863AFF234FC90200D8F1AC /* XCRemoteSwiftPackageReference "Charts" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/danielgindi/Charts.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.4.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		945EFFE82370A1D900719FB5 /* LBTATools */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 945EFFE72370A1D900719FB5 /* XCRemoteSwiftPackageReference "LBTATools" */;
-			productName = LBTATools;
-		};
-		94631B02236E315B00E851CD /* DeviceKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 94631B01236E315B00E851CD /* XCRemoteSwiftPackageReference "DeviceKit" */;
-			productName = DeviceKit;
-		};
-		94863B00234FC90200D8F1AC /* Charts */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 94863AFF234FC90200D8F1AC /* XCRemoteSwiftPackageReference "Charts" */;
-			productName = Charts;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9476EE5B231567BD00C85AF9 /* Project object */;
 }
