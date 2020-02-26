@@ -10,14 +10,13 @@ import SwiftUI
 import PencilKit
 
 struct ContentView : View {
-    @State var color = UIColor.black
     @State var clear = false
     var body : some View{
         Image("motorcycle")
             .resizable()
             .scaledToFit()
             .overlay(
-                PKCanvas(color: $color, clear: $clear)
+                PKCanvas(clear: $clear)
         )
             .edgesIgnoringSafeArea(.all)
     }
@@ -39,7 +38,6 @@ struct PKCanvas: UIViewRepresentable {
         }
     }
     
-    @Binding var color:UIColor
     @Binding var clear:Bool
     
     func makeCoordinator() -> Coordinator {
@@ -48,7 +46,7 @@ struct PKCanvas: UIViewRepresentable {
     
     func makeUIView(context: Context) -> PKCanvasView {
         let canvasView = PKCanvasView()
-        canvasView.tool = PKInkingTool(.pen, color: color, width: 10)
+        canvasView.tool = PKInkingTool(.pen, color: .black, width: 10)
         canvasView.isRulerActive = true
         canvasView.delegate = context.coordinator
         canvasView.isOpaque = false
@@ -68,6 +66,5 @@ struct PKCanvas: UIViewRepresentable {
         if clear != context.coordinator.pkCanvas.clear{
             canvasView.drawing = PKDrawing()
         }
-        canvasView.tool = PKInkingTool(.pen, color: color, width: 10)
     }
 }
