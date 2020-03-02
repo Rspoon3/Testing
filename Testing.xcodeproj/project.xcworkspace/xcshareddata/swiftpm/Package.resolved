@@ -2,30 +2,12 @@
   "object": {
     "pins": [
       {
-        "package": "Charts",
-        "repositoryURL": "https://github.com/danielgindi/Charts.git",
+        "package": "DisplayLink",
+        "repositoryURL": "https://github.com/timdonnelly/DisplayLink.git",
         "state": {
           "branch": null,
-          "revision": "dbf7fa2891270f88aeafc872ea0beddb344af94b",
-          "version": "3.4.0"
-        }
-      },
-      {
-        "package": "DeviceKit",
-        "repositoryURL": "https://github.com/devicekit/DeviceKit.git",
-        "state": {
-          "branch": null,
-          "revision": "4a1c9aa580ae1db763791015e119c4331c95ad02",
-          "version": "2.3.0"
-        }
-      },
-      {
-        "package": "LBTATools",
-        "repositoryURL": "https://github.com/bhlvoong/LBTATools.git",
-        "state": {
-          "branch": null,
-          "revision": "efa5d19b6b5378a4f01a3ac7f293a52fb90ab23b",
-          "version": "1.0.12"
+          "revision": "e95f592a176246172324f10eb1bdc92f121d479f",
+          "version": "0.2.0"
         }
       }
     ]

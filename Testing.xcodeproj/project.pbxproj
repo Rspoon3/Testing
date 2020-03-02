@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,6 +15,7 @@
 		9476EE73231567BF00C85AF9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */; };
 		9476EE7E231567BF00C85AF9 /* TestingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE7D231567BF00C85AF9 /* TestingTests.swift */; };
 		9476EE89231567BF00C85AF9 /* TestingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE88231567BF00C85AF9 /* TestingUITests.swift */; };
+		A67E9C7F240D7CFE00675A54 /* DisplayLink in Frameworks */ = {isa = PBXBuildFile; productRef = A67E9C7E240D7CFE00675A54 /* DisplayLink */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A67E9C7F240D7CFE00675A54 /* DisplayLink in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,6 +155,7 @@
 			);
 			name = Testing;
 			packageProductDependencies = (
+				A67E9C7E240D7CFE00675A54 /* DisplayLink */,
 			);
 			productName = Testing;
 			productReference = 9476EE63231567BD00C85AF9 /* Testing.app */;
@@ -227,6 +230,7 @@
 			);
 			mainGroup = 9476EE5A231567BD00C85AF9;
 			packageReferences = (
+				A67E9C7D240D7CFE00675A54 /* XCRemoteSwiftPackageReference "DisplayLink" */,
 			);
 			productRefGroup = 9476EE64231567BD00C85AF9 /* Products */;
 			projectDirPath = "";
@@ -598,6 +602,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A67E9C7D240D7CFE00675A54 /* XCRemoteSwiftPackageReference "DisplayLink" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/timdonnelly/DisplayLink.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A67E9C7E240D7CFE00675A54 /* DisplayLink */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A67E9C7D240D7CFE00675A54 /* XCRemoteSwiftPackageReference "DisplayLink" */;
+			productName = DisplayLink;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9476EE5B231567BD00C85AF9 /* Project object */;
 }
