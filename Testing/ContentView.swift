@@ -8,28 +8,38 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    static let width:CGFloat = 300
-    let duration: Double = 10
-    let animation = Animation.linear(duration: 20).repeatForever(autoreverses: false)
-    @State private var offset = -width
+struct AnimatedGradientRectangle: View {
+    let backgroundColor: Color
+    let gradientColors: [Color]
+    let duration: Double
+
+    @State private var offset: CGFloat = 0
     
     var body: some View {
-        Rectangle()
-            .frame(width: Self.width, height: 200)
-            .foregroundColor(Color.green)
-            .overlay(
-                LinearGradient(gradient: .init(colors: [.green, .blue, .green]), startPoint: .leading, endPoint: .trailing)
-                .offset(x: CGFloat(offset), y: 0)
-                .mask(
-                    Rectangle()
-                    .onAppear{
-                        withAnimation(self.animation){
-                            self.offset = Self.width
-                        }
-                    }
-                )
-        )
+        GeometryReader{ geo in
+            Rectangle()
+                .foregroundColor(self.backgroundColor)
+                .overlay(
+                    LinearGradient(gradient: .init(colors: self.gradientColors), startPoint: .leading, endPoint: .trailing)
+                        .offset(x: self.offset, y: 0)
+                        .mask(
+                            Rectangle()
+                                .onAppear{
+                                    self.offset = -geo.size.width
+                                    withAnimation(Animation.linear(duration: self.duration).repeatForever(autoreverses: false)){
+                                        self.offset = geo.size.width
+                                    }
+                            }
+                    )
+            )
+        }
+    }
+}
+
+struct ContentView: View {
+    var body: some View {
+        AnimatedGradientRectangle(backgroundColor: .blue, gradientColors: [.blue, .red, .blue], duration: 3)
+            .frame(height: 100)
     }
 }
 
