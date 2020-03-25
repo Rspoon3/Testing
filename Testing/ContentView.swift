@@ -9,35 +9,36 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var animate = false
+    static let width:CGFloat = 300
+    let duration: Double = 10
+    let animation = Animation.linear(duration: 20).repeatForever(autoreverses: false)
+    @State private var offset = -width
     
     var body: some View {
-        AnimatedGradientView1()
-            .frame(width: 200, height: 200)
+        Rectangle()
+            .frame(width: Self.width, height: 200)
+            .foregroundColor(Color.green)
+            .overlay(
+                LinearGradient(gradient: .init(colors: [.green, .blue, .green]), startPoint: .leading, endPoint: .trailing)
+                .offset(x: CGFloat(offset), y: 0)
+                .mask(
+                    Rectangle()
+                    .onAppear{
+                        withAnimation(self.animation){
+                            self.offset = Self.width
+                        }
+                    }
+                )
+        )
     }
 }
 
-struct AnimatedGradientView1: View {
-    
-    @State var gradient = [Color.green, Color.red]
-    @State var startPoint = UnitPoint(x: 0, y: 0)
-    @State var endPoint = UnitPoint(x: 0, y: 2)
-    
-    var body: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(LinearGradient(gradient: Gradient(colors: self.gradient), startPoint: self.startPoint, endPoint: self.endPoint))
-            .frame(width: 256, height: 256)
-            .onTapGesture {
-                withAnimation (.easeInOut(duration: 3)){
-                    self.startPoint = UnitPoint(x: 1, y: -1)
-                    self.endPoint = UnitPoint(x: 0, y: 1)
-                }
-        }
-    }
-}
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
     }
 }
+
+
