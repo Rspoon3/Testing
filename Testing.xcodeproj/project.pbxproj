@@ -15,6 +15,8 @@
 		9476EE73231567BF00C85AF9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */; };
 		9476EE7E231567BF00C85AF9 /* TestingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE7D231567BF00C85AF9 /* TestingTests.swift */; };
 		9476EE89231567BF00C85AF9 /* TestingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE88231567BF00C85AF9 /* TestingUITests.swift */; };
+		A6A6E45A24913BAA00A88727 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A6E45924913BAA00A88727 /* Constants.swift */; };
+		A6A6E45C24913BB700A88727 /* ColorDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A6E45B24913BB700A88727 /* ColorDropDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		9476EE84231567BF00C85AF9 /* TestingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9476EE88231567BF00C85AF9 /* TestingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingUITests.swift; sourceTree = "<group>"; };
 		9476EE8A231567BF00C85AF9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A6A6E45924913BAA00A88727 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		A6A6E45B24913BB700A88727 /* ColorDropDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorDropDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +105,8 @@
 			children = (
 				9476EE66231567BD00C85AF9 /* AppDelegate.swift */,
 				9476EE6A231567BD00C85AF9 /* ContentView.swift */,
+				A6A6E45924913BAA00A88727 /* Constants.swift */,
+				A6A6E45B24913BB700A88727 /* ColorDropDelegate.swift */,
 				9476EE68231567BD00C85AF9 /* SceneDelegate.swift */,
 				9476EE6C231567BF00C85AF9 /* Assets.xcassets */,
 				9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */,
@@ -271,9 +277,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6A6E45C24913BB700A88727 /* ColorDropDelegate.swift in Sources */,
 				9476EE67231567BD00C85AF9 /* AppDelegate.swift in Sources */,
 				9476EE69231567BD00C85AF9 /* SceneDelegate.swift in Sources */,
 				9476EE6B231567BD00C85AF9 /* ContentView.swift in Sources */,
+				A6A6E45A24913BAA00A88727 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -370,7 +378,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -424,7 +432,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

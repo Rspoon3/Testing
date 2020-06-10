@@ -9,8 +9,12 @@
 import SwiftUI
 
 struct ContentView : View {
+    @State var backgroundColor = Color.blue
+    
     var body : some View{
-        Text("Hello, World")
+        backgroundColor
+            .edgesIgnoringSafeArea(.all)
+            .onDrop(of: [UTI.data], delegate: ColorDropDelegate(color: $backgroundColor))
     }
 }
 
