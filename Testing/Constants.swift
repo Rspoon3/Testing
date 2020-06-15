@@ -9,5 +9,5 @@
 import Foundation
 
 enum UTI {
-    static let data = "public.data"
+    static let color = "com.apple.uikit.color"
 }

@@ -9,12 +9,14 @@
 import SwiftUI
 
 struct ContentView : View {
-    @State var backgroundColor = Color.blue
+    @State var backgroundColor = UIColor.systemBlue
     
     var body : some View{
-        backgroundColor
+        Color(backgroundColor)
             .edgesIgnoringSafeArea(.all)
-            .onDrop(of: [UTI.data], delegate: ColorDropDelegate(color: $backgroundColor))
+            .onDrop(of: [UTI.color], delegate: ColorDropDelegate(color: $backgroundColor))
+            .onDrag { NSItemProvider(object: self.backgroundColor as UIColor)
+        }
     }
 }
 

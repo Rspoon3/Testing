@@ -10,13 +10,13 @@ import SwiftUI
 
 
 struct ColorDropDelegate: DropDelegate {
-    @Binding var color: Color
+    @Binding var color: UIColor
 
     func performDrop(info: DropInfo) -> Bool {
-        let providers = info.itemProviders(for: [UTI.data])
+        let providers = info.itemProviders(for: [UTI.color])
         providers.first?.loadObject(ofClass: UIColor.self, completionHandler: { (data, error) in
             if let uiColor = data as? UIColor{
-                self.color = Color(uiColor)
+                self.color = uiColor
             }
         })
         return true
