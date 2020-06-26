@@ -15,6 +15,8 @@
 		9476EE73231567BF00C85AF9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */; };
 		9476EE7E231567BF00C85AF9 /* TestingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE7D231567BF00C85AF9 /* TestingTests.swift */; };
 		9476EE89231567BF00C85AF9 /* TestingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE88231567BF00C85AF9 /* TestingUITests.swift */; };
+		A6733EDE24A55C9F009C1152 /* CoreDataTesting.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A6733EDC24A55C9F009C1152 /* CoreDataTesting.xcdatamodeld */; };
+		A6733EE024A55CEB009C1152 /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6733EDF24A55CEB009C1152 /* Person.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		9476EE84231567BF00C85AF9 /* TestingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9476EE88231567BF00C85AF9 /* TestingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingUITests.swift; sourceTree = "<group>"; };
 		9476EE8A231567BF00C85AF9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A6733EDD24A55C9F009C1152 /* CoreDataTesting.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataTesting.xcdatamodel; sourceTree = "<group>"; };
+		A6733EDF24A55CEB009C1152 /* Person.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +104,8 @@
 			isa = PBXGroup;
 			children = (
 				9476EE66231567BD00C85AF9 /* AppDelegate.swift */,
+				A6733EDC24A55C9F009C1152 /* CoreDataTesting.xcdatamodeld */,
+				A6733EDF24A55CEB009C1152 /* Person.swift */,
 				9476EE6A231567BD00C85AF9 /* ContentView.swift */,
 				9476EE68231567BD00C85AF9 /* SceneDelegate.swift */,
 				9476EE6C231567BF00C85AF9 /* Assets.xcassets */,
@@ -271,7 +277,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6733EE024A55CEB009C1152 /* Person.swift in Sources */,
 				9476EE67231567BD00C85AF9 /* AppDelegate.swift in Sources */,
+				A6733EDE24A55C9F009C1152 /* CoreDataTesting.xcdatamodeld in Sources */,
 				9476EE69231567BD00C85AF9 /* SceneDelegate.swift in Sources */,
 				9476EE6B231567BD00C85AF9 /* ContentView.swift in Sources */,
 			);
@@ -598,6 +606,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		A6733EDC24A55C9F009C1152 /* CoreDataTesting.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				A6733EDD24A55C9F009C1152 /* CoreDataTesting.xcdatamodel */,
+			);
+			currentVersion = A6733EDD24A55C9F009C1152 /* CoreDataTesting.xcdatamodel */;
+			path = CoreDataTesting.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 9476EE5B231567BD00C85AF9 /* Project object */;
 }
