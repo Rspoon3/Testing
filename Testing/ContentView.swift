@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct ContentView : View {
+    @State private var degrees = 0.0
     var body : some View{
         Text("Hello, World")
     }

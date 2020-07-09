@@ -15,6 +15,8 @@
 		9476EE73231567BF00C85AF9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */; };
 		9476EE7E231567BF00C85AF9 /* TestingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE7D231567BF00C85AF9 /* TestingTests.swift */; };
 		9476EE89231567BF00C85AF9 /* TestingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE88231567BF00C85AF9 /* TestingUITests.swift */; };
+		A6C2AB6024B64846000DDDDA /* StickyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C2AB5F24B64846000DDDDA /* StickyViewController.swift */; };
+		A6C2AB6224B64889000DDDDA /* UIViewControllerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C2AB6124B64889000DDDDA /* UIViewControllerPreview.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		9476EE84231567BF00C85AF9 /* TestingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9476EE88231567BF00C85AF9 /* TestingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingUITests.swift; sourceTree = "<group>"; };
 		9476EE8A231567BF00C85AF9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A6C2AB5F24B64846000DDDDA /* StickyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickyViewController.swift; sourceTree = "<group>"; };
+		A6C2AB6124B64889000DDDDA /* UIViewControllerPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerPreview.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +105,8 @@
 			children = (
 				9476EE66231567BD00C85AF9 /* TestingApp.swift */,
 				9476EE6A231567BD00C85AF9 /* ContentView.swift */,
+				A6C2AB5F24B64846000DDDDA /* StickyViewController.swift */,
+				A6C2AB6124B64889000DDDDA /* UIViewControllerPreview.swift */,
 				9476EE68231567BD00C85AF9 /* SceneDelegate.swift */,
 				9476EE6C231567BF00C85AF9 /* Assets.xcassets */,
 				9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */,
@@ -273,7 +279,9 @@
 			files = (
 				9476EE67231567BD00C85AF9 /* TestingApp.swift in Sources */,
 				9476EE69231567BD00C85AF9 /* SceneDelegate.swift in Sources */,
+				A6C2AB6224B64889000DDDDA /* UIViewControllerPreview.swift in Sources */,
 				9476EE6B231567BD00C85AF9 /* ContentView.swift in Sources */,
+				A6C2AB6024B64846000DDDDA /* StickyViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
