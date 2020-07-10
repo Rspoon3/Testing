@@ -21,13 +21,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        
+        let firstTeam = try! context.fetch(Team.getAllTeams()).first
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
             window.rootViewController = UIHostingController(rootView:
-                                                                ContentView()
-                                                                .environment(\.managedObjectContext, context)
+                                                                NavigationView{
+                                                                    TeamList()
+                                                                    if firstTeam != nil{
+                                                                        PeopleList(team: firstTeam!)
+                                                                    }
+                                                                }.environment(\.managedObjectContext, context)
 
             )
             self.window = window

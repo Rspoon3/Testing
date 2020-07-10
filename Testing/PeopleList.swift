@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  PeopleList.swift
 //  Testing
 //
 //  Created by Richard Witherspoon on 11/4/19.
@@ -8,13 +8,14 @@
 
 import SwiftUI
 
-struct ContentView : View {
+struct PeopleList : View {
+    @ObservedObject var team: Team
     @Environment(\.managedObjectContext) var moc
-    @FetchRequest(fetchRequest: Person.getAllPeople()) var people : FetchedResults<Person>
     @State var name = String()
     
     func addPerson(){
-        let _ = Person(name: name, context: moc)
+        let _ = Person(name: name,team: team, context: moc)
+        try? moc.save()
         name.removeAll()
     }
     
@@ -26,16 +27,17 @@ struct ContentView : View {
                 Spacer()
                 Button("Add Person"){
                     addPerson()
-                }
+                }.disabled(name.isEmpty)
             }.padding()
             
-            List(people){ person in
+            List(team.people.sorted(by: {$0.name < $1.name})){ person in
                 HStack{
                     Text(person.name)
                         .font(.largeTitle)
                         .contextMenu{
                             Button("Toggle Favorite"){
                                 person.isFavorite.toggle()
+                                team.objectWillChange.send()
                                 try? moc.save()
                             }
                         }
@@ -45,11 +47,14 @@ struct ContentView : View {
                 }
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitle("test")
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
+struct PeopleList_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        return PeopleList(team: Team(title: "Soccer", context: context))
     }
 }

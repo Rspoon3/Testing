@@ -12,16 +12,20 @@ import CoreData
 public class Person : NSManagedObject, Identifiable {
     @NSManaged public var name: String
     @NSManaged public var isFavorite: Bool
-    
-    convenience init(name: String, context: NSManagedObjectContext) {
+    @NSManaged public var team: Team
+    @NSManaged public var createdAt: Date
+
+    convenience init(name: String, team: Team, context: NSManagedObjectContext) {
         self.init(context: context)
         self.name = name
         self.isFavorite = false
+        self.team = team
+        self.createdAt = Date()
     }
 
     static func getAllPeople() -> NSFetchRequest<Person> {
         let request : NSFetchRequest<Person> = Person.fetchRequest() as! NSFetchRequest<Person>
-        request.sortDescriptors = []
+        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
         return request
     }
 }
