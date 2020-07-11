@@ -31,20 +31,12 @@ struct PeopleList : View {
             }.padding()
             
             List(team.people.sorted(by: {$0.name < $1.name})){ person in
-                HStack{
-                    Text(person.name)
-                        .font(.largeTitle)
+                NavigationLink(destination: Text("go"), label: {
+                    PersonRow(person: person)
                         .contextMenu{
-                            Button("Toggle Favorite"){
-                                person.isFavorite.toggle()
-                                team.objectWillChange.send()
-                                try? moc.save()
-                            }
+                            Text("Test")
                         }
-                    Spacer()
-                    Image(systemName: "star.fill")
-                        .foregroundColor(person.isFavorite ? Color.yellow : .gray)
-                }
+                })
             }
         }
         .navigationBarTitleDisplayMode(.inline)

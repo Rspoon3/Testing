@@ -15,6 +15,7 @@
 		9476EE73231567BF00C85AF9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9476EE71231567BF00C85AF9 /* LaunchScreen.storyboard */; };
 		9476EE7E231567BF00C85AF9 /* TestingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE7D231567BF00C85AF9 /* TestingTests.swift */; };
 		9476EE89231567BF00C85AF9 /* TestingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE88231567BF00C85AF9 /* TestingUITests.swift */; };
+		A6504DE024B94BD80009D143 /* PersonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6504DDF24B94BD80009D143 /* PersonRow.swift */; };
 		A6733EDE24A55C9F009C1152 /* CoreDataTesting.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A6733EDC24A55C9F009C1152 /* CoreDataTesting.xcdatamodeld */; };
 		A6733EE024A55CEB009C1152 /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6733EDF24A55CEB009C1152 /* Person.swift */; };
 		A6B5DF4624B8A86400775A7F /* TeamRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B5DF4524B8A86400775A7F /* TeamRow.swift */; };
@@ -54,6 +55,7 @@
 		9476EE84231567BF00C85AF9 /* TestingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9476EE88231567BF00C85AF9 /* TestingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingUITests.swift; sourceTree = "<group>"; };
 		9476EE8A231567BF00C85AF9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A6504DDF24B94BD80009D143 /* PersonRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonRow.swift; sourceTree = "<group>"; };
 		A6733EDD24A55C9F009C1152 /* CoreDataTesting.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataTesting.xcdatamodel; sourceTree = "<group>"; };
 		A6733EDF24A55CEB009C1152 /* Person.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
 		A6B5DF4524B8A86400775A7F /* TeamRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamRow.swift; sourceTree = "<group>"; };
@@ -114,6 +116,7 @@
 				A6733EDF24A55CEB009C1152 /* Person.swift */,
 				A6C4150724B7AE9D006C9A4A /* Team.swift */,
 				9476EE6A231567BD00C85AF9 /* PeopleList.swift */,
+				A6504DDF24B94BD80009D143 /* PersonRow.swift */,
 				A6C4150924B7B180006C9A4A /* TeamList.swift */,
 				A6B5DF4524B8A86400775A7F /* TeamRow.swift */,
 				9476EE68231567BD00C85AF9 /* SceneDelegate.swift */,
@@ -287,6 +290,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6C4150824B7AE9D006C9A4A /* Team.swift in Sources */,
+				A6504DE024B94BD80009D143 /* PersonRow.swift in Sources */,
 				A6733EE024A55CEB009C1152 /* Person.swift in Sources */,
 				9476EE67231567BD00C85AF9 /* AppDelegate.swift in Sources */,
 				A6733EDE24A55C9F009C1152 /* CoreDataTesting.xcdatamodeld in Sources */,
