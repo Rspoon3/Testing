@@ -17,6 +17,7 @@
 		9476EE89231567BF00C85AF9 /* TestingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476EE88231567BF00C85AF9 /* TestingUITests.swift */; };
 		A6A6E45A24913BAA00A88727 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A6E45924913BAA00A88727 /* Constants.swift */; };
 		A6A6E45C24913BB700A88727 /* ColorDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A6E45B24913BB700A88727 /* ColorDropDelegate.swift */; };
+		A6C3FEAC24BFF9CB0087FFCF /* BlueSquare.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3FEAB24BFF9CB0087FFCF /* BlueSquare.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		9476EE8A231567BF00C85AF9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A6A6E45924913BAA00A88727 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		A6A6E45B24913BB700A88727 /* ColorDropDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorDropDelegate.swift; sourceTree = "<group>"; };
+		A6C3FEAB24BFF9CB0087FFCF /* BlueSquare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueSquare.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +107,7 @@
 			children = (
 				9476EE66231567BD00C85AF9 /* AppDelegate.swift */,
 				9476EE6A231567BD00C85AF9 /* ContentView.swift */,
+				A6C3FEAB24BFF9CB0087FFCF /* BlueSquare.swift */,
 				A6A6E45924913BAA00A88727 /* Constants.swift */,
 				A6A6E45B24913BB700A88727 /* ColorDropDelegate.swift */,
 				9476EE68231567BD00C85AF9 /* SceneDelegate.swift */,
@@ -277,6 +280,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6C3FEAC24BFF9CB0087FFCF /* BlueSquare.swift in Sources */,
 				A6A6E45C24913BB700A88727 /* ColorDropDelegate.swift in Sources */,
 				9476EE67231567BD00C85AF9 /* AppDelegate.swift in Sources */,
 				9476EE69231567BD00C85AF9 /* SceneDelegate.swift in Sources */,
@@ -451,6 +455,7 @@
 				DEVELOPMENT_TEAM = SBS8ZBXB9U;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Testing/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -471,6 +476,7 @@
 				DEVELOPMENT_TEAM = SBS8ZBXB9U;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Testing/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
