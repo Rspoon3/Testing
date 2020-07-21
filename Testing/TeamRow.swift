@@ -21,13 +21,18 @@ struct TeamRow: View{
     }
     
     var body: some View{
-        VStack(alignment: .leading){
-            Text(team.title)
-                .font(.title)
-            if let person = latestPersonFetchRequest.wrappedValue.first{
-                Text(person.name)
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
+        HStack{
+            Color(team.color)
+                .frame(width: 20, height: 20)
+                .clipShape(Circle())
+            VStack(alignment: .leading){
+                Text(team.title)
+                    .font(.title)
+                if let person = latestPersonFetchRequest.wrappedValue.first{
+                    Text(person.name)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
