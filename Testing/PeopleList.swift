@@ -46,7 +46,8 @@ struct PeopleList : View {
 
 struct PeopleList_Previews: PreviewProvider {
     static var previews: some View {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let context = PersistentStore.shared.context
         return PeopleList(team: Team(title: "Soccer", context: context))
+            .environment(\.managedObjectContext, context)
     }
 }

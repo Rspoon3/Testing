@@ -44,7 +44,7 @@ public class Team : NSManagedObject, Identifiable, NSSecureCoding {
     }
     
     required convenience public init?(coder aDecoder: NSCoder) {
-        let managedObjectContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let managedObjectContext = PersistentStore.shared.context
         guard let entity = NSEntityDescription.entity(forEntityName: "Team", in: managedObjectContext) else {
             fatalError("Failed to decode Team")
         }
