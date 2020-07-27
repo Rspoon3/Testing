@@ -10,15 +10,37 @@ import SwiftUI
 import PencilKit
 
 struct ContentView : View {
-    @State var clear = false
+    @State var title = "Title"
+    @State var showLines = true
+    
     var body : some View{
-        Image("motorcycle")
-            .resizable()
-            .scaledToFit()
-            .overlay(
-                PKCanvas(clear: $clear)
-        )
-            .edgesIgnoringSafeArea(.all)
+        NavigationView{
+            VStack(alignment: .leading){
+                VStack(alignment: .leading){
+                    TextField("", text: $title)
+                        .font(.largeTitle)
+                    Text("July 17, 2020 at 2:40pm")
+                }.padding()
+                GeometryReader{ geo in
+                    VStack(spacing: 34){
+                        ForEach(0..<200){ _ in
+                            Divider()
+                        }
+                    }.opacity(showLines ? 1 : 0)
+                    PKCanvas()
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar{
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Lines"){
+                        withAnimation(Animation.linear(duration: 0.15)){
+                            showLines.toggle()
+                        }
+                    }
+                }
+            }
+        }.navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
@@ -38,8 +60,6 @@ struct PKCanvas: UIViewRepresentable {
         }
     }
     
-    @Binding var clear:Bool
-    
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
@@ -52,6 +72,7 @@ struct PKCanvas: UIViewRepresentable {
         canvasView.isOpaque = false
         canvasView.backgroundColor = .clear
         canvasView.overrideUserInterfaceStyle = .light
+        canvasView.isRulerActive = false
         
         if let window = UIApplication.shared.windows.last, let toolPicker = PKToolPicker.shared(for: window) {
             toolPicker.setVisible(true, forFirstResponder: canvasView)
@@ -63,8 +84,8 @@ struct PKCanvas: UIViewRepresentable {
     }
     
     func updateUIView(_ canvasView: PKCanvasView, context: Context) {
-        if clear != context.coordinator.pkCanvas.clear{
-            canvasView.drawing = PKDrawing()
-        }
+        //        if clear != context.coordinator.pkCanvas.clear{
+        //            canvasView.drawing = PKDrawing()
+        //        }
     }
 }
