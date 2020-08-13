@@ -9,32 +9,24 @@
 import SwiftUI
 
 struct TeamList: View {
-    @FetchRequest(fetchRequest: Team.getAllTeams()) var teams : FetchedResults<Team>
-    @State var title = String()
-    @Environment(\.managedObjectContext) var moc
-
-    func addTeam(){
-        let _ = Team(title: title, context: moc)
-        try? moc.save()
-        title.removeAll()
-    }
+    @StateObject var model = TeamModel()
     
     var body: some View {
         VStack{
-            TextField("", text: $title)
+            TextField("", text: $model.title)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
-            List(teams){ team in
+            List(model.teams){ team in
                 NavigationLink(destination: PeopleList(team: team), label: {
                     TeamRow(team)
                 })
             }.toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        addTeam()
+                        model.addTeam()
                     }, label: {
                         Image(systemName: "plus")
-                    }).disabled(title.isEmpty)
+                    }).disabled(model.title.isEmpty)
                 }
             }
         }.navigationTitle("Teams")
