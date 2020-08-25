@@ -7,16 +7,13 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct ContentView: View {
-    @FetchRequest(fetchRequest: Team.getAllTeams()) var teams : FetchedResults<Team>
-    
     var body: some View {
         NavigationView{
-            TeamList()
-            if teams.first != nil{
-                PeopleList(team: teams.first!)
-            }
+            ConversationsView()
+            Text("Select a conversation")
         }
     }
 }
@@ -26,3 +23,11 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
+
+
+
+
+
+
+
+

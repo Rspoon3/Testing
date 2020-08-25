@@ -55,4 +55,27 @@ class PersistentStore: ObservableObject {
             }
         }
     }
+    
+    // MARK: - Delete For Debug
+    
+    func deleteEverythingForDebug(){
+        let conversationsRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Conversation")
+        let messagesRequest: NSFetchRequest<NSFetchRequestResult>      = NSFetchRequest(entityName: "Message")
+        let personRequest: NSFetchRequest<NSFetchRequestResult>        = NSFetchRequest(entityName: "Person")
+
+        let conversationsDeleteRequest = NSBatchDeleteRequest(fetchRequest: conversationsRequest)
+        let messagesDeleteRequest      = NSBatchDeleteRequest(fetchRequest: messagesRequest)
+        let personDeleteRequest        = NSBatchDeleteRequest(fetchRequest: personRequest)
+
+        do {
+            try persistentContainer.viewContext.execute(conversationsDeleteRequest)
+            try persistentContainer.viewContext.execute(messagesDeleteRequest)
+            try persistentContainer.viewContext.execute(personDeleteRequest)
+            print("Deleted all of Core Data objects.")
+        } catch {
+            fatalError("Error deleting everything: \(error)")
+        }
+        
+        saveContext()
+    }
 }

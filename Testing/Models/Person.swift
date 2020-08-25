@@ -9,23 +9,28 @@
 import Foundation
 import CoreData
 
-public class Person : NSManagedObject, Identifiable {
-    @NSManaged public var name: String
-    @NSManaged public var isFavorite: Bool
-    @NSManaged public var team: Team
-    @NSManaged public var createdAt: Date
 
-    convenience init(name: String, team: Team, context: NSManagedObjectContext) {
-        self.init(context: context)
-        self.name = name
-        self.isFavorite = false
-        self.team = team
-        self.createdAt = Date()
+public class Person: NSManagedObject, Identifiable {
+    @NSManaged public var firstName: String
+    @NSManaged public var lastName: String
+    @NSManaged public var title: String
+    @NSManaged public var conversations: Set<Conversation>
+    @NSManaged public var messages: Set<Message>
+    
+    var fullName : String{
+        "\(firstName) \(lastName)"
     }
-
+    
+    static func getAllPeopleWith(title: String) -> NSFetchRequest<Person> {
+        let request : NSFetchRequest<Person> = Person.fetchRequest() as! NSFetchRequest<Person>
+        request.sortDescriptors = [NSSortDescriptor(key: "firstName", ascending: false)]
+        request.predicate = NSPredicate(format: "title == %@", title)
+        return request
+    }
+    
     static func getAllPeople() -> NSFetchRequest<Person> {
         let request : NSFetchRequest<Person> = Person.fetchRequest() as! NSFetchRequest<Person>
-        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        request.sortDescriptors = [NSSortDescriptor(key: "firstName", ascending: false)]
         return request
     }
 }
