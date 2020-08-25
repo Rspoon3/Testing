@@ -20,6 +20,13 @@ public class Message : NSManagedObject, Identifiable {
     static func getMessagesFor(_ conversation: Conversation) -> NSFetchRequest<Message> {
         let request : NSFetchRequest<Message> = Message.fetchRequest() as! NSFetchRequest<Message>
         request.sortDescriptors = [NSSortDescriptor(key: "timeStamp", ascending: true)]
+        request.predicate = NSPredicate(format: "conversation == %@", conversation)
+        return request
+    }
+    
+    static func getAllMessages() -> NSFetchRequest<Message> {
+        let request : NSFetchRequest<Message> = Message.fetchRequest() as! NSFetchRequest<Message>
+        request.sortDescriptors = [NSSortDescriptor(key: "timeStamp", ascending: true)]
         return request
     }
 }

@@ -15,9 +15,9 @@ class ConversationModel: NSObject, ObservableObject, NSFetchedResultsControllerD
     
     override init(){
         conversationsController = NSFetchedResultsController(fetchRequest: Conversation.getAllConversations(),
-                                                     managedObjectContext: PersistentStore.shared.context,
-                                                     sectionNameKeyPath: nil,
-                                                     cacheName: nil)
+                                                             managedObjectContext: PersistentStore.shared.context,
+                                                             sectionNameKeyPath: nil,
+                                                             cacheName: nil)
         super.init()
         conversationsController.delegate = self
         
@@ -31,29 +31,40 @@ class ConversationModel: NSObject, ObservableObject, NSFetchedResultsControllerD
     }
     
     private func createConversations(){
-        let context      = PersistentStore.shared.context
-        let conversation = Conversation(context: context)
-        let ricky        = Person(context: context)
-        let message      = Message(context: context)
-        
-        ricky.firstName = "Ricky"
-        ricky.lastName = "W"
-        ricky.title = "iOS Dev"
-        
-        message.id = 1
-        message.message = "Testing 123"
-        message.timeStamp = Date().timeIntervalSince1970
-        message.person = ricky
-        
-        conversation.myDescription = "This is a conversation"
-        conversation.id = 1
-        conversation.activeParticipants.insert(ricky)
-        conversation.latestMessage = message
-        conversation.messages.insert(message)
-        
-        PersistentStore.shared.saveContext()
+        PersistentStore.shared.persistentContainer.performBackgroundTask { context in
+            context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            
+            do{
+                let conversation = Conversation(context: context)
+                let ricky        = Person(context: context)
+                let message      = Message(context: context)
+                
+                ricky.firstName = "Ricky"
+                ricky.lastName = "W"
+                ricky.title = "iOS Dev"
+                
+                message.id = 1
+                message.message = "Testing 123"
+                message.timeStamp = Date().timeIntervalSince1970
+                message.person = ricky
+                
+                conversation.myDescription = "This is a conversation"
+                conversation.id = 1
+                conversation.activeParticipants.insert(ricky)
+                conversation.latestMessage = message
+                conversation.messages.insert(message)
+                
+                if context.hasChanges {
+                    try context.save()
+                }
+                
+                // Free up some memory.
+                context.reset()
+            } catch{
+                print("Conversation Model Error: \(error.localizedDescription)")
+            }
+        }
     }
-    
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         if let items = controller.fetchedObjects as? [Conversation]{

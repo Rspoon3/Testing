@@ -36,21 +36,33 @@ class MessagesModel: NSObject, ObservableObject, NSFetchedResultsControllerDeleg
     }
     
     func addMessage(to conversation: Conversation){
-        let context = PersistentStore.shared.context
-
-        let tim = Person(context: context)
-        tim.firstName = "Tim"
-        tim.lastName = "Apple"
-        tim.title = "CEO"
-
-        let message = Message(context: context)
-        message.id = 2
-        message.message = "I Am Tim Apple"
-        message.timeStamp = Date().timeIntervalSince1970
-        message.person = tim
-
-        conversation.messages.insert(message)
-        conversation.latestMessage = message
-        PersistentStore.shared.saveContext()
+        PersistentStore.shared.persistentContainer.performBackgroundTask { context in
+            context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            
+            do {
+                let tim = Person(context: context)
+                tim.firstName = "Tim"
+                tim.lastName = "Apple"
+                tim.title = "CEO"
+                
+                let message = Message(context: context)
+                message.id = 2
+                message.message = "I Am Tim Apple"
+                message.timeStamp = Date().timeIntervalSince1970
+                message.person = tim
+                
+                conversation.messages.insert(message)
+//                conversation.latestMessage = message
+                
+                if context.hasChanges {
+                    try context.save()
+                }
+                
+                // Free up some memory.
+                context.reset()
+            } catch{
+                print("Message Model Error: \(error.localizedDescription)")
+            }
+        }
     }
 }
