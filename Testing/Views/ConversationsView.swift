@@ -21,10 +21,8 @@ struct ConversationsView: View{
                             .font(.headline)
                         Text("Description: \(convo.myDescription)")
                             .font(.headline)
-                        if convo.latestMessage.person != nil{
-                            Text("\(convo.latestMessage.person.fullName): \(convo.latestMessage.message)")
-                                .font(.subheadline)
-                        }
+                        Text("\(convo.latestMessage.person.fullName): \(convo.latestMessage.message)")
+                            .font(.subheadline)
                     }
                 })
         }.navigationTitle("Conversations \(model.conversations.count)")

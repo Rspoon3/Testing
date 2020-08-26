@@ -24,7 +24,8 @@ struct MessagesView: View{
                 Text("Message: \(message.message)")
                 Text("Person: \(message.person.firstName)")
             }
-        }.navigationTitle("Messages \(model.messages.count)")
+        }
+        .navigationTitle("Messages \(model.messages.count)")
         .toolbar(content: {
             ToolbarItem(placement: .navigationBarTrailing){
                 Button("Add Messages"){
