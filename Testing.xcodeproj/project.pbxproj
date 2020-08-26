@@ -17,7 +17,6 @@
 		A69BD2BE24F592BD008E52CC /* ConversationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69BD2BD24F592BD008E52CC /* ConversationModel.swift */; };
 		A69BD2C024F592E2008E52CC /* ConversationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69BD2BF24F592E2008E52CC /* ConversationsView.swift */; };
 		A69BD2C224F592F6008E52CC /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69BD2C124F592F6008E52CC /* MessagesView.swift */; };
-		A69F4A3024C6920600833D08 /* ColorValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69F4A2F24C6920600833D08 /* ColorValueTransformer.swift */; };
 		A6BA2F1C24C7E37C0013DC74 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BA2F1B24C7E37C0013DC74 /* TestingApp.swift */; };
 		A6BA2F1E24C7E4E10013DC74 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BA2F1D24C7E4E10013DC74 /* ContentView.swift */; };
 		A6DCF8A124F4325D006CAF1C /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DCF8A024F4325D006CAF1C /* Message.swift */; };
@@ -59,7 +58,6 @@
 		A69BD2BD24F592BD008E52CC /* ConversationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationModel.swift; sourceTree = "<group>"; };
 		A69BD2BF24F592E2008E52CC /* ConversationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationsView.swift; sourceTree = "<group>"; };
 		A69BD2C124F592F6008E52CC /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
-		A69F4A2F24C6920600833D08 /* ColorValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorValueTransformer.swift; sourceTree = "<group>"; };
 		A6BA2F1B24C7E37C0013DC74 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6BA2F1D24C7E4E10013DC74 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A6DCF8A024F4325D006CAF1C /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
@@ -177,7 +175,6 @@
 			isa = PBXGroup;
 			children = (
 				9476EE66231567BD00C85AF9 /* PersistentStore.swift */,
-				A69F4A2F24C6920600833D08 /* ColorValueTransformer.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -336,7 +333,6 @@
 				A69BD2BE24F592BD008E52CC /* ConversationModel.swift in Sources */,
 				A69BD2C224F592F6008E52CC /* MessagesView.swift in Sources */,
 				A6DCF8A124F4325D006CAF1C /* Message.swift in Sources */,
-				A69F4A3024C6920600833D08 /* ColorValueTransformer.swift in Sources */,
 				A6DCF8A924F45A65006CAF1C /* CoreDataTesting.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

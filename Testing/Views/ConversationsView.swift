@@ -21,6 +21,9 @@ struct ConversationsView: View{
                             .font(.headline)
                         Text("Description: \(convo.myDescription)")
                             .font(.headline)
+                        //If you wrap this in an if let block, you'll see that 50% of the time on
+                        //the conversation row it's there, and 50% of the time its not. This is because
+                        //latest message becomes nil when adding a message.
                         Text("\(convo.latestMessage.person.fullName): \(convo.latestMessage.message)")
                             .font(.subheadline)
                     }
