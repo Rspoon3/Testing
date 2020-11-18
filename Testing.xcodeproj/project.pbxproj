@@ -15,6 +15,10 @@
 		A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* ContentView.swift */; };
 		A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
 		A6A2630224E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
+		A6CC688A2565E07000FE0AE9 /* PhotoGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CC68892565E07000FE0AE9 /* PhotoGridCell.swift */; };
+		A6CC688B2565E07000FE0AE9 /* PhotoGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CC68892565E07000FE0AE9 /* PhotoGridCell.swift */; };
+		A6CC68912565E08C00FE0AE9 /* PhotosGridController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CC68902565E08C00FE0AE9 /* PhotosGridController.swift */; };
+		A6CC68922565E08C00FE0AE9 /* PhotosGridController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CC68902565E08C00FE0AE9 /* PhotosGridController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +53,8 @@
 		A6A262F624E0BCB30091EA92 /* Tests macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOS.swift; sourceTree = "<group>"; };
 		A6A262FC24E0BCB30091EA92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A6CC68892565E07000FE0AE9 /* PhotoGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoGridCell.swift; sourceTree = "<group>"; };
+		A6CC68902565E08C00FE0AE9 /* PhotosGridController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosGridController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +106,8 @@
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				A6CC68902565E08C00FE0AE9 /* PhotosGridController.swift */,
+				A6CC68892565E07000FE0AE9 /* PhotoGridCell.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -308,7 +316,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6CC68912565E08C00FE0AE9 /* PhotosGridController.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				A6CC688A2565E07000FE0AE9 /* PhotoGridCell.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -317,7 +327,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6CC68922565E08C00FE0AE9 /* PhotosGridController.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				A6CC688B2565E07000FE0AE9 /* PhotoGridCell.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
