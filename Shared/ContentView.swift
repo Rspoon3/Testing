@@ -6,28 +6,32 @@
 //
 
 import SwiftUI
+import Combine
+
+
+class ContentViewModel: ObservableObject{
+    @Published var image: UIImage?
+}
 
 struct ContentView: View{
-    @State private var image: UIImage?
+    @StateObject var model = ContentViewModel()
     
     var  body: some View{
-        NavigationView{
-            VStack{
-                if let image = image{
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 100, height: 100)
-                        .onTapGesture{
-                            self.image = nil
-                        }
-                }
-                PhotoGrid(selectedImage: $image)
-                    .edgesIgnoringSafeArea(.all)
-                    .navigationTitle("Photo Grid")
+        VStack{
+            if let image = model.image{
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 100, height: 100)
+                    .onTapGesture {
+                        model.image = nil
+                    }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            PhotoGrid(selectedImage: $model.image)
+                .edgesIgnoringSafeArea(.all)
+                .navigationTitle("Photo Grid")
         }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

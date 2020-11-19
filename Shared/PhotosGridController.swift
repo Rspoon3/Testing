@@ -6,29 +6,31 @@
 //
 
 import SwiftUI
-
+import Combine
 
 struct PhotoGrid: UIViewControllerRepresentable{
     @Binding var selectedImage: UIImage?
     
-    func makeUIViewController(context: UIViewControllerRepresentableContext<PhotoGrid>) -> PhotosGridController {
-        return PhotosGridController{
+    func makeUIViewController(context: UIViewControllerRepresentableContext<PhotoGrid>) -> UINavigationController {
+        return UINavigationController(rootViewController: PhotosGridController{
             selectedImage = $0
-        }
+        })
     }
     
-    func updateUIViewController(_ uiViewController: PhotosGridController, context: UIViewControllerRepresentableContext<PhotoGrid>) {
+    func updateUIViewController(_ nc: UINavigationController, context: UIViewControllerRepresentableContext<PhotoGrid>) {
     }
 }
 
 
 class PhotosGridController: UIViewController, UICollectionViewDelegate {
     enum Section { case main }
-    var dataSource: UICollectionViewDiffableDataSource<Section, Int>! = nil
+    var dataSource: UICollectionViewDiffableDataSource<Section, URL>! = nil
     var collectionView: UICollectionView! = nil
     var imageSelection: ((UIImage)->Void)!
+    let searchController = UISearchController()
+    var subscriptions = Set<AnyCancellable>()
     
-     init(imageSelection: @escaping (UIImage)->Void){
+    init(imageSelection: @escaping (UIImage)->Void){
         super.init(nibName: nil, bundle: nil)
         self.imageSelection = imageSelection
     }
@@ -41,33 +43,40 @@ class PhotosGridController: UIViewController, UICollectionViewDelegate {
         super.viewDidLoad()
         configureHierarchy()
         configureDataSource()
+        configureSearchController()
+        fetchURLS()
     }
     
     func configureDataSource() {
-        let cellRegistration = UICollectionView.CellRegistration<PhotoGridCell, Int> { (cell, indexPath, identifier) in
-            cell.imageView.image = UIImage(named: "bike")
+        let cellRegistration = UICollectionView.CellRegistration<PhotoGridCell, URL> { (cell, indexPath, url) in
+            // Populate the cell with our item description.
+            cell.url = url
+            cell.showErrorAlert = {
+                self.throwAlert(with: $0)
+            }
         }
         
-        dataSource = UICollectionViewDiffableDataSource<Section, Int>(collectionView: collectionView) {
-            (collectionView: UICollectionView, indexPath: IndexPath, identifier: Int) -> UICollectionViewCell? in
+        dataSource = UICollectionViewDiffableDataSource<Section, URL>(collectionView: collectionView) {
+            (collectionView: UICollectionView, indexPath: IndexPath, identifier: URL) -> UICollectionViewCell? in
             // Return the cell.
             return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: identifier)
         }
-
-        // initial data
-        var snapshot = NSDiffableDataSourceSnapshot<Section, Int>()
+    }
+    
+    func updateDataSource(with urls: [URL]){
+        var snapshot = NSDiffableDataSourceSnapshot<Section, URL>()
         snapshot.appendSections([Section.main])
-        snapshot.appendItems(Array(0..<100))
-        dataSource.apply(snapshot, animatingDifferences: false)
+        snapshot.appendItems(urls)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
     
     func configureHierarchy() {
-         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
-         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-         collectionView.backgroundColor = .systemBackground
-         view.addSubview(collectionView)
-         collectionView.delegate = self
-     }
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+        collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        collectionView.backgroundColor = .systemBackground
+        view.addSubview(collectionView)
+        collectionView.delegate = self
+    }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = dataSource.collectionView(collectionView, cellForItemAt: indexPath) as! PhotoGridCell
@@ -77,6 +86,7 @@ class PhotosGridController: UIViewController, UICollectionViewDelegate {
         collectionView.deselectItem(at: indexPath, animated: true)
     }
     
+    //MARK: - Helpers
     private func createLayout() -> UICollectionViewLayout {
         // We have three row styles
         // Style 1: 'Full'
@@ -142,6 +152,46 @@ class PhotosGridController: UIViewController, UICollectionViewDelegate {
         let section = NSCollectionLayoutSection(group: nestedGroup)
         let layout = UICollectionViewCompositionalLayout(section: section)
         return layout
+    }
+    
+    private func throwAlert(with error: Error){
+        let ac = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+        self.present(ac, animated: true)
+    }
+    
+    private func fetchURLS(){
+        UnsplashAPI.fetchRandomPhotoURLs()
+            .sink(receiveCompletion: {
+                if case .failure(let error) = $0{
+                    self.throwAlert(with: error)
+                }
+            }, receiveValue: { [weak self] urls in
+                self?.updateDataSource(with: urls)
+            }).store(in: &subscriptions)
+    }
+    
+    //MARK: - Search Controller
+    func configureSearchController(){
+        let nc        = NotificationCenter.default
+        let name      = UISearchTextField.textDidChangeNotification
+        let textField = searchController.searchBar.searchTextField
+        searchController.searchBar.placeholder = "Search"
+        searchController.obscuresBackgroundDuringPresentation = false
+        navigationItem.searchController = searchController
+        
+        nc.publisher(for: name, object: textField)
+            .map { ($0.object as! UISearchTextField).text }
+            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+            .flatMap{ string in
+                UnsplashAPI.searchForPhoto(query: string ?? "nature")
+            }
+            .sink {
+                if case .failure(let error) = $0{
+                    self.throwAlert(with: error)
+                }
+            } receiveValue: { [weak self] urls in
+                self?.updateDataSource(with: urls)
+            }.store(in: &subscriptions)
     }
 }
 
