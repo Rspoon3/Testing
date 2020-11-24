@@ -15,6 +15,10 @@ struct ContentView: View {
         NavigationView{
             List{
                 Text("Updates: \(manager.updates)")
+                Text("Number of samples: \(manager.steps.count)")
+                if !manager.isLoading{
+                    Text("Sum: \(manager.steps.reduce(0) { $0 + $1.value })")
+                }
                 ForEach(manager.steps){ steps in
                     HStack{
                         Text(steps.value.description)
@@ -177,7 +181,7 @@ class HealthKitManager: ObservableObject{
         
         let query = HKStatisticsCollectionQuery(
             quantityType: stepsType,
-            quantitySamplePredicate: predicate,
+            quantitySamplePredicate: nil,
             options: .cumulativeSum,
             anchorDate: anchorDate,
             intervalComponents: interval
@@ -192,13 +196,13 @@ class HealthKitManager: ObservableObject{
                 return
             }
             
-            collection.enumerateStatistics(from: startDate, to: Date()){ (result, stop) in
-                guard let sumQuantity = result.sumQuantity() else {
+            for statistic in collection.statistics(){
+                guard let sumQuantity = statistic.sumQuantity() else {
                     return
                 }
                 
                 let totalStepsForADay = Int(sumQuantity.doubleValue(for: .count()))
-                let steps = Steps(date: result.startDate, value: totalStepsForADay)
+                let steps = Steps(date: statistic.startDate, value: totalStepsForADay)
                 print(steps.value, steps.formattedDate)
                 
                 DispatchQueue.main.async{
