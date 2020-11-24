@@ -13,8 +13,11 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView{
-            List(manager.steps, id: \.self){ step in
-                Text(step.description)
+            List{
+                Text("Updates: \(manager.updates)")
+                ForEach(manager.steps, id: \.self){ step in
+                    Text(step.description)
+                }
             }
             .overlay(
                 ProgressView()
@@ -47,18 +50,21 @@ struct ContentView_Previews: PreviewProvider {
 class HealthKitManager: ObservableObject{
     let healthStore = HKHealthStore()
     let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+    let fallType  = HKQuantityType.quantityType(forIdentifier: .numberOfTimesFallen)!
     @Published var isLoading = false
     @Published var steps = [Int]()
-    
+    @Published var updates = 0
+
     init() {
         let steps = HKObjectType.quantityType(forIdentifier: .stepCount)!
-        let healthKitTypesToRead: Set<HKSampleType> = [steps]
+        let healthKitTypesToRead: Set<HKSampleType> = [steps, fallType]
 
         healthStore.requestAuthorization(toShare: nil, read: healthKitTypesToRead) { (success, error) in
             if let error = error{
                 print("Error: \(error)")
+            } else if success{
+                self.getTotalStepsEachDayOverTheCourseOfThisWeek()
             }
-            print(success)
         }
     }
     
@@ -146,7 +152,7 @@ class HealthKitManager: ObservableObject{
         let now = Date()
         let cal = Calendar.current
         let sevenDaysAgo = cal.date(byAdding: .day, value: -7, to: now)!
-        let startDate = cal.startOfDay(for: sevenDaysAgo)
+        var startDate = cal.startOfDay(for: sevenDaysAgo)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: [.strictStartDate, .strictEndDate])
         
         var interval = DateComponents()
@@ -156,14 +162,15 @@ class HealthKitManager: ObservableObject{
         let anchorDate = cal.startOfDay(for: now)
        
         let query = HKStatisticsCollectionQuery(
-            quantityType: stepsType,
+            quantityType: fallType,
             quantitySamplePredicate: predicate,
             options: .cumulativeSum,
             anchorDate: anchorDate,
             intervalComponents: interval
         )
         
-        
+        self.steps.removeAll(keepingCapacity: true)
+
         query.initialResultsHandler = { query, collection, error in
             guard let collection = collection else {
                 return
@@ -191,17 +198,26 @@ class HealthKitManager: ObservableObject{
         
         
         query.statisticsUpdateHandler = { query, statistics, collection, error in
+            startDate = cal.startOfDay(for: Date())
+            
+            print("In statisticsUpdateHandler...")
+            
+            
             guard let collection = collection else {
                 return
             }
             
             DispatchQueue.main.async{
                 self.isLoading = true
-                self.steps.removeAll()
+                self.updates += 1
             }
             
-            collection.enumerateStatistics(from: startDate, to: now){ (result, stop) in
+            collection.enumerateStatistics(from: startDate, to: Date()){ (result, stop) in
                 guard let sumQuantity = result.sumQuantity() else {
+                    DispatchQueue.main.async{
+                        print("No quantity avaliable")
+                        self.isLoading = false
+                    }
                     return
                 }
                 let totalStepForADay = Int(sumQuantity.doubleValue(for: .count()))
@@ -210,13 +226,18 @@ class HealthKitManager: ObservableObject{
                 
                 print("Total Step For A Day: \(totalStepForADay) :\(formatter.string(from: result.startDate)) - \(formatter.string(from: result.endDate))")
                 DispatchQueue.main.async{
-                    self.steps.insert(totalStepForADay, at: 0)
-                    if result == collection.statistics().last{
-                        self.isLoading = false
+                    if self.steps.isEmpty{
+                        self.steps.append(totalStepForADay)
+                    } else{
+                        self.steps[0] = totalStepForADay
                     }
+                    self.isLoading = false
+                    print("\n\n")
                 }
             }
         }
+        
+        
         
         isLoading = true
         healthStore.execute(query)
