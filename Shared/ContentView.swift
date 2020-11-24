@@ -15,8 +15,12 @@ struct ContentView: View {
         NavigationView{
             List{
                 Text("Updates: \(manager.updates)")
-                ForEach(manager.steps, id: \.self){ step in
-                    Text(step.description)
+                ForEach(manager.steps){ steps in
+                    HStack{
+                        Text(steps.value.description)
+                        Spacer()
+                        Text(steps.formattedDate)
+                    }
                 }
             }
             .overlay(
@@ -25,20 +29,26 @@ struct ContentView: View {
                     .opacity(manager.isLoading ? 1 : 0)
             )
             .navigationTitle("Steps")
-            .toolbar{
-                ToolbarItem(placement: .confirmationAction){
-                    Button("Get steps"){
-                        manager.getTotalStepsEachDayOverTheCourseOfThisWeek()
-                    }
-                }
-            }
         }
     }
 }
 
+
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+    }
+}
+
+struct Steps: Identifiable{
+    let id = UUID()
+    let date: Date
+    let value: Int
+    
+    var formattedDate: String{
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("MM/dd/yyyy")
+        return formatter.string(from: date)
     }
 }
 
@@ -52,13 +62,13 @@ class HealthKitManager: ObservableObject{
     let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
     let fallType  = HKQuantityType.quantityType(forIdentifier: .numberOfTimesFallen)!
     @Published var isLoading = false
-    @Published var steps = [Int]()
+    @Published var steps = [Steps]()
     @Published var updates = 0
-
+    
     init() {
         let steps = HKObjectType.quantityType(forIdentifier: .stepCount)!
         let healthKitTypesToRead: Set<HKSampleType> = [steps, fallType]
-
+        
         healthStore.requestAuthorization(toShare: nil, read: healthKitTypesToRead) { (success, error) in
             if let error = error{
                 print("Error: \(error)")
@@ -74,7 +84,7 @@ class HealthKitManager: ObservableObject{
         let sevenDaysAgo = cal.date(byAdding: .month, value: -1, to: now)!
         let startDate = cal.startOfDay(for: sevenDaysAgo)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: [.strictStartDate, .strictEndDate])
-
+        
         let query = HKSampleQuery(sampleType: stepsType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
             guard let samples = samples,
                   let results = samples as? [HKQuantitySample]
@@ -86,9 +96,10 @@ class HealthKitManager: ObservableObject{
             
             for result in results{
                 let value = result.quantity.doubleValue(for: .count())
+                let steps = Steps(date: result.startDate, value: Int(value))
                 
                 DispatchQueue.main.async{
-                    self.steps.append(Int(value))
+                    self.steps.append(steps)
                     if result == results.last{
                         self.isLoading = false
                     }
@@ -99,7 +110,7 @@ class HealthKitManager: ObservableObject{
         isLoading = true
         healthStore.execute(query)
     }
-
+    
     func getTotalStepsEver() {
         let query = HKStatisticsQuery(quantityType: stepsType, quantitySamplePredicate: nil, options: .cumulativeSum) { (query, statistics, error) in
             DispatchQueue.main.async{
@@ -109,12 +120,13 @@ class HealthKitManager: ObservableObject{
                 print("Error: \(error)")
             } else if let statistics = statistics{
                 let sum = Int(statistics.sumQuantity()?.doubleValue(for: .count()) ?? 0)
+                let steps = Steps(date: Date(), value: sum)
                 print("Start Date: ", statistics.startDate)
                 print("End Date: ", statistics.endDate)
                 print("Sum: \(sum)")
-                            
+                
                 DispatchQueue.main.async{
-                    self.steps.append(sum)
+                    self.steps.append(steps)
                 }
             }
         }
@@ -136,11 +148,13 @@ class HealthKitManager: ObservableObject{
                 let result = result,
                 let sumQuantity = result.sumQuantity()
             else { return }
+            
             let sum = Int(sumQuantity.doubleValue(for: .count()))
+            let steps = Steps(date: now, value: sum)
             
             print("Sum: \(sum)")
             DispatchQueue.main.async{
-                self.steps.append(sum)
+                self.steps.append(steps)
             }
         }
         
@@ -152,91 +166,89 @@ class HealthKitManager: ObservableObject{
         let now = Date()
         let cal = Calendar.current
         let sevenDaysAgo = cal.date(byAdding: .day, value: -7, to: now)!
-        var startDate = cal.startOfDay(for: sevenDaysAgo)
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: [.strictStartDate, .strictEndDate])
+        let startDate = cal.startOfDay(for: sevenDaysAgo)
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: nil, options: [.strictStartDate])
         
         var interval = DateComponents()
         interval.day = 1
         
         // start from midnight
         let anchorDate = cal.startOfDay(for: now)
-       
+        
         let query = HKStatisticsCollectionQuery(
-            quantityType: fallType,
+            quantityType: stepsType,
             quantitySamplePredicate: predicate,
             options: .cumulativeSum,
             anchorDate: anchorDate,
             intervalComponents: interval
         )
         
-        self.steps.removeAll(keepingCapacity: true)
-
         query.initialResultsHandler = { query, collection, error in
             guard let collection = collection else {
+                print("No collection")
+                DispatchQueue.main.async{
+                    self.isLoading = false
+                }
                 return
             }
             
-            collection.enumerateStatistics(from: startDate, to: now){ (result, stop) in
+            collection.enumerateStatistics(from: startDate, to: Date()){ (result, stop) in
                 guard let sumQuantity = result.sumQuantity() else {
                     return
                 }
-                let totalStepForADay = Int(sumQuantity.doubleValue(for: .count()))
-                let formatter = DateFormatter()
-                formatter.setLocalizedDateFormatFromTemplate("MM-dd hh:mm:ss a")
                 
-                print("Total Step For A Day: \(totalStepForADay) :\(formatter.string(from: result.startDate)) - \(formatter.string(from: result.endDate))")
+                let totalStepsForADay = Int(sumQuantity.doubleValue(for: .count()))
+                let steps = Steps(date: result.startDate, value: totalStepsForADay)
+                print(steps.value, steps.formattedDate)
+                
                 DispatchQueue.main.async{
-                    self.steps.insert(totalStepForADay, at: 0)
-                    if result == collection.statistics().last{
-                        self.isLoading = false
-                        print("\n\n")
-                    }
+                    self.steps.insert(steps, at: 0)
                 }
+            }
+            
+            print("initialResultsHandler done")
+            DispatchQueue.main.async{
+                self.isLoading = false
             }
         }
         
         
-        
         query.statisticsUpdateHandler = { query, statistics, collection, error in
-            startDate = cal.startOfDay(for: Date())
-            
             print("In statisticsUpdateHandler...")
-            
-            
             guard let collection = collection else {
+                print("No collection")
+                DispatchQueue.main.async{
+                    self.isLoading = false
+                }
                 return
             }
             
             DispatchQueue.main.async{
                 self.isLoading = true
                 self.updates += 1
+                self.steps.removeAll(keepingCapacity: true)
             }
             
             collection.enumerateStatistics(from: startDate, to: Date()){ (result, stop) in
                 guard let sumQuantity = result.sumQuantity() else {
-                    DispatchQueue.main.async{
-                        print("No quantity avaliable")
-                        self.isLoading = false
-                    }
                     return
                 }
-                let totalStepForADay = Int(sumQuantity.doubleValue(for: .count()))
-                let formatter = DateFormatter()
-                formatter.setLocalizedDateFormatFromTemplate("MM-dd hh:mm:ss a")
                 
-                print("Total Step For A Day: \(totalStepForADay) :\(formatter.string(from: result.startDate)) - \(formatter.string(from: result.endDate))")
+                let totalStepsForADay = Int(sumQuantity.doubleValue(for: .count()))
+                let steps = Steps(date: result.startDate, value: totalStepsForADay)
+                print(steps.value, steps.formattedDate)
+                print("\n\n")
+                
                 DispatchQueue.main.async{
-                    if self.steps.isEmpty{
-                        self.steps.append(totalStepForADay)
-                    } else{
-                        self.steps[0] = totalStepForADay
-                    }
-                    self.isLoading = false
-                    print("\n\n")
+                    self.steps.insert(steps, at: 0)
                 }
             }
+            
+            print("statisticsUpdateHandler done")
+            DispatchQueue.main.async{
+                self.isLoading = false
+            }
         }
-        
         
         
         isLoading = true
