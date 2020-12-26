@@ -27,6 +27,7 @@ struct ConversationsView: View{
                         Text("\(convo.latestMessage.person.fullName): \(convo.latestMessage.message)")
                             .font(.subheadline)
                     }
+                    .background(Color(convo.color).opacity(0.5))
                 })
         }.navigationTitle("Conversations \(model.conversations.count)")
     }

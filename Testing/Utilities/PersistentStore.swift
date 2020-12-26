@@ -57,7 +57,6 @@ class PersistentStore: ObservableObject {
     }
     
     // MARK: - Delete For Debug
-    
     func deleteEverythingForDebug(){
         let conversationsRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Conversation")
         let messagesRequest: NSFetchRequest<NSFetchRequestResult>      = NSFetchRequest(entityName: "Message")

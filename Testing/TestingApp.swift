@@ -10,7 +10,7 @@ import SwiftUI
 
 class AppDelegateAdaptor: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        PersistentStore.shared.deleteEverythingForDebug()
+//        PersistentStore.shared.deleteEverythingForDebug()
         return true
     }
 }
@@ -20,6 +20,10 @@ struct TestingApp: App {
     @UIApplicationDelegateAdaptor(AppDelegateAdaptor.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var persistentStore = PersistentStore.shared
+    
+    init() {
+        ColorValueTransformer.register()
+    }
 
     var body: some Scene {
         WindowGroup {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17189" systemVersion="19G2021" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17511" systemVersion="20B29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Conversation" representedClassName=".Conversation" syncable="YES">
+        <attribute name="color" optional="YES" attributeType="Transformable" valueTransformerName="ColorValueTransformer"/>
         <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="myDescription" optional="YES" attributeType="String"/>
         <relationship name="activeParticipants" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Person" inverseName="conversations" inverseEntity="Person"/>
@@ -39,7 +40,7 @@
         </uniquenessConstraints>
     </entity>
     <elements>
-        <element name="Conversation" positionX="3936.57421875" positionY="6536.25390625" width="128" height="118"/>
+        <element name="Conversation" positionX="3936.57421875" positionY="6536.25390625" width="128" height="119"/>
         <element name="Message" positionX="4502.8515625" positionY="6552.984375" width="128" height="133"/>
         <element name="Person" positionX="4270.1796875" positionY="6098.40234375" width="128" height="118"/>
     </elements>

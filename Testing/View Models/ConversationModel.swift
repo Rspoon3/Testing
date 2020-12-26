@@ -24,7 +24,7 @@ class ConversationModel: NSObject, ObservableObject, NSFetchedResultsControllerD
         do {
             try conversationsController.performFetch()
             conversations = conversationsController.fetchedObjects ?? []
-            createConversations()
+//            createConversations()
         } catch {
             print("Error: \(error.localizedDescription)")
         }
@@ -51,6 +51,7 @@ class ConversationModel: NSObject, ObservableObject, NSFetchedResultsControllerD
         conversation.activeParticipants.insert(ricky)
         conversation.latestMessage = message
         conversation.messages.insert(message)
+        conversation.color = .systemRed
         
         PersistentStore.shared.saveContext()
     }
