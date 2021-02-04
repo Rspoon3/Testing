@@ -3,10 +3,21 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A62D50FA25CB05F700B75395 /* DriverMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D50F925CB05F700B75395 /* DriverMap.swift */; };
+		A62D50FB25CB05F700B75395 /* DriverMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D50F925CB05F700B75395 /* DriverMap.swift */; };
+		A62D510125CB068D00B75395 /* RiderMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D510025CB068D00B75395 /* RiderMap.swift */; };
+		A62D510225CB068D00B75395 /* RiderMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D510025CB068D00B75395 /* RiderMap.swift */; };
+		A62D511925CB228700B75395 /* AnimatableAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D511825CB228700B75395 /* AnimatableAnnotation.swift */; };
+		A62D511A25CB228700B75395 /* AnimatableAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D511825CB228700B75395 /* AnimatableAnnotation.swift */; };
+		A62D512525CB2F0F00B75395 /* SocketIO in Frameworks */ = {isa = PBXBuildFile; productRef = A62D512425CB2F0F00B75395 /* SocketIO */; };
+		A62D512B25CB30AD00B75395 /* SocketIOManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D512A25CB30AD00B75395 /* SocketIOManager.swift */; };
+		A62D512C25CB30AD00B75395 /* SocketIOManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D512A25CB30AD00B75395 /* SocketIOManager.swift */; };
+		A62D513625CB382100B75395 /* MKMapView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D513525CB382100B75395 /* MKMapView+Extension.swift */; };
+		A62D513725CB382100B75395 /* MKMapView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D513525CB382100B75395 /* MKMapView+Extension.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -35,6 +46,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A62D50F925CB05F700B75395 /* DriverMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriverMap.swift; sourceTree = "<group>"; };
+		A62D510025CB068D00B75395 /* RiderMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiderMap.swift; sourceTree = "<group>"; };
+		A62D511825CB228700B75395 /* AnimatableAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatableAnnotation.swift; sourceTree = "<group>"; };
+		A62D512A25CB30AD00B75395 /* SocketIOManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketIOManager.swift; sourceTree = "<group>"; };
+		A62D513525CB382100B75395 /* MKMapView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MKMapView+Extension.swift"; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A6A262D624E0BCB30091EA92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -56,6 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A62D512525CB2F0F00B75395 /* SocketIO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,8 +115,13 @@
 		A6A262D324E0BCB20091EA92 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				A62D511825CB228700B75395 /* AnimatableAnnotation.swift */,
+				A62D512A25CB30AD00B75395 /* SocketIOManager.swift */,
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				A62D50F925CB05F700B75395 /* DriverMap.swift */,
+				A62D510025CB068D00B75395 /* RiderMap.swift */,
+				A62D513525CB382100B75395 /* MKMapView+Extension.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -167,6 +189,9 @@
 			dependencies = (
 			);
 			name = "Testing (iOS)";
+			packageProductDependencies = (
+				A62D512425CB2F0F00B75395 /* SocketIO */,
+			);
 			productName = "Testing (iOS)";
 			productReference = A6A262DB24E0BCB30091EA92 /* Testing.app */;
 			productType = "com.apple.product-type.application";
@@ -258,6 +283,9 @@
 				Base,
 			);
 			mainGroup = A6A262CE24E0BCB20091EA92;
+			packageReferences = (
+				A62D512325CB2F0F00B75395 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */,
+			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -309,7 +337,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				A62D510125CB068D00B75395 /* RiderMap.swift in Sources */,
+				A62D50FA25CB05F700B75395 /* DriverMap.swift in Sources */,
+				A62D511925CB228700B75395 /* AnimatableAnnotation.swift in Sources */,
+				A62D512B25CB30AD00B75395 /* SocketIOManager.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				A62D513625CB382100B75395 /* MKMapView+Extension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,7 +351,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				A62D510225CB068D00B75395 /* RiderMap.swift in Sources */,
+				A62D50FB25CB05F700B75395 /* DriverMap.swift in Sources */,
+				A62D511A25CB228700B75395 /* AnimatableAnnotation.swift in Sources */,
+				A62D512C25CB30AD00B75395 /* SocketIOManager.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				A62D513725CB382100B75395 /* MKMapView+Extension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -696,6 +734,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A62D512325CB2F0F00B75395 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/socketio/socket.io-client-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 16.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A62D512425CB2F0F00B75395 /* SocketIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A62D512325CB2F0F00B75395 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */;
+			productName = SocketIO;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A6A262CF24E0BCB20091EA92 /* Project object */;
 }
