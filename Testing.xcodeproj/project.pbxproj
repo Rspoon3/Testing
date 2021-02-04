@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A6203BCA25CC48FD0045BC50 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6203BC925CC48FD0045BC50 /* MapKit.framework */; };
 		A62D50FA25CB05F700B75395 /* DriverMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D50F925CB05F700B75395 /* DriverMap.swift */; };
 		A62D50FB25CB05F700B75395 /* DriverMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D50F925CB05F700B75395 /* DriverMap.swift */; };
 		A62D510125CB068D00B75395 /* RiderMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D510025CB068D00B75395 /* RiderMap.swift */; };
@@ -46,11 +47,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A6203BC925CC48FD0045BC50 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.5.sdk/System/Library/Frameworks/MapKit.framework; sourceTree = DEVELOPER_DIR; };
 		A62D50F925CB05F700B75395 /* DriverMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriverMap.swift; sourceTree = "<group>"; };
 		A62D510025CB068D00B75395 /* RiderMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiderMap.swift; sourceTree = "<group>"; };
 		A62D511825CB228700B75395 /* AnimatableAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatableAnnotation.swift; sourceTree = "<group>"; };
 		A62D512A25CB30AD00B75395 /* SocketIOManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketIOManager.swift; sourceTree = "<group>"; };
 		A62D513525CB382100B75395 /* MKMapView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MKMapView+Extension.swift"; sourceTree = "<group>"; };
+		A62D514025CC399D00B75395 /* archies_fr.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = archies_fr.gpx; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A6A262D624E0BCB30091EA92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -72,6 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6203BCA25CC48FD0045BC50 /* MapKit.framework in Frameworks */,
 				A62D512525CB2F0F00B75395 /* SocketIO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -100,15 +104,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A6203BC825CC48FD0045BC50 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A6203BC925CC48FD0045BC50 /* MapKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		A6A262CE24E0BCB20091EA92 = {
 			isa = PBXGroup;
 			children = (
+				A62D514025CC399D00B75395 /* archies_fr.gpx */,
 				A6A262D324E0BCB20091EA92 /* Shared */,
 				A6A262DD24E0BCB30091EA92 /* iOS */,
 				A6A262E424E0BCB30091EA92 /* macOS */,
 				A6A262EE24E0BCB30091EA92 /* Tests iOS */,
 				A6A262F924E0BCB30091EA92 /* Tests macOS */,
 				A6A262DC24E0BCB30091EA92 /* Products */,
+				A6203BC825CC48FD0045BC50 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};

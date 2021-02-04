@@ -9,7 +9,6 @@ import SwiftUI
 import MapKit
 
 struct RiderMap: UIViewRepresentable {
-    private let locationManager = CLLocationManager()
     private let mapView = MKMapView()
     let nashua = CLLocationCoordinate2D(latitude: 42.74658038844741, longitude: -71.50032246048838)
     let span    = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)

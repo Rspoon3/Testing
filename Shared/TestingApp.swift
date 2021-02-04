@@ -16,18 +16,7 @@ struct TestingApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-        }
-        .onChange(of: scenePhase) { phase in
-            switch phase {
-            case .active:
-                socketManager.establishConnection()
-            case .inactive:
-                print("\(#function) REPORTS - App change of scenePhase to INACTIVE")
-            case .background:
-                socketManager.closeConnection()
-            @unknown default:
-                fatalError("\(#function) REPORTS - fatal error in switch statement for .onChange modifier")
-            }
+                .environmentObject(socketManager)
         }
     }
 }

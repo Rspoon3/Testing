@@ -7,11 +7,15 @@
 
 import SwiftUI
 import MapKit
+import CoreLocation
+
 
 struct DriverMap: UIViewRepresentable {
     private let mapView = MKMapView()
     private let span    = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-    let duration = 1.0
+    private let duration = 1.0
+    private let locationManager = CLLocationManager()
+    
     @State private var endAnnotation: AnimatableAnnotation? = nil
     
     func makeCoordinator() -> Coordinator {
@@ -23,6 +27,8 @@ struct DriverMap: UIViewRepresentable {
         let center = CLLocationCoordinate2D(latitude: lowell.latitude, longitude: lowell.longitude)
         let region = MKCoordinateRegion(center: center, span: span)
         
+        configureLocationManager(context: context)
+        
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = true
         mapView.setRegion(region, animated: true)
@@ -31,6 +37,17 @@ struct DriverMap: UIViewRepresentable {
     
     
     func updateUIView(_ uiView: MKMapView, context: Context) {
+    }
+    
+    //MARK: - Helpers
+    private func configureLocationManager(context: Context){
+        locationManager.delegate = context.coordinator
+        locationManager.requestAlwaysAuthorization()
+        locationManager.distanceFilter = 5//meters
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.allowsBackgroundLocationUpdates = true
+        locationManager.startUpdatingLocation()
+        locationManager.requestLocation()
     }
     
     
@@ -49,25 +66,31 @@ struct DriverMap: UIViewRepresentable {
         }
     }
     
-    class Coordinator: NSObject, MKMapViewDelegate {
+    class Coordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate {
         private var parent: DriverMap
-        var lat = 42.601619944327965
         
         init(_ parent: DriverMap) {
             self.parent = parent
             super.init()
-            
-            _ = Timer.scheduledTimer(withTimeInterval: parent.duration, repeats: true) { timer in
-                self.lat += 0.002
-                let long = -71.33422851562501
-                let updatedLocation = CLLocationCoordinate2D(latitude: self.lat, longitude: long)
-                parent.updateLocation(updatedLocation)
-                SocketIOManager.shared.sendLocation(lat: self.lat, long: long)
-//                print("Changing to \(updatedLocation)")
-            }
         }
+        
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             return nil
+        }
+        
+        func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+            guard let currentLocation = locations.first else { return }
+            let lat  = currentLocation.coordinate.latitude
+            let long = currentLocation.coordinate.longitude
+            let updatedLocation = CLLocationCoordinate2D(latitude: lat, longitude: long)
+            parent.updateLocation(updatedLocation)
+            SocketIOManager.shared.sendLocation(lat: lat, long: long)
+            
+            print("Changing location")
+        }
+        
+        func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+            print("Error: \(error)")
         }
     }
 }

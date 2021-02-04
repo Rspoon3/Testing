@@ -8,20 +8,25 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var socketManager: SocketIOManager
     @State private var distance = "N/A"
     @State private var time = "N/A"
     @State private var follow = true
-    let isDriver = false
+    let isDriver = true
     
     var body: some View {
         Group{
             if isDriver{
                 ZStack(alignment: .topLeading){
                     DriverMap()
-                    Text("Driver")
-                        .padding(.top, 50)
-                        .padding(.horizontal)
-                        .font(.title)
+                    VStack(alignment: .leading){
+                        Text("Driver")
+                        Text("Socket Connected: ") + Text(socketManager.isConnected.description)
+                            .foregroundColor(socketManager.isConnected ? .green : .red)
+                    }
+                    .padding(.top, 50)
+                    .padding(.horizontal)
+                    .font(.title)
                 }
             } else{
                 ZStack(alignment: .topLeading){
@@ -29,6 +34,8 @@ struct ContentView: View {
                     
                     VStack(alignment: .leading){
                         Text("Rider")
+                        Text("Socket Connected: ") + Text(socketManager.isConnected.description)
+                            .foregroundColor(socketManager.isConnected ? .green : .red)
                         Text(distance)
                         Text(time)
                         Toggle("Follow Camera", isOn: $follow)
