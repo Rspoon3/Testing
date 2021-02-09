@@ -11,10 +11,24 @@ import DisplayLink
 
 struct ContentView : View {
     @ObservedObject var displayLink = DisplayLinkManager()
+    @State private var number = 0
+    let duration = 4.0
+    let endValue = 100.0
     
     var body : some View{
-        Text(displayLink.value).onAppear{
-            self.displayLink.run(startValue: 0, endValue: 2000000, duration: 5)
+        VStack{
+            Text(displayLink.value)
+                .onAppear{
+                    self.displayLink.run(startValue: 0, endValue: endValue, duration: duration)
+                }
+            
+            Text(String(number))
+                .modifier(NumberView(number: number))
+                .onAppear{
+                    withAnimation(Animation.linear(duration: duration)) {
+                        number = Int(endValue)
+                    }
+                }
         }
     }
 }
@@ -67,5 +81,19 @@ class DisplayLinkManager: ObservableObject{
         
             value = String(format: "%.\(asInteger ? 0 : 3)f", newValue)
         }
+    }
+}
+
+
+struct NumberView: AnimatableModifier {
+    var number: Int
+
+    var animatableData: CGFloat {
+        get { CGFloat(number) }
+        set { number = Int(newValue) }
+    }
+
+    func body(content: Content) -> some View {
+        Text(String(number))
     }
 }
