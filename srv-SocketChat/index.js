@@ -1,6 +1,8 @@
 var app = require("express")();
 var http = require("http").Server(app);
-var io = require("socket.io")(http);
+var io = require("socket.io")(http, {
+    allowEIO3: true
+});
 var PORT = process.env.PORT || 3000;
 
 app.get("/", function (req, res) {
