@@ -11,7 +11,10 @@ import SwiftUI
 struct TestingApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+//            OrderConfirmationView(person: .ricky)
+//            PurchaseScreen(person: .ricky)
+            PersonDetailsView(person: .ricky)
+//            ContentView()
         }
     }
 }

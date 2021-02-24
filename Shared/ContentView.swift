@@ -8,9 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+    ]
+    
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 20) {
+                ForEach(Person.people) { person in
+                    HomeCell(person: person)
+                }
+            }
+            .padding(.horizontal)
+        }
     }
 }
 
