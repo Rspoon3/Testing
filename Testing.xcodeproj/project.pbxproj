@@ -115,13 +115,58 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A6A262CE24E0BCB20091EA92 = {
+		A607D23925E6DB1000684601 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				A676AB9E25E6C3D1005A9C59 /* DeliveryOptions.swift */,
 				A6ACEFE225E6BE720019CF65 /* PurchaseScreen.swift */,
 				A676ABAE25E6CA00005A9C59 /* OrderConfirmationView.swift */,
+				A68A735B25E58E8800DB7CB9 /* HomeCell.swift */,
+				A68A739625E5A7D300DB7CB9 /* PersonDetailsView.swift */,
+				A66BB11125E6A90D006F66F9 /* CustomerReviewsHeader.swift */,
+				A6832DF425E69FAF003F936E /* PersonDetailsSectionOne.swift */,
+				A661625F25E5B22D00C739B0 /* ReviewView.swift */,
+				A68A73A525E5ADE100DB7CB9 /* PersonDetailsSectionTwo.swift */,
+				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A607D23E25E6DB1500684601 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
 				A676ABA425E6C52D005A9C59 /* Color+Extension.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		A607D24725E6DB1C00684601 /* App Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
+			);
+			path = "App Navigation";
+			sourceTree = "<group>";
+		};
+		A607D24C25E6DB2300684601 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A68A736225E58EBD00DB7CB9 /* Person.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A607D25125E6DB2800684601 /* Shapes */ = {
+			isa = PBXGroup;
+			children = (
+				A68A738F25E5A53F00DB7CB9 /* Parallelogram.swift */,
+			);
+			path = Shapes;
+			sourceTree = "<group>";
+		};
+		A6A262CE24E0BCB20091EA92 = {
+			isa = PBXGroup;
+			children = (
 				A6A262D324E0BCB20091EA92 /* Shared */,
 				A6A262DD24E0BCB30091EA92 /* iOS */,
 				A6A262E424E0BCB30091EA92 /* macOS */,
@@ -134,16 +179,11 @@
 		A6A262D324E0BCB20091EA92 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
-				A68A735B25E58E8800DB7CB9 /* HomeCell.swift */,
-				A68A739625E5A7D300DB7CB9 /* PersonDetailsView.swift */,
-				A66BB11125E6A90D006F66F9 /* CustomerReviewsHeader.swift */,
-				A6832DF425E69FAF003F936E /* PersonDetailsSectionOne.swift */,
-				A661625F25E5B22D00C739B0 /* ReviewView.swift */,
-				A68A73A525E5ADE100DB7CB9 /* PersonDetailsSectionTwo.swift */,
-				A68A738F25E5A53F00DB7CB9 /* Parallelogram.swift */,
-				A68A736225E58EBD00DB7CB9 /* Person.swift */,
-				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				A607D23925E6DB1000684601 /* Views */,
+				A607D23E25E6DB1500684601 /* Extensions */,
+				A607D24725E6DB1C00684601 /* App Navigation */,
+				A607D25125E6DB2800684601 /* Shapes */,
+				A607D24C25E6DB2300684601 /* Models */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
