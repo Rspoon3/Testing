@@ -23,6 +23,12 @@ struct ContentView: View {
                         Text("Driver")
                         Text("Socket Connected: ") + Text(socketManager.isConnected.description)
                             .foregroundColor(socketManager.isConnected ? .green : .red)
+                        
+                        Button("Send fake data"){
+                            let lat = Double.random(in: 41...41.2)
+                            let long = Double.random(in: 70...70.3)
+                            socketManager.sendLocation(lat: lat, long: -long)
+                        }
                     }
                     .padding(.top, 50)
                     .padding(.horizontal)

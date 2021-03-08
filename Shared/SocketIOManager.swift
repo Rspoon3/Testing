@@ -52,6 +52,7 @@ class SocketIOManager: ObservableObject {
     }
     
     func sendLocation(lat: Double, long: Double) {
+        print("Sending...", lat, long)
         socket.emit("locationUpdate", lat, long)
     }
     
