@@ -18,7 +18,7 @@ class SocketIOManager: ObservableObject {
     
     private init() {
         let config: SocketIOClientConfiguration = [.log(false), .compress]
-        let url = URL(string: "https://ezmr-tracking-map.herokuapp.com")!
+        let url = URL(string: "http://ezmaxrequest-socket-1-development.eba-vnghmvex.us-east-1.elasticbeanstalk.com:5000/")!
         
         manager = SocketManager(socketURL: url, config: config)
         socket = manager.defaultSocket
@@ -53,11 +53,11 @@ class SocketIOManager: ObservableObject {
     
     func sendLocation(lat: Double, long: Double) {
         print("Sending...", lat, long)
-        socket.emit("locationUpdate", lat, long)
+        socket.emit("locationUpdate", lat, long, "interpro_2951")
     }
     
     func getLocation(completionHandler: @escaping (_ location: Location?) -> Void) {
-        socket.on("locationUpdate") { (dataArray, socketAck) -> Void in
+        socket.on("locationUpdate") { (dataArray, socketAck) -> Void in   
             guard
                 let dict = dataArray[0] as? [String: Any],
                 let data = try? JSONSerialization.data(withJSONObject: dict),
