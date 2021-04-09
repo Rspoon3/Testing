@@ -64,28 +64,20 @@ struct PKCanvas: UIViewRepresentable {
         Coordinator(self)
     }
     
+    let picker = PKToolPicker()
+    let canvasView = PKCanvasView()
+    
     func makeUIView(context: Context) -> PKCanvasView {
-        let canvasView = PKCanvasView()
-        canvasView.tool = PKInkingTool(.pen, color: .black, width: 10)
-        canvasView.isRulerActive = true
+        canvasView.tool = PKInkingTool(.pen, color: .black, width: 15)
+        canvasView.becomeFirstResponder()
         canvasView.delegate = context.coordinator
         canvasView.isOpaque = false
-        canvasView.backgroundColor = .clear
-        canvasView.overrideUserInterfaceStyle = .light
-        canvasView.isRulerActive = false
-        
-        if let window = UIApplication.shared.windows.last, let toolPicker = PKToolPicker.shared(for: window) {
-            toolPicker.setVisible(true, forFirstResponder: canvasView)
-            toolPicker.addObserver(canvasView)
-            canvasView.becomeFirstResponder()
-        }
-        
+        canvasView.drawingPolicy = .anyInput
+        picker.addObserver(canvasView)
+        picker.setVisible(true, forFirstResponder: canvasView)
         return canvasView
     }
     
-    func updateUIView(_ canvasView: PKCanvasView, context: Context) {
-        //        if clear != context.coordinator.pkCanvas.clear{
-        //            canvasView.drawing = PKDrawing()
-        //        }
-    }
+      func updateUIView(_ uiView: PKCanvasView, context: Context) {
+      }
 }
