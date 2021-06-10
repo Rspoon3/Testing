@@ -25,7 +25,7 @@ struct ContentView : View {
             }
         }
         .listStyle(SidebarListStyle())
-        .navigationTitle("Drang & Drop")
+        .navigationTitle("Drag & Drop")
     }
     
     var body : some View{
