@@ -9,29 +9,22 @@
 import SwiftUI
 
 struct ContentView : View {
-    @State var backgroundColor = UIColor.systemBlue
     @State var textColor = UIColor.black
     
     var sidebar: some View{
         List{
-            ForEach(0..<10){ _ in
-                NavigationLink(
-                    destination: BlueSquare(backgroundColor: $backgroundColor),
-                    label: {
-                        Text("Testing")
-                            .foregroundColor(Color(textColor))
-                            .onDrop(of: [UTI.color], delegate: ColorDropDelegate(color: $textColor))
-                    })
-            }
+            Text("Accept Drop Here")
+                .foregroundColor(Color(textColor))
         }
-        .listStyle(SidebarListStyle())
+        .onDrop(of: [UTI.color], delegate: ColorDropDelegate(color: $textColor))
+        .listStyle(.sidebar)
         .navigationTitle("Drag & Drop")
     }
     
     var body : some View{
         NavigationView{
             sidebar
-            BlueSquare(backgroundColor: $backgroundColor)
+            BlueSquare()
         }
     }
 }

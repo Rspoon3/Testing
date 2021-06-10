@@ -9,13 +9,11 @@
 import SwiftUI
 
 struct BlueSquare : View{
-    @Binding var backgroundColor: UIColor
     
     var body: some View{
-        Color(backgroundColor)
+        Color.blue
             .edgesIgnoringSafeArea(.all)
-            .onDrop(of: [UTI.color], delegate: ColorDropDelegate(color: $backgroundColor))
-            .onDrag { NSItemProvider(object: self.backgroundColor as UIColor)}
+            .onDrag { NSItemProvider(object: UIColor.systemBlue)}
             .frame(width: 200, height: 200)
             .cornerRadius(10)
     }
@@ -23,6 +21,6 @@ struct BlueSquare : View{
 
 struct BlueSquare_Previews: PreviewProvider {
     static var previews: some View {
-        BlueSquare(backgroundColor: .constant(.systemBlue))
+        BlueSquare()
     }
 }
