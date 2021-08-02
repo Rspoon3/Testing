@@ -48,5 +48,7 @@
 	</array>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Access your health data</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
 </dict>
 </plist>
