@@ -1,20 +1,20 @@
 //
-//  Data.swift
-//  Data
+//  SampleData.swift
+//  SampleData
 //
 //  Created by Richard Witherspoon on 8/1/21.
 //
 
 import Foundation
 
-struct Data: Identifiable{
+struct SampleData: Identifiable{
     let id = UUID()
     let date: Date
-    let value: Int
+    let value: Double
 }
 
-extension Sequence where Element == Data {
-    func sum() -> Int {
+extension Sequence where Element == SampleData {
+    func sum() -> Double {
         reduce(0) { value, data in
             value + data.value
         }

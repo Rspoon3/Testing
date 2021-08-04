@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A66A77D2256C6BEB003590F3 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A66A77D1256C6BEB003590F3 /* HealthKit.framework */; };
-		A6854A2726B74F810042CD9B /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6854A2626B74F810042CD9B /* Data.swift */; };
+		A6854A2726B74F810042CD9B /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6854A2626B74F810042CD9B /* SampleData.swift */; };
 		A6854A2926B74FA90042CD9B /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6854A2526B74F500042CD9B /* HealthKitManager.swift */; };
 		A6854A2B26B775230042CD9B /* HKError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6854A2A26B775230042CD9B /* HKError.swift */; };
 		A6854A2D26B77AE10042CD9B /* StepsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6854A2C26B77AE10042CD9B /* StepsListView.swift */; };
@@ -20,6 +20,10 @@
 		A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* ContentView.swift */; };
 		A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
 		A6A2630224E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
+		A6D0694626B83A1300353329 /* HealthSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0694526B83A1300353329 /* HealthSample.swift */; };
+		A6D0694826B83A4400353329 /* ChartInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0694726B83A4400353329 /* ChartInterval.swift */; };
+		A6D0694A26B83A5300353329 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0694926B83A5300353329 /* Category.swift */; };
+		A6D0694C26B83F1400353329 /* SampleDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0694B26B83F1300353329 /* SampleDetails.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,7 +47,7 @@
 		A66A77CF256C6BEB003590F3 /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A66A77D1256C6BEB003590F3 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.2.sdk/System/Library/Frameworks/HealthKit.framework; sourceTree = DEVELOPER_DIR; };
 		A6854A2526B74F500042CD9B /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
-		A6854A2626B74F810042CD9B /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
+		A6854A2626B74F810042CD9B /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
 		A6854A2A26B775230042CD9B /* HKError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HKError.swift; sourceTree = "<group>"; };
 		A6854A2C26B77AE10042CD9B /* StepsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsListView.swift; sourceTree = "<group>"; };
 		A6854A2E26B7801E0042CD9B /* Extension+HKHealthStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extension+HKHealthStore.swift"; sourceTree = "<group>"; };
@@ -62,6 +66,10 @@
 		A6A262F624E0BCB30091EA92 /* Tests macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOS.swift; sourceTree = "<group>"; };
 		A6A262FC24E0BCB30091EA92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A6D0694526B83A1300353329 /* HealthSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSample.swift; sourceTree = "<group>"; };
+		A6D0694726B83A4400353329 /* ChartInterval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartInterval.swift; sourceTree = "<group>"; };
+		A6D0694926B83A5300353329 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
+		A6D0694B26B83F1300353329 /* SampleDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDetails.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,9 +152,13 @@
 				A6854A2E26B7801E0042CD9B /* Extension+HKHealthStore.swift */,
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				A6D0694B26B83F1300353329 /* SampleDetails.swift */,
 				A6854A2C26B77AE10042CD9B /* StepsListView.swift */,
-				A6854A2626B74F810042CD9B /* Data.swift */,
+				A6854A2626B74F810042CD9B /* SampleData.swift */,
 				A6854A2526B74F500042CD9B /* HealthKitManager.swift */,
+				A6D0694926B83A5300353329 /* Category.swift */,
+				A6D0694726B83A4400353329 /* ChartInterval.swift */,
+				A6D0694526B83A1300353329 /* HealthSample.swift */,
 				A6854A3026B787590042CD9B /* Extension+HKQuantity.swift */,
 				A6854A2A26B775230042CD9B /* HKError.swift */,
 				A6A262DE24E0BCB30091EA92 /* Info.plist */,
@@ -339,13 +351,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
-				A6854A2726B74F810042CD9B /* Data.swift in Sources */,
+				A6D0694826B83A4400353329 /* ChartInterval.swift in Sources */,
+				A6854A2726B74F810042CD9B /* SampleData.swift in Sources */,
 				A6854A2D26B77AE10042CD9B /* StepsListView.swift in Sources */,
 				A6854A2F26B7801E0042CD9B /* Extension+HKHealthStore.swift in Sources */,
 				A6854A2926B74FA90042CD9B /* HealthKitManager.swift in Sources */,
+				A6D0694C26B83F1400353329 /* SampleDetails.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				A6854A2B26B775230042CD9B /* HKError.swift in Sources */,
+				A6D0694626B83A1300353329 /* HealthSample.swift in Sources */,
 				A6854A3126B787590042CD9B /* Extension+HKQuantity.swift in Sources */,
+				A6D0694A26B83A5300353329 /* Category.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

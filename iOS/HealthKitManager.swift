@@ -19,13 +19,12 @@ import HealthKit
 class HealthKitManager: ObservableObject{
     let healthStore = HKHealthStore()
     let cal = Calendar.current
-    private let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+    private let distance = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
     var errorMessage: String?
     
-    @Published var individualStepsLastWeek = [Data]()
-    @Published var totalStepsEver = 0
-    @Published var todaysSteps = 0
-    @Published var totalStepsEachDayThisWeek = [Data]()
+    @Published var totalDataEver = 0.0
+    @Published var todaysData = 0.0
+    @Published var thisWeeksDataGroupedByDay = [SampleData]()
     @Published private(set) var state = State.loading
     
     enum State {
@@ -42,10 +41,9 @@ class HealthKitManager: ObservableObject{
                 try await requestAuthorization()
             }
             
-            individualStepsLastWeek = try await getIndividualStepFromLastWeek()
-            totalStepsEver = try await getTotalStepsEver()
-            todaysSteps = try await getTodaysSteps()
-            totalStepsEachDayThisWeek = try await getTotalStepsEachDayOverTheCourseOfThisWeek()
+            totalDataEver = try await getTotalDataEver()
+            todaysData = try await getTodaysData()
+            thisWeeksDataGroupedByDay = try await getThisWeeksDataGroupedByDay()
         } catch{
             state = .failed(error)
         }
@@ -58,31 +56,31 @@ class HealthKitManager: ObservableObject{
     
     func requestAuthorization() async throws {
         do {
-            let types: Set<HKSampleType> = [stepsType]
+            let types: Set<HKSampleType> = [distance]
             try await healthStore.requestAuthorization(toShare: Set(), read: types)
         } catch {
             throw HKError.notAuthorized(error: error)
         }
     }
     
-    func getTotalStepsEver() async throws -> Int{
-        let statistics = try await healthStore.executeHKStatisticsQuery(type: stepsType,
+    func getTotalDataEver() async throws -> Double{
+        let statistics = try await healthStore.executeHKStatisticsQuery(type: distance,
                                                                         options: .cumulativeSum).1
         
         guard let sum = statistics.sumQuantity() else {
             throw HKError.noSumQuantity
         }
         
-        return sum.integerValue(for: .count())
+        return sum.doubleValue(for: .mile())
     }
     
-    func getTodaysSteps() async throws -> Int{
+    func getTodaysData() async throws -> Double{
         let now = Date()
         let startOfDay = cal.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay,
                                                     end: now,
                                                     options: .strictStartDate)
-        let statistics = try await healthStore.executeHKStatisticsQuery(type: stepsType,
+        let statistics = try await healthStore.executeHKStatisticsQuery(type: distance,
                                                                         predicate: predicate,
                                                                         options: .cumulativeSum).1
         
@@ -90,28 +88,25 @@ class HealthKitManager: ObservableObject{
             throw HKError.noSumQuantity
         }
         
-        return sum.integerValue(for: .count())
+        let units = try await healthStore.preferredUnits(for: [distance])
+        let preferredUnit = units.first!.value
+        let value = sum.integerValue(for: preferredUnit)
+        
+
+        let formatter = LengthFormatter()
+        formatter.unitStyle = .long
+        
+        var lengthFormatterUnit = HKUnit.lengthFormatterUnit(from: preferredUnit)
+        print(formatter.string(fromValue: Double(value), unit: lengthFormatterUnit))
+                
+        let feetValue = sum.doubleValue(for: .foot())
+        lengthFormatterUnit = HKUnit.lengthFormatterUnit(from: .foot())
+        print(formatter.string(fromValue: feetValue, unit: lengthFormatterUnit))
+        
+        return sum.doubleValue(for: .mile())
     }
     
-    func getIndividualStepFromLastWeek() async throws -> [Data]{
-        let now = Date()
-        let sevenDaysAgo = cal.date(byAdding: .weekOfYear, value: -1, to: now)!
-        let startDate = cal.startOfDay(for: sevenDaysAgo)
-        let predicate = HKQuery.predicateForSamples(withStart: startDate,
-                                                    end: nil,
-                                                    options: [.strictStartDate, .strictEndDate])
-        
-        
-        let samples = try await healthStore.executeHKSampleQuery(type: stepsType, predicate: predicate).1
-        
-        return samples.map{ sample in
-            let value = sample.quantity.integerValue(for: .count())
-            let date = sample.startDate
-            return Data(date: date, value: value)
-        }
-    }
-    
-    func getTotalStepsEachDayOverTheCourseOfThisWeek() async throws -> [Data]{
+    func getThisWeeksDataGroupedByDay() async throws -> [SampleData]{
         let now = Date()
         let sevenDaysAgo = cal.date(byAdding: .day, value: -7, to: now)!
         let startDate = cal.startOfDay(for: sevenDaysAgo)
@@ -120,20 +115,20 @@ class HealthKitManager: ObservableObject{
                                                     options: [.strictStartDate])
         let interval = DateComponents(day: 1)
         let anchorDate = cal.startOfDay(for: now)// start from midnight
-        let statistics = try await healthStore.executeHKStatisticsCollectionQuery(type: stepsType,
+        let statistics = try await healthStore.executeHKStatisticsCollectionQuery(type: distance,
                                                                                   predicate: predicate,
                                                                                   options: .cumulativeSum,
                                                                                   anchorDate: anchorDate,
                                                                                   intervalComponents: interval).1.statistics()
         
-        return try statistics.compactMap{ statistic -> Data in
+        return try statistics.compactMap{ statistic -> SampleData in
             guard let sum = statistic.sumQuantity() else {
                 throw HKError.noSumQuantity
             }
             
-            let totalStepsForADay = sum.integerValue(for: .count())
+            let totalForADay = sum.doubleValue(for: .mile())
             
-            return Data(date: statistic.startDate, value: totalStepsForADay)
+            return SampleData(date: statistic.startDate, value: totalForADay)
         }
     }
 }

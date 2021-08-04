@@ -8,47 +8,51 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var manager = HealthKitManager()
+    @State var samples = UserDefaults.standard.array(forKey: "data") as? [HealthSampleCodable] ?? []
     
     var body: some View {
         NavigationView{
-            ZStack{
-                Color(.systemGroupedBackground)
-                    .edgesIgnoringSafeArea(.all)
-                switch manager.state{
-                case .loading:
-                    ProgressView()
-                        .task{
-                            await manager.loadData(authorize: true)
-                        }
-                case .failed(let error):
-                    VStack{
-                        Text("Error")
-                            .font(.title)
-                            .fontWeight(.medium)
-                            .padding(.bottom, 6)
-                        Text(error.localizedDescription)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom)
-                        Image(systemName: "exclamationmark.triangle")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 70)
-                            .foregroundColor(.secondary)
+            List($samples){ $sample in
+                Button {
+                    sample.isFavorite.toggle()
+                    
+                    if let encoded = try? JSONEncoder().encode(samples) {
+                        UserDefaults.standard.set(encoded, forKey: "data")
                     }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                case .loaded:
-                    StepsListView(manager: manager)
-                        .refreshable{
-                            await manager.loadData(authorize: false)
-                        }
+                } label: {
+                    Label(sample.title, systemImage: sample.sfSymbol)
+                        .symbolVariant(sample.isFavorite ? .fill : .none)
                 }
             }
-            .navigationTitle("Steps")
+            .navigationTitle("Samples")
         }
         .navigationViewStyle(.stack)
+        .onAppear{
+            let samples = [
+                HealthSampleCodable(title: "Steps",
+                                    typeIdentifier: .stepCount,
+                                    isFavorite: true),
+                HealthSampleCodable(title: "Cycling",
+                                    typeIdentifier: .distanceCycling,
+                                    isFavorite: false),
+                HealthSampleCodable(title: "Walking/Running",
+                                    typeIdentifier: .distanceWalkingRunning,
+                                    isFavorite: true),
+            ]
+            
+            if let data = UserDefaults.standard.data(forKey: "data") {
+                if let decoded = try? JSONDecoder().decode([HealthSampleCodable].self, from: data) {
+                    self.samples = decoded
+                }
+                print("Have samples")
+            } else {
+                print("Creating samples")
+                if let encoded = try? JSONEncoder().encode(samples) {
+                    UserDefaults.standard.set(encoded, forKey: "data")
+                    self.samples = samples
+                }
+            }
+        }
     }
 }
 
