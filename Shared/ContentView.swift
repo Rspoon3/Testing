@@ -15,6 +15,7 @@ struct ContentView: View {
             List{
                 ForEach(model.data){ data in
                     Section{
+                        ProgressView("Downloading…", value: data.downloadProgress, total: 45_000_000)
                         Text(data.urlString)
                         Text(data.dataInfo)
                         Text("Status Code: \(data.statusCode)")

@@ -9,8 +9,10 @@ import Foundation
 
 
 struct MyData: Identifiable{
-    let id = UUID()
+    var id: Int { task.taskIdentifier }
     let urlString: String
     let dataInfo: String
     let statusCode: Int
+    let task: URLSessionTask
+    var downloadProgress:Double = 0
 }

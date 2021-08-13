@@ -20,6 +20,7 @@ class ContentViewModel: NSObject, ObservableObject{
     ].map{URL(string: $0)!}
     
     private let geoDatabaseUrls = [
+        "http:/192.168.1.175/emmtest/map/downloadgeodatabase.action?jsonParam=%7B%0A%20%20%22geoId%22%20:%20%22WATERPIPES%22%0A%7D&token=UrFOS5XdnH2caDeYLnhVJb3FnJXWKdCB",
         "http:/192.168.1.175/emmtest/map/downloadgeodatabase.action?jsonParam=%7B%0A%20%20%22geoId%22%20:%20%22WUAINACTIVE%22%0A%7D&token=UrFOS5XdnH2caDeYLnhVJb3FnJXWKdCB",
         "http:/192.168.1.175/emmtest/map/downloadgeodatabase.action?jsonParam=%7B%0A%20%20%22geoId%22%20:%20%22WATERVALVESPRV%22%0A%7D&token=UrFOS5XdnH2caDeYLnhVJb3FnJXWKdCB",
         "http:/192.168.1.175/emmtest/map/downloadgeodatabase.action?jsonParam=%7B%0A%20%20%22geoId%22%20:%20%22WUAACTIVE%22%0A%7D&token=UrFOS5XdnH2caDeYLnhVJb3FnJXWKdCB",
@@ -31,12 +32,11 @@ class ContentViewModel: NSObject, ObservableObject{
         "http:/192.168.1.175/emmtest/map/downloadgeodatabase.action?jsonParam=%7B%0A%20%20%22geoId%22%20:%20%22NONWUAINACTIVE%22%0A%7D&token=UrFOS5XdnH2caDeYLnhVJb3FnJXWKdCB",
         "http:/192.168.1.175/emmtest/map/downloadgeodatabase.action?jsonParam=%7B%0A%20%20%22geoId%22%20:%20%22WATERPIPESTRANS%22%0A%7D&token=UrFOS5XdnH2caDeYLnhVJb3FnJXWKdCB",
         "http:/192.168.1.175/emmtest/map/downloadgeodatabase.action?jsonParam=%7B%0A%20%20%22geoId%22%20:%20%22WATERVALVES%22%0A%7D&token=UrFOS5XdnH2caDeYLnhVJb3FnJXWKdCB",
-        "http:/192.168.1.175/emmtest/map/downloadgeodatabase.action?jsonParam=%7B%0A%20%20%22geoId%22%20:%20%22WATERPIPES%22%0A%7D&token=UrFOS5XdnH2caDeYLnhVJb3FnJXWKdCB",
     ].map{URL(string: $0)!}
     
     //MARK: Initializer
     override init() {
-        self.downloadManager = DownloadManager(maxConcurrentOperationCount: 4,
+        self.downloadManager = DownloadManager(maxConcurrentOperationCount: 2,
                                                queueName: "downloads",
                                                sessionConfig: .default)
         super.init()
@@ -49,6 +49,14 @@ class ContentViewModel: NSObject, ObservableObject{
     
     
     //MARK: Helpers
+    
+    fileprivate func download(_ url: URL, _ completion: BlockOperation) {
+        print("Adding operation")
+        let operation = downloadManager.queueDownload(url)
+        completion.addDependency(operation)
+        
+        data.append(.init(urlString: url.absoluteString, dataInfo: "IDK", statusCode: 0, task: operation.task))
+    }
     
     func startLoading(){
         let start = CFAbsoluteTimeGetCurrent()
@@ -67,9 +75,7 @@ class ContentViewModel: NSObject, ObservableObject{
         }
         
         for url in urls {
-            print("Adding operation")
-            let operation = downloadManager.queueDownload(url)
-            completion.addDependency(operation)
+            download(url, completion)
         }
         
         OperationQueue.main.addOperation(completion)
@@ -114,22 +120,22 @@ class ContentViewModel: NSObject, ObservableObject{
 
 extension ContentViewModel: DownloadManagerURlSessionDelegate{
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        print("Finished download")
-
-
-        let formattedURL = location.absoluteString.removingPercentEncoding ?? "N/A"
-        let myData = MyData(urlString: formattedURL, dataInfo: "NA", statusCode: 200)
-
-        DispatchQueue.main.async{
-            self.data.append(myData)
-        }
-
-        moveTempDownloadedFileFor(from: location)
+        
     }
     
+    
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-
-//        let formatter = MeasurementFormatter()
+        let index = data.firstIndex(where: {$0.task.taskIdentifier == downloadTask.taskIdentifier})!
+        let p = self.data[index].downloadProgress
+        
+        if p + 5_000_000 < Double(totalBytesWritten) || p == 0{
+            print("In here")
+            DispatchQueue.main.async{
+                self.data[index].downloadProgress = Double(totalBytesWritten)
+            }
+        }
+        
+        //        let formatter = MeasurementFormatter()
 //        formatter.unitOptions = .naturalScale
 //
 //        let measurement = Measurement(value: Double(totalBytesWritten), unit: UnitInformationStorage.bytes)
