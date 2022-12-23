@@ -94,9 +94,6 @@ class CarouselModel: NSObject, ObservableObject, UICollectionViewDelegate, UICol
                         cell.shadowOpacity(percentage: percentageToMidX)
     //                    cell.scale(clampedScale)
                     }
-                    
-                    print(self.collectionView.cellForItem(at: item.indexPath))
-                    print(item.indexPath)
 
                     item.transform = CGAffineTransform(scaleX: clampedScale, y: clampedScale)
 
