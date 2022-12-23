@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9405A5CA2956240B00A08FDB /* CarouselViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9405A5C92956240B00A08FDB /* CarouselViewModel.swift */; };
+		9405A5CB2956240B00A08FDB /* CarouselViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9405A5C92956240B00A08FDB /* CarouselViewModel.swift */; };
+		9405A5CD2956243300A08FDB /* CarouselRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9405A5CC2956243300A08FDB /* CarouselRepresentable.swift */; };
+		9405A5CE2956243300A08FDB /* CarouselRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9405A5CC2956243300A08FDB /* CarouselRepresentable.swift */; };
 		941B25872954EC3A0057B09C /* OrthogonalUICollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941B25862954EC3A0057B09C /* OrthogonalUICollectionView.swift */; };
 		941B25882954EC3A0057B09C /* OrthogonalUICollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941B25862954EC3A0057B09C /* OrthogonalUICollectionView.swift */; };
 		941B258A2954EC530057B09C /* TestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941B25892954EC530057B09C /* TestCell.swift */; };
@@ -39,6 +43,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9405A5C92956240B00A08FDB /* CarouselViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselViewModel.swift; sourceTree = "<group>"; };
+		9405A5CC2956243300A08FDB /* CarouselRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselRepresentable.swift; sourceTree = "<group>"; };
 		941B25862954EC3A0057B09C /* OrthogonalUICollectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrthogonalUICollectionView.swift; sourceTree = "<group>"; };
 		941B25892954EC530057B09C /* TestCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestCell.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
@@ -110,6 +116,8 @@
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				941B25892954EC530057B09C /* TestCell.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				9405A5CC2956243300A08FDB /* CarouselRepresentable.swift */,
+				9405A5C92956240B00A08FDB /* CarouselViewModel.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -320,7 +328,9 @@
 			files = (
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
 				941B258A2954EC530057B09C /* TestCell.swift in Sources */,
+				9405A5CD2956243300A08FDB /* CarouselRepresentable.swift in Sources */,
 				941B25872954EC3A0057B09C /* OrthogonalUICollectionView.swift in Sources */,
+				9405A5CA2956240B00A08FDB /* CarouselViewModel.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -331,7 +341,9 @@
 			files = (
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
 				941B258B2954EC530057B09C /* TestCell.swift in Sources */,
+				9405A5CE2956243300A08FDB /* CarouselRepresentable.swift in Sources */,
 				941B25882954EC3A0057B09C /* OrthogonalUICollectionView.swift in Sources */,
+				9405A5CB2956240B00A08FDB /* CarouselViewModel.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

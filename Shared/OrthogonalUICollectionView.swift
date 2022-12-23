@@ -25,10 +25,8 @@ class OrthogonalUICollectionView: UICollectionView {
             return
         }
         
-        
         setObserver(using: scrollView)
     }
-    
     
     private func setObserver(using scrollView: UIScrollView) {
         observer = scrollView.observe(\UIScrollView.contentOffset, options: .new) { [weak self] scrollView, _ in
