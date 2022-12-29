@@ -7,7 +7,6 @@
 
 import UIKit
 
-
 class TestCell: UICollectionViewCell {
     private let containerView = UIView()
     private let imageView = UIImageView()
@@ -32,13 +31,6 @@ class TestCell: UICollectionViewCell {
 
         contentView.addSubview(containerView)
         containerView.addSubview(imageView)
-        
-//        NSLayoutConstraint.activate([
-//            view.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-//            view.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-//            view.heightAnchor.constraint(equalToConstant: 50),
-//            view.widthAnchor.constraint(equalToConstant: 50)
-//        ])
         
         label.font = .preferredFont(forTextStyle: .largeTitle)
         label.textColor = .white
@@ -66,19 +58,12 @@ class TestCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with color: UIColor, indexPath: IndexPath) {
-//        contentView.backgroundColor = color
-        
+    func configure(indexPath: IndexPath) {
         let i = indexPath.item.isMultiple(of: 2) ? "carousel_B-new-size" : "dog"
         imageView.image = .init(named: i)
     }
     
     func shadowOpacity(percentage: Double) {
-//        view.transform = CGAffineTransform(scaleX: percentage, y: percentage)
         containerView.layer.shadowOpacity = Float(percentage)
-    }
-    
-    func scale(_ scale: CGFloat) {
-        containerView.transform = CGAffineTransform(scaleX: scale, y: scale)
     }
 }

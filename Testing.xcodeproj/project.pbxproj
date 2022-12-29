@@ -112,8 +112,8 @@
 		A6A262D324E0BCB20091EA92 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				941B25862954EC3A0057B09C /* OrthogonalUICollectionView.swift */,
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
+				941B25862954EC3A0057B09C /* OrthogonalUICollectionView.swift */,
 				941B25892954EC530057B09C /* TestCell.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
 				9405A5CC2956243300A08FDB /* CarouselRepresentable.swift */,
@@ -503,7 +503,7 @@
 				DEVELOPMENT_TEAM = SBS8ZBXB9U;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -528,7 +528,7 @@
 				DEVELOPMENT_TEAM = SBS8ZBXB9U;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -562,7 +562,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.Testing;
 				PRODUCT_NAME = Testing;
 				SDKROOT = macosx;
@@ -588,7 +588,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.Testing;
 				PRODUCT_NAME = Testing;
 				SDKROOT = macosx;

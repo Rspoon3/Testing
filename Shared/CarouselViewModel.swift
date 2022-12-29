@@ -10,32 +10,23 @@ import UIKit
 class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionViewDelegate, UICollectionViewDataSource {
     @Published var currentIndex = IndexPath(item: 0, section: 0)
     @Published var height: CGFloat = 100
-    let carouselItems = [UIColor.systemRed, .systemBlue, .systemOrange, .systemPink, .systemGray, .systemTeal, .systemGreen]
-    private let numberOfCarouselItems = 10//1_000_000
-    let minScale: CGFloat = 0.8
-    let maxScale: CGFloat = 1
-    private var cellRegistration: UICollectionView.CellRegistration<TestCell, UIColor>! = nil
-    weak var collectionView: OrthogonalUICollectionView?
-    private var timer: Timer?
-    let scrollRateInSeconds: TimeInterval = 4
     
-    func configureScrollObserver() {
-        collectionView?.didStartDragging = { [weak self] in
-            self?.stopTimer()
-        }
-    }
+    private let carouselItems = [UIColor.systemRed, .systemBlue, .systemOrange, .systemPink, .systemGray, .systemTeal, .systemGreen]
+    private let numberOfCarouselItems = 1_000_000
+    private let minScale: CGFloat = 0.8
+    private let maxScale: CGFloat = 1
+    private var cellRegistration: UICollectionView.CellRegistration<TestCell, UIColor>! = nil
+    private let scrollRateInSeconds: TimeInterval = 4
+    private var timer: Timer?
+    weak var collectionView: OrthogonalUICollectionView?
+    
+    
+    //MARK: - Private Helpers
     
     private func stopTimer() {
         print(#function)
         timer?.invalidate()
         timer = nil
-    }
-    
-    func startTimer() {
-        print(#function)
-        timer = Timer.scheduledTimer(withTimeInterval: scrollRateInSeconds, repeats: true) { [weak self] timer in
-            self?.scrollToNextIndex()
-        }
     }
     
     private func scrollToNextIndex() {
@@ -48,9 +39,12 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
         collectionView?.scrollToItem(at: currentIndex, at: .centeredHorizontally, animated: true)
     }
     
+    
+    //MARK: - Public Helpers
+    
     func registerCell() {
         cellRegistration = UICollectionView.CellRegistration<TestCell, UIColor> { (cell, indexPath, color) in
-            cell.configure(with: color, indexPath: indexPath)
+            cell.configure(indexPath: indexPath)
             cell.label.text = indexPath.item.formatted()
         }
     }
@@ -60,26 +54,6 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
             self.currentIndex = IndexPath(row: self.numberOfCarouselItems / 2, section: 0)
             self.collectionView?.scrollToItem(at: self.currentIndex, at: .centeredHorizontally, animated: false)
         }
-    }
-    
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 1
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let index = indexPath.item % carouselItems.count
-        let item = carouselItems[index]
-        
-        return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return numberOfCarouselItems
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: true)
-        print(indexPath)
     }
     
     func createLayout() -> UICollectionViewLayout {
@@ -121,8 +95,12 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
                     let scale = ((self.maxScale - self.minScale) * percentageToMidX) + self.minScale
                     let clampedScale = max(self.minScale, scale)
                     
+                    
                     if let cell = self.collectionView?.cellForItem(at: item.indexPath) as? TestCell {
                         cell.shadowOpacity(percentage: percentageToMidX)
+                        print(clampedScale, "GOOD")
+                    } else {
+                        print(clampedScale, "BAD")
                     }
                     
                     item.transform = CGAffineTransform(scaleX: clampedScale, y: clampedScale)
@@ -137,5 +115,44 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
             
             return section
         }
+    }
+    
+    func startTimer() {
+        print(#function)
+        timer = Timer.scheduledTimer(withTimeInterval: scrollRateInSeconds, repeats: true) { [weak self] timer in
+            self?.scrollToNextIndex()
+        }
+    }
+    
+    func configureScrollObserver() {
+        collectionView?.didStartDragging = { [weak self] in
+            self?.stopTimer()
+        }
+    }
+
+    
+    //MARK: - UICollectionViewDataSource
+    
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 1
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let index = indexPath.item % carouselItems.count
+        let item = carouselItems[index]
+        
+        return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return numberOfCarouselItems
+    }
+    
+    
+    //MARK: - UICollectionViewDelegate
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        print(indexPath)
     }
 }
