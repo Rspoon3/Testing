@@ -91,10 +91,9 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
                     guard let self else { return }
                     
                     let distanceFromCenter = abs((item.frame.midX - offset.x) - environment.container.contentSize.width / 2.0)
-                    let percentageToMidX =  1 - (distanceFromCenter / (item.frame.width + spacing))
+                    let percentageToMidX =  1 - (distanceFromCenter / (item.frame.width - spacing * 2))
                     let scale = ((self.maxScale - self.minScale) * percentageToMidX) + self.minScale
                     let clampedScale = max(self.minScale, scale)
-                    
                     
                     if let cell = self.collectionView?.cellForItem(at: item.indexPath) as? TestCell {
                         cell.shadowOpacity(percentage: percentageToMidX)
