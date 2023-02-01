@@ -11,6 +11,7 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
     @Published var currentIndex = IndexPath(item: 0, section: 0)
     @Published var height: CGFloat = 100
     
+    var didScroll = false
     private let carouselItems = [UIColor.systemRed, .systemBlue, .systemOrange, .systemPink, .systemGray, .systemTeal, .systemGreen]
     private let numberOfCarouselItems = 1_000_000
     private let minScale: CGFloat = 0.8
@@ -18,7 +19,7 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
     private var cellRegistration: UICollectionView.CellRegistration<TestCell, UIColor>! = nil
     private let scrollRateInSeconds: TimeInterval = 4
     private var timer: Timer?
-    weak var collectionView: OrthogonalUICollectionView?
+    weak var collectionView: UICollectionView?
     
     
     //MARK: - Private Helpers
@@ -49,12 +50,10 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
         }
     }
     
-    func scrollToMiddle() {
-        DispatchQueue.main.async {
-            self.currentIndex = IndexPath(row: self.numberOfCarouselItems / 2, section: 0)
-            self.collectionView?.scrollToItem(at: self.currentIndex, at: .centeredHorizontally, animated: false)
-        }
-    }
+//    func scrollToMiddle() {
+//        currentIndex = IndexPath(row: self.numberOfCarouselItems / 2, section: 0)
+//        collectionView?.scrollToItem(at: self.currentIndex, at: .centeredHorizontally, animated: false)
+//    }
     
     func createLayout() -> UICollectionViewLayout {
         return UICollectionViewCompositionalLayout { [weak self] (sectionIndex: Int, layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
@@ -120,12 +119,6 @@ class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionVi
         print(#function)
         timer = Timer.scheduledTimer(withTimeInterval: scrollRateInSeconds, repeats: true) { [weak self] timer in
             self?.scrollToNextIndex()
-        }
-    }
-    
-    func configureScrollObserver() {
-        collectionView?.didStartDragging = { [weak self] in
-            self?.stopTimer()
         }
     }
 

@@ -34,14 +34,8 @@ struct ContentView: View {
                     Text("TOP")
                     Text("Index: \(model.currentIndex.item)")
                     CarouselRepresentable(model: model)
-                        .frame(height: model.height + shadowBottomPadding)
-                        .opacity(debug ? 0.75 : 1)
-                        .onAppear{
-                            model.scrollToMiddle()
-                            //                    model.startTimer()
-                            model.configureScrollObserver()
-                        }
-                    
+                        .frame(height: 393 / 2)
+//                        .opacity(debug ? 0.75 : 1)
                     Text("Bottom")
                     
                     ForEach(0..<100) {_ in
