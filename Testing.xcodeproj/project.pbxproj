@@ -3,10 +3,15 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94AF291E29E9C8F10004DEC1 /* FLAnimatedImage in Frameworks */ = {isa = PBXBuildFile; productRef = 94AF291D29E9C8F10004DEC1 /* FLAnimatedImage */; };
+		94AF292029E9C9070004DEC1 /* GIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AF291F29E9C9070004DEC1 /* GIFView.swift */; };
+		94AF292129E9C9070004DEC1 /* GIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AF291F29E9C9070004DEC1 /* GIFView.swift */; };
+		94AF292329E9C92D0004DEC1 /* slideGif.gif in Resources */ = {isa = PBXBuildFile; fileRef = 94AF292229E9C92D0004DEC1 /* slideGif.gif */; };
+		94AF292429E9C92D0004DEC1 /* slideGif.gif in Resources */ = {isa = PBXBuildFile; fileRef = 94AF292229E9C92D0004DEC1 /* slideGif.gif */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -35,6 +40,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		94AF291F29E9C9070004DEC1 /* GIFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFView.swift; sourceTree = "<group>"; };
+		94AF292229E9C92D0004DEC1 /* slideGif.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = slideGif.gif; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,6 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94AF291E29E9C8F10004DEC1 /* FLAnimatedImage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,8 +108,10 @@
 		A6A262D324E0BCB20091EA92 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				94AF292229E9C92D0004DEC1 /* slideGif.gif */,
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				94AF291F29E9C9070004DEC1 /* GIFView.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -169,6 +179,9 @@
 			dependencies = (
 			);
 			name = "Testing (iOS)";
+			packageProductDependencies = (
+				94AF291D29E9C8F10004DEC1 /* FLAnimatedImage */,
+			);
 			productName = "Testing (iOS)";
 			productReference = A6A262DB24E0BCB30091EA92 /* Testing.app */;
 			productType = "com.apple.product-type.application";
@@ -260,6 +273,9 @@
 				Base,
 			);
 			mainGroup = A6A262CE24E0BCB20091EA92;
+			packageReferences = (
+				94AF291C29E9C8F10004DEC1 /* XCRemoteSwiftPackageReference "FLAnimatedImage" */,
+			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -278,6 +294,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */,
+				94AF292329E9C92D0004DEC1 /* slideGif.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,6 +303,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630224E0BCB30091EA92 /* Assets.xcassets in Resources */,
+				94AF292429E9C92D0004DEC1 /* slideGif.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,6 +329,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94AF292029E9C9070004DEC1 /* GIFView.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -320,6 +339,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94AF292129E9C9070004DEC1 /* GIFView.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -712,6 +732,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		94AF291C29E9C8F10004DEC1 /* XCRemoteSwiftPackageReference "FLAnimatedImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Flipboard/FLAnimatedImage.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.0.17;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		94AF291D29E9C8F10004DEC1 /* FLAnimatedImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94AF291C29E9C8F10004DEC1 /* XCRemoteSwiftPackageReference "FLAnimatedImage" */;
+			productName = FLAnimatedImage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A6A262CF24E0BCB20091EA92 /* Project object */;
 }
