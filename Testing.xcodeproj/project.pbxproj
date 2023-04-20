@@ -3,10 +3,21 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9459150829F0AEB900510ED9 /* UIImage+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9459150729F0AEB900510ED9 /* UIImage+Extension.swift */; };
+		9459150929F0AEB900510ED9 /* UIImage+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9459150729F0AEB900510ED9 /* UIImage+Extension.swift */; };
+		9459150B29F0B23900510ED9 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9459150A29F0B23900510ED9 /* DeviceInfo.swift */; };
+		9459150C29F0B23900510ED9 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9459150A29F0B23900510ED9 /* DeviceInfo.swift */; };
+		9459151129F0E63600510ED9 /* CreateScreenshotsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9459151029F0E63600510ED9 /* CreateScreenshotsIntent.swift */; };
+		9459151229F0E63600510ED9 /* CreateScreenshotsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9459151029F0E63600510ED9 /* CreateScreenshotsIntent.swift */; };
+		9459151B29F1909300510ED9 /* CollectionConcurrencyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9459151A29F1909300510ED9 /* CollectionConcurrencyKit */; };
+		949DB81029F1A93E00120734 /* Frames.json in Resources */ = {isa = PBXBuildFile; fileRef = 949DB80F29F1A93E00120734 /* Frames.json */; };
+		949DB81129F1A93E00120734 /* Frames.json in Resources */ = {isa = PBXBuildFile; fileRef = 949DB80F29F1A93E00120734 /* Frames.json */; };
+		949DB81329F1ADD200120734 /* Bundle+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949DB81229F1ADD200120734 /* Bundle+Extension.swift */; };
+		949DB81429F1ADD200120734 /* Bundle+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949DB81229F1ADD200120734 /* Bundle+Extension.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -35,6 +46,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9459150729F0AEB900510ED9 /* UIImage+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extension.swift"; sourceTree = "<group>"; };
+		9459150A29F0B23900510ED9 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
+		9459151029F0E63600510ED9 /* CreateScreenshotsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateScreenshotsIntent.swift; sourceTree = "<group>"; };
+		949DB80F29F1A93E00120734 /* Frames.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Frames.json; sourceTree = "<group>"; };
+		949DB81229F1ADD200120734 /* Bundle+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Bundle+Extension.swift"; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9459151B29F1909300510ED9 /* CollectionConcurrencyKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,8 +117,13 @@
 		A6A262D324E0BCB20091EA92 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				949DB80F29F1A93E00120734 /* Frames.json */,
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				9459151029F0E63600510ED9 /* CreateScreenshotsIntent.swift */,
+				9459150729F0AEB900510ED9 /* UIImage+Extension.swift */,
+				9459150A29F0B23900510ED9 /* DeviceInfo.swift */,
+				949DB81229F1ADD200120734 /* Bundle+Extension.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -169,6 +191,9 @@
 			dependencies = (
 			);
 			name = "Testing (iOS)";
+			packageProductDependencies = (
+				9459151A29F1909300510ED9 /* CollectionConcurrencyKit */,
+			);
 			productName = "Testing (iOS)";
 			productReference = A6A262DB24E0BCB30091EA92 /* Testing.app */;
 			productType = "com.apple.product-type.application";
@@ -260,6 +285,9 @@
 				Base,
 			);
 			mainGroup = A6A262CE24E0BCB20091EA92;
+			packageReferences = (
+				9459151929F1909300510ED9 /* XCRemoteSwiftPackageReference "CollectionConcurrencyKit" */,
+			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -278,6 +306,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */,
+				949DB81029F1A93E00120734 /* Frames.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,6 +315,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630224E0BCB30091EA92 /* Assets.xcassets in Resources */,
+				949DB81129F1A93E00120734 /* Frames.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,8 +340,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				949DB81329F1ADD200120734 /* Bundle+Extension.swift in Sources */,
+				9459151129F0E63600510ED9 /* CreateScreenshotsIntent.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				9459150829F0AEB900510ED9 /* UIImage+Extension.swift in Sources */,
+				9459150B29F0B23900510ED9 /* DeviceInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,8 +353,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				949DB81429F1ADD200120734 /* Bundle+Extension.swift in Sources */,
+				9459151229F0E63600510ED9 /* CreateScreenshotsIntent.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				9459150929F0AEB900510ED9 /* UIImage+Extension.swift in Sources */,
+				9459150C29F0B23900510ED9 /* DeviceInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -479,7 +517,7 @@
 				DEVELOPMENT_TEAM = SBS8ZBXB9U;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -504,7 +542,7 @@
 				DEVELOPMENT_TEAM = SBS8ZBXB9U;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -712,6 +750,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9459151929F1909300510ED9 /* XCRemoteSwiftPackageReference "CollectionConcurrencyKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/JohnSundell/CollectionConcurrencyKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9459151A29F1909300510ED9 /* CollectionConcurrencyKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9459151929F1909300510ED9 /* XCRemoteSwiftPackageReference "CollectionConcurrencyKit" */;
+			productName = CollectionConcurrencyKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A6A262CF24E0BCB20091EA92 /* Project object */;
 }
