@@ -43,10 +43,10 @@ final class CarouselLayoutModel {
     // MARK: - Public Helpers
     
     func getSectionInset(collectionViewFrame: CGRect, adjustedContentInset: UIEdgeInsets) -> UIEdgeInsets {
-        let verticalInsets = (collectionViewFrame.height - adjustedContentInset.top - adjustedContentInset.bottom - cellSize.height) / 2
+        let bottomInsets = (collectionViewFrame.height - adjustedContentInset.top - adjustedContentInset.bottom - cellSize.height)
         let horizontalInsets = (collectionViewFrame.width - adjustedContentInset.right - adjustedContentInset.left - cellSize.width) / 2
         
-        return UIEdgeInsets(top: verticalInsets, left: horizontalInsets, bottom: verticalInsets, right: horizontalInsets)
+        return UIEdgeInsets(top: 0, left: horizontalInsets, bottom: bottomInsets, right: horizontalInsets)
     }
     
     func performScaleCalulations(midX: CGFloat, xOffset: CGFloat) -> Calculation {

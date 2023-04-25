@@ -15,41 +15,14 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                if debug {
-                    HStack(spacing: 0) {
-                        Color.blue
-                            .frame(width: spacing)
-                        Color.red
-                            .frame(width: spacing)
-                        Spacer()
-                        Color.red
-                            .frame(width: spacing)
-                        Color.blue
-                            .frame(width: spacing)
-                    }
-                }
-                
+            GeometryReader { geo in
                 ScrollView {
-                    Text("TOP")
-                    Text("Index: \(model.currentIndex.item)")
-                    CarouselRepresentable(model: model)
-                        .frame(height: 393 / 2)
-//                        .opacity(debug ? 0.75 : 1)
-                    Text("Bottom")
-                    
-                    ForEach(0..<100) {_ in
-                        Color.orange
-                            .frame(height: 100)
-                            .cornerRadius(10)
-                            .padding(.horizontal, spacing)
+                    VStack {
+                        CarouselRepresentable(model: model, width: geo.size.width)
+                            .frame(height: geo.size.width / 2 + 150)
+                            .background(Color.blue.opacity(0.1))
+                        Text("This is a long sentence")
                     }
-                }
-            }
-            .toolbar {
-                ToolbarItem {
-                    Toggle("Debug", isOn: $debug.animation())
-                        .toggleStyle(.switch)
                 }
             }
         }

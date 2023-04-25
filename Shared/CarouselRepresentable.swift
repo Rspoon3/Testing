@@ -9,15 +9,16 @@ import SwiftUI
 
 struct CarouselRepresentable: UIViewRepresentable {
     @ObservedObject var model: CarouselRepresentableViewModel
+    let width: CGFloat
     
     func makeUIView(context: Context) -> UICollectionView {
-        let layoutModel = CarouselLayoutModel(collectionViewWidth: 393, indexPath: $model.currentIndex)
+        let layoutModel = CarouselLayoutModel(collectionViewWidth: width, indexPath: $model.currentIndex)
         let layout = CarouselLayout(model: layoutModel)
         let collectionView = MiddleUICollectionView(frame: .zero,
                                                     collectionViewLayout: layout,
                                                     indexPath: $model.currentIndex)
         collectionView.contentInsetAdjustmentBehavior = .always
-        collectionView.backgroundColor = .white
+        collectionView.backgroundColor = .green.withAlphaComponent(0.1)
         collectionView.decelerationRate = .fast
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
