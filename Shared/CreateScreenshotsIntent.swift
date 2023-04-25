@@ -63,11 +63,9 @@ struct CreateScreenshotsIntent: AppIntent {
     }
     
     private func createDeviceFrame(using data: Data) async throws -> URL {
-        let devices = Bundle.main.decode([DeviceInfo].self, from: "Frames.json")
-
         guard
             let screenshot = UIImage(data: data),
-            let device = devices.first(where: {$0.inputSize == screenshot.size}),
+            let device = DeviceInfo.all.first(where: {$0.inputSize == screenshot.size}),
             let image = device.framed(using: screenshot),
             let data = image.pngData()
         else {

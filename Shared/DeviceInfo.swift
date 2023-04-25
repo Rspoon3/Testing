@@ -21,6 +21,8 @@ struct DeviceInfo: Decodable {
         case islandOverlay
     }
     
+    // MARK: - Functions
+    
     func framed(using screenshot: UIImage) -> UIImage? {
         var screenshot = screenshot
         
@@ -53,4 +55,8 @@ struct DeviceInfo: Decodable {
             }
         }
     }
+    
+    // MARK: - Data
+    
+    static let all = Bundle.main.decode([DeviceInfo].self, from: "Frames.json")
 }

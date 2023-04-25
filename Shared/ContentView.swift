@@ -46,10 +46,8 @@ class ContentViewModel: ObservableObject {
     
     @MainActor
     private func createDeviceFrame(using screenshot: UIImage) {
-        let devices = Bundle.main.decode([DeviceInfo].self, from: "Frames.json")
-
         guard
-            let device = devices.first(where: {$0.inputSize == screenshot.size}),
+            let device = DeviceInfo.all.first(where: {$0.inputSize == screenshot.size}),
             let image = device.framed(using: screenshot)
         else {
             state = .error(DeviceFrameError.noImage)
