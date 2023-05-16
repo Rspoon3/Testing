@@ -11,7 +11,12 @@ import SwiftUI
 struct TestingApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            VStack {
+                ContentView(offers: ["offer1", "offer2", "offer3"])
+                ContentView(offers: ["offer1", "offer2"])
+                ContentView(offers: ["offer1"])
+                ContentView(offers: [])
+            }
         }
     }
 }
