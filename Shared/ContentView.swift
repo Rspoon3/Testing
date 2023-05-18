@@ -7,29 +7,7 @@
 
 import SwiftUI
 
-class ContentViewModel: ObservableObject {
-    
-}
-
-struct ContentView3: View {
-    let offers: [String]
-
-    var body: some View {
-        ZStack(alignment: .bottom) {
-            Rectangle()
-                .foregroundColor(.blue)
-                .frame(width: 80, height: 80)
-                .layoutPriority(2)
-            
-            Text("this is a long")
-                .fontWeight(.medium)
-                .lineLimit(1)
-        }
-    }
-}
-
 struct ContentView: View {
-    @StateObject private var viewModel = ContentViewModel()
     let offers: [String]
     
     var moreCount: Int {
@@ -39,7 +17,7 @@ struct ContentView: View {
     var body: some View {
         GeometryReader{ geo in
             HStack(spacing: 0) {
-                ZStack(alignment: .centerLastTextBaseline) {
+                ZStack(alignment: .bottom) {
                     Image("DORITOS")
                         .resizable()
                         .frame(width: 104, height: 104)
@@ -47,14 +25,16 @@ struct ContentView: View {
                     
                     Chip(text: "🪙 10 per $1")
                         .alignmentGuide(HorizontalAlignment.center, computeValue: { _ in 10 } )
+                        .alignmentGuide(.bottom) { d in d[.bottom] / 2 }
+                    
                 }
                 .border(Color.orange)
-                
-                if geo.size.width < 375 {
-                    smallContainer
-                } else {
-                    largeContainer
-                }
+                //
+                //                if geo.size.width < 375 {
+                //                    smallContainer
+                //                } else {
+                //                    largeContainer
+                //                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 8)
@@ -64,7 +44,7 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 6)
                     .stroke(Color.gray, lineWidth: 1)
             )
-//            .padding()
+            //            .padding()
             
             Text(geo.size.width.formatted())
         }
@@ -140,7 +120,7 @@ struct Chip: View {
     
     var body: some View {
         Text(text)
-            .font(.footnote)
+            .font(.headline)
             .padding(.vertical, 3)
             .padding(.leading, 6)
             .padding(.trailing, 8)
@@ -168,13 +148,13 @@ struct ContentView_Previews: PreviewProvider {
     
     static var previews: some View {
         ForEach(devices, id: \.self) { device in
-            VStack {
-                ContentView(offers: ["offer1", "offer2", "offer3"])
-                ContentView(offers: ["offer1", "offer2"])
-                ContentView(offers: ["offer1"])
-            }
-            .previewLayout(.sizeThatFits)
-            .previewDevice(PreviewDevice(rawValue: device))
+            //            VStack {
+            //                ContentView(offers: ["offer1", "offer2", "offer3"])
+            //                ContentView(offers: ["offer1", "offer2"])
+            ContentView(offers: ["offer1"])
+            //            }
+                .previewLayout(.sizeThatFits)
+                .previewDevice(PreviewDevice(rawValue: device))
         }
     }
 }
