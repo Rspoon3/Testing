@@ -9,8 +9,16 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        Form {
+            ForEach(Item.previewData.sortedByKeyPath()) { item in
+                Section {
+                    LabeledContent("Id", value: item.id.formatted())
+                    LabeledContent("Rank", value: item.rank?.formatted() ?? "NA")
+                    LabeledContent("Start Date", value: item.startDate?.description ?? "NA")
+                    LabeledContent("Points Earned", value: item.pointsEarned.formatted())
+                }
+            }
+        }
     }
 }
 
