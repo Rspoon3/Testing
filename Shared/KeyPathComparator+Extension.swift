@@ -8,8 +8,36 @@
 import Foundation
 
 extension KeyPathComparator {
-    public init<Value: Comparable>(forwardOptionalLastUsing keyPath: KeyPath<Compared, Value?>) {
-        self.init(keyPath, comparator: OptionalComparator(), order: SortOrder.forward)
+    public init<Value: Comparable>(
+        _ keyPath: KeyPath<Compared, Value?>,
+        order: SortOrder,
+        nilOrder: SortOrder
+    ) {
+        switch nilOrder {
+        case .forward:
+            self.init(keyPath, order: order)
+        case .reverse:
+            self.init(keyPath, comparator: OptionalComparator(), order: order)
+        }
+    }
+    
+    public init(_ keyPath: KeyPath<Compared, Bool>, order: SortOrder = .forward) {
+        self.init(keyPath, comparator: BoolComparator(order: order), order: order)
+    }
+    
+    private struct BoolComparator: SortComparator {
+        var order: SortOrder
+        
+        func compare(_ lhs: Bool, _ rhs: Bool) -> ComparisonResult {
+            switch (lhs, rhs) {
+            case (true, false):
+                return order == .forward ? .orderedDescending : .orderedAscending
+            case (false, true):
+                return order == .forward ? .orderedAscending : .orderedDescending
+            default:
+                return .orderedSame
+            }
+        }
     }
 
     private struct OptionalComparator<T:Comparable>: SortComparator {

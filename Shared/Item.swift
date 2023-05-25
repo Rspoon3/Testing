@@ -8,51 +8,41 @@
 import Foundation
 
 struct Item: Identifiable {
-    let id: Int
-    let rank: Int?
-    let startDate: Date?
-    let pointsEarned: Int
+    let id = UUID()
+    let isFavorite: Bool
+    let favoriteRank: Int?
+    let isRecommended: Bool
+    let popularityRank: Int
     
-    static var previewData: [Item] {
-        let now = Date.now
-        
-        return [
-            Item(id: 0, rank: nil, startDate: nil, pointsEarned: 0),
-            Item(id: 1, rank: 4, startDate: nil, pointsEarned: 1),
-            Item(id: 2, rank: 5, startDate: nil, pointsEarned: 2),
-            Item(id: 3, rank: 8, startDate: nil, pointsEarned: 3),
-            Item(id: 4, rank: 1, startDate: nil, pointsEarned: 4),
-            Item(id: 5, rank: nil, startDate: nil, pointsEarned: 5),
-            Item(id: 6, rank: nil, startDate: nil, pointsEarned: 15),
-            Item(id: 7, rank: nil, startDate: nil, pointsEarned: 35),
-            Item(id: 8, rank: nil, startDate: nil, pointsEarned: 2),
-            Item(id: 9, rank: nil, startDate: now, pointsEarned: 6),
-            Item(id: 10, rank: nil, startDate: now, pointsEarned: 6),
-            Item(id: 11, rank: nil, startDate: now, pointsEarned: 2),
-            Item(id: 12, rank: nil, startDate: now, pointsEarned: 6),
-            Item(id: 13, rank: nil, startDate: now, pointsEarned: 6),
-            Item(id: 14, rank: nil, startDate: now, pointsEarned: 4),
-            Item(id: 15, rank: nil, startDate: now, pointsEarned: 14),
-            Item(id: 16, rank: nil, startDate: now, pointsEarned: 6),
-            Item(id: 17, rank: nil, startDate: now.addingTimeInterval(10 * 86400), pointsEarned: 7),
-            Item(id: 18, rank: 79, startDate: now.addingTimeInterval(100 * 86400), pointsEarned: 8),
-            Item(id: 19, rank: 79, startDate: now.addingTimeInterval(7 * 86400), pointsEarned: 9),
-            Item(id: 20, rank: nil, startDate: now.addingTimeInterval(2 * 86400), pointsEarned: 8),
-            Item(id: 21, rank: nil, startDate: now.addingTimeInterval(1 * 86400), pointsEarned: 1),
-            Item(id: 22, rank: nil, startDate: now.addingTimeInterval(1 * 86400), pointsEarned: 8),
-            Item(id: 23, rank: nil, startDate: now.addingTimeInterval(1 * 86400), pointsEarned: 9),
-            Item(id: 24, rank: nil, startDate: now.addingTimeInterval(1 * 86400), pointsEarned: 8),
-        ]
-    }
+    static let previewData: [Item] = [
+        Item(isFavorite: true, favoriteRank: 14, isRecommended: false, popularityRank: 10),
+        Item(isFavorite: true, favoriteRank: 5, isRecommended: false, popularityRank: 20),
+        Item(isFavorite: true, favoriteRank: 34, isRecommended: true, popularityRank: 30),
+        Item(isFavorite: true, favoriteRank: 5, isRecommended: true, popularityRank: 5),
+        Item(isFavorite: true, favoriteRank: 214, isRecommended: true, popularityRank: 3),
+        Item(isFavorite: true, favoriteRank: 554, isRecommended: true, popularityRank: 3),
+        Item(isFavorite: true, favoriteRank: 234, isRecommended: true, popularityRank: 3),
+        Item(isFavorite: true, favoriteRank: 1, isRecommended: false, popularityRank: 5),
+        Item(isFavorite: true, favoriteRank: 0, isRecommended: false, popularityRank: 5),
+        Item(isFavorite: false, favoriteRank: nil, isRecommended: false, popularityRank: 1),
+        Item(isFavorite: false, favoriteRank: nil, isRecommended: true, popularityRank: 33),
+        Item(isFavorite: false, favoriteRank: nil, isRecommended: true, popularityRank: 33),
+        Item(isFavorite: false, favoriteRank: nil, isRecommended: false, popularityRank: 10),
+        Item(isFavorite: false, favoriteRank: nil, isRecommended: true, popularityRank: 45),
+        Item(isFavorite: false, favoriteRank: nil, isRecommended: false, popularityRank: 90),
+        Item(isFavorite: false, favoriteRank: nil, isRecommended: false, popularityRank: 10),
+        Item(isFavorite: false, favoriteRank: nil, isRecommended: true, popularityRank: 40),
+    ]
 }
 
 
 extension Array where Element == Item {
-    func sortedByKeyPath() -> [Item] {
+    func sortedByKeyPath() -> Self {
         sorted(using: [
-            KeyPathComparator(\.rank, order: .reverse),
-            KeyPathComparator(forwardOptionalLastUsing: \.startDate),
-            KeyPathComparator(\.pointsEarned, order: .reverse)
+            KeyPathComparator(\.favoriteRank, order: .forward, nilOrder: .reverse),
+            KeyPathComparator(\.isRecommended, order: .reverse),
+            KeyPathComparator(\.popularityRank, order: .forward)
         ])
+        
     }
 }
