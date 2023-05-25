@@ -12,6 +12,7 @@ struct ContentView: View {
         Form {
             ForEach(Item.previewData.sortedByKeyPath()) { item in
                 Section {
+                    LabeledContent("title", value: item.title)
                     LabeledContent("favoriteRank", value: item.favoriteRank?.formatted() ?? "NA")
                     LabeledContent("recommended", value: item.isRecommended.description)
                     LabeledContent("popularityRank", value: item.popularityRank.formatted())

@@ -10,6 +10,8 @@
 		941B905D2A1FC0B700120AB9 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941B905C2A1FC0B700120AB9 /* Item.swift */; };
 		941B90602A1FC14300120AB9 /* KeyPathComparator+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941B905F2A1FC14300120AB9 /* KeyPathComparator+Extension.swift */; };
 		94EA1AFE2A1FC3AB00EB1FA1 /* TestingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94EA1AFD2A1FC3AB00EB1FA1 /* TestingTests.swift */; };
+		94EA1B0D2A1FF39500EB1FA1 /* SortComparator+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94EA1B0C2A1FF39500EB1FA1 /* SortComparator+Extension.swift */; };
+		94EA1B0F2A1FF3A100EB1FA1 /* StringComparator+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94EA1B0E2A1FF3A100EB1FA1 /* StringComparator+Extension.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
 		A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* ContentView.swift */; };
 		A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
@@ -30,6 +32,8 @@
 		941B905F2A1FC14300120AB9 /* KeyPathComparator+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyPathComparator+Extension.swift"; sourceTree = "<group>"; };
 		94EA1AFB2A1FC3AB00EB1FA1 /* TestingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		94EA1AFD2A1FC3AB00EB1FA1 /* TestingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingTests.swift; sourceTree = "<group>"; };
+		94EA1B0C2A1FF39500EB1FA1 /* SortComparator+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SortComparator+Extension.swift"; sourceTree = "<group>"; };
+		94EA1B0E2A1FF3A100EB1FA1 /* StringComparator+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StringComparator+Extension.swift"; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -64,6 +68,16 @@
 			path = TestingTests;
 			sourceTree = "<group>";
 		};
+		94EA1B102A1FF3AF00EB1FA1 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				94EA1B0E2A1FF3A100EB1FA1 /* StringComparator+Extension.swift */,
+				94EA1B0C2A1FF39500EB1FA1 /* SortComparator+Extension.swift */,
+				941B905F2A1FC14300120AB9 /* KeyPathComparator+Extension.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		A6A262CE24E0BCB20091EA92 = {
 			isa = PBXGroup;
 			children = (
@@ -81,7 +95,7 @@
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
 				941B905C2A1FC0B700120AB9 /* Item.swift */,
-				941B905F2A1FC14300120AB9 /* KeyPathComparator+Extension.swift */,
+				94EA1B102A1FF3AF00EB1FA1 /* Extensions */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -211,7 +225,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94EA1B0F2A1FF3A100EB1FA1 /* StringComparator+Extension.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94EA1B0D2A1FF39500EB1FA1 /* SortComparator+Extension.swift in Sources */,
 				941B905D2A1FC0B700120AB9 /* Item.swift in Sources */,
 				941B90602A1FC14300120AB9 /* KeyPathComparator+Extension.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
