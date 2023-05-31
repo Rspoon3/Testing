@@ -12,48 +12,11 @@ struct ContentView: View {
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            HStack(alignment: .top, spacing: 30) {
-                //
-                //            .frame(maxWidth: .infinity, alignment: .leading)
-                
-                VStack(alignment: .leading, spacing: 30) {
-                    Text("Book I")
-                        .foregroundColor(.white)
-                        .frame(minWidth: 100)
-                        .font(.headline)
-                        .padding(.all, 8)
-                        .background(
-                            Capsule()
-                                .foregroundColor(.gray)
-                        )
-                    
-                    Image("mockingBird")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 300)
-                        .cornerRadius(8)
-                    
-                    HStack {
-                        Image(systemName: "star.fill")
-                        Image(systemName: "star.fill")
-                        Image(systemName: "star.fill")
-                        Image(systemName: "star.fill")
-                        Image(systemName: "star.fill")
-                    }
-                    .font(.title)
-                    .symbolRenderingMode(.multicolor)
-                }
-                .padding()
-                .background {
-                    Color.white
-                        .padding(.trailing, -50)
-                        .padding(.bottom, -50)
-                        .ignoresSafeArea()
-                }
-                //                .frame(maxHeight: .infinity, alignment: .top)
-                
-                
-                VStack(spacing: 20) {
+            PKCanvas()
+                .border(Color.green)
+            
+            VStack(spacing: 10) {
+                VStack(spacing: 10) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Title")
                             .font(.headline)
@@ -70,22 +33,49 @@ struct ContentView: View {
                         }
                     }
                 }
-                //                .background(Color.red)
-            }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .frame(maxWidth: .infinity, alignment: .leading)
-//            .background(Color.blue)
-            .background {
-                LazyVStack(spacing: 30) {
-                    ForEach(0..<300, id: \.self) { _ in
-//                        Divider()
+                
+                VStack(spacing: 30) {
+                    ForEach(0..<20, id: \.self) { _ in
+                        Divider()
                     }
                 }
+                .padding(.top)
             }
+            .border(Color.blue)
             
-            //            Color.clear
-            //        }
-            //        .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 30) {
+                Text("Book I")
+                    .foregroundColor(.white)
+                    .frame(minWidth: 100)
+                    .font(.headline)
+                    .padding(.all, 8)
+                    .background(
+                        Capsule()
+                            .foregroundColor(.gray)
+                    )
+                
+                Image("mockingBird")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 300)
+                    .cornerRadius(8)
+                
+                HStack {
+                    Image(systemName: "star.fill")
+                    Image(systemName: "star.fill")
+                    Image(systemName: "star.fill")
+                    Image(systemName: "star.fill")
+                    Image(systemName: "star.fill")
+                }
+                .font(.title)
+                .symbolRenderingMode(.multicolor)
+            }
+            .padding()
+            .border(Color.red)
+            .background {
+                Color.white
+                    .ignoresSafeArea()
+            }
         }
     }
 }
