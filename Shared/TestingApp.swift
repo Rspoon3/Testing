@@ -12,7 +12,8 @@ struct TestingApp: App {
     var body: some Scene {
         WindowGroup {
 //            ContentView2()
-            Patrick()
+//            Patrick()
+            PatrickHorizontal()
         }
     }
 }

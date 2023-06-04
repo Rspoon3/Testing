@@ -12,6 +12,7 @@
 		9484065C2A237CC800C8DAAF /* AlignmentTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9484065B2A237CC800C8DAAF /* AlignmentTesting.swift */; };
 		9484065E2A23874700C8DAAF /* ContentView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9484065D2A23874700C8DAAF /* ContentView2.swift */; };
 		94A50E2B2A26448500BB95F0 /* Patrick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A50E2A2A26448500BB95F0 /* Patrick.swift */; };
+		94EF7DFC2A2CD27A00958B81 /* PatrickHorizontal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94EF7DFB2A2CD27A00958B81 /* PatrickHorizontal.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
 		A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* ContentView.swift */; };
@@ -34,6 +35,7 @@
 		9484065B2A237CC800C8DAAF /* AlignmentTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlignmentTesting.swift; sourceTree = "<group>"; };
 		9484065D2A23874700C8DAAF /* ContentView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView2.swift; sourceTree = "<group>"; };
 		94A50E2A2A26448500BB95F0 /* Patrick.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Patrick.swift; sourceTree = "<group>"; };
+		94EF7DFB2A2CD27A00958B81 /* PatrickHorizontal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatrickHorizontal.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
 				9484065D2A23874700C8DAAF /* ContentView2.swift */,
 				94A50E2A2A26448500BB95F0 /* Patrick.swift */,
+				94EF7DFB2A2CD27A00958B81 /* PatrickHorizontal.swift */,
 				9484065B2A237CC800C8DAAF /* AlignmentTesting.swift */,
 				948406592A22D6C100C8DAAF /* PKCanvas.swift */,
 				948406572A22BD0500C8DAAF /* HeaderLine.swift */,
@@ -215,6 +218,7 @@
 			files = (
 				9484065A2A22D6C100C8DAAF /* PKCanvas.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94EF7DFC2A2CD27A00958B81 /* PatrickHorizontal.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				9484065E2A23874700C8DAAF /* ContentView2.swift in Sources */,
 				948406582A22BD0500C8DAAF /* HeaderLine.swift in Sources */,
