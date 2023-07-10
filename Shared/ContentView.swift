@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
+import Models
 
 struct ContentView: View {
+    let item = Item()
+    
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        Text(item.tile)
+            .font(.largeTitle)
     }
 }
 

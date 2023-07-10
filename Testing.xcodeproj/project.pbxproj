@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94C7FCE72A5C6F1E008F993C /* Models in Frameworks */ = {isa = PBXBuildFile; productRef = 94C7FCE62A5C6F1E008F993C /* Models */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		94C7FCE42A5C6F06008F993C /* TestingCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestingCore; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94C7FCE72A5C6F1E008F993C /* Models in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,9 +87,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		94C7FCE52A5C6F1E008F993C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		A6A262CE24E0BCB20091EA92 = {
 			isa = PBXGroup;
 			children = (
+				94C7FCE42A5C6F06008F993C /* TestingCore */,
 				A6A0310D266EBC6D001CBE2A /* Testing.entitlements */,
 				A6A262D324E0BCB20091EA92 /* Shared */,
 				A6A262DD24E0BCB30091EA92 /* iOS */,
@@ -94,6 +105,7 @@
 				A6A262EE24E0BCB30091EA92 /* Tests iOS */,
 				A6A262F924E0BCB30091EA92 /* Tests macOS */,
 				A6A262DC24E0BCB30091EA92 /* Products */,
+				94C7FCE52A5C6F1E008F993C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -169,6 +181,9 @@
 			dependencies = (
 			);
 			name = "Testing (iOS)";
+			packageProductDependencies = (
+				94C7FCE62A5C6F1E008F993C /* Models */,
+			);
 			productName = "Testing (iOS)";
 			productReference = A6A262DB24E0BCB30091EA92 /* Testing.app */;
 			productType = "com.apple.product-type.application";
@@ -712,6 +727,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		94C7FCE62A5C6F1E008F993C /* Models */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Models;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A6A262CF24E0BCB20091EA92 /* Project object */;
 }
