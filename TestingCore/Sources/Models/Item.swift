@@ -8,7 +8,12 @@
 import Foundation
 
 public struct Item {
-    public let tile = "Testing 1"
     
-    public init() {} 
+#if DEBUG
+    public let title = "Debug"
+#else
+    public let title = "Else Block"
+#endif
+    
+    public init() {}
 }

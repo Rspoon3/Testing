@@ -11,8 +11,19 @@ import Models
 struct ContentView: View {
     let item = Item()
     
+#if DEBUG
+    public let title = "Debug"
+#else
+    public let title = "Else Block"
+#endif
+    
+    
+    
     var body: some View {
-        Text(item.tile)
+        VStack {
+            Text("Title: \(title)")
+            Text(item.title)
+        }
             .font(.largeTitle)
     }
 }
