@@ -7,14 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		947F054E2A65CFE90088B4DC /* SimpleEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947F054C2A65CFD30088B4DC /* SimpleEntry.swift */; };
+		947F054F2A65CFED0088B4DC /* Provider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947F054A2A65CF130088B4DC /* Provider.swift */; };
+		947F05502A65CFF10088B4DC /* TestingWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947F05482A65C7E20088B4DC /* TestingWidgetEntryView.swift */; };
 		94C7FCF42A5D9890008F993C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94C7FCF32A5D9890008F993C /* WidgetKit.framework */; };
 		94C7FCF62A5D9890008F993C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94C7FCF52A5D9890008F993C /* SwiftUI.framework */; };
 		94C7FCF92A5D9890008F993C /* TestingWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C7FCF82A5D9890008F993C /* TestingWidgetBundle.swift */; };
 		94C7FCFB2A5D9890008F993C /* TestingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C7FCFA2A5D9890008F993C /* TestingWidget.swift */; };
 		94C7FCFD2A5D9891008F993C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 94C7FCFC2A5D9891008F993C /* Assets.xcassets */; };
 		94C7FD012A5D9891008F993C /* TestingWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 94C7FCF12A5D9890008F993C /* TestingWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		94D11F192A5D9E4D00AC3577 /* UserDefaults+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D11F182A5D9E4D00AC3577 /* UserDefaults+Extension.swift */; };
-		94D11F1A2A5D9E5100AC3577 /* UserDefaults+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D11F182A5D9E4D00AC3577 /* UserDefaults+Extension.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
 		A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* ContentView.swift */; };
 		A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
@@ -45,6 +46,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		947F05482A65C7E20088B4DC /* TestingWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingWidgetEntryView.swift; sourceTree = "<group>"; };
+		947F054A2A65CF130088B4DC /* Provider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Provider.swift; sourceTree = "<group>"; };
+		947F054C2A65CFD30088B4DC /* SimpleEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleEntry.swift; sourceTree = "<group>"; };
 		94C7FCF12A5D9890008F993C /* TestingWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TestingWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		94C7FCF32A5D9890008F993C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		94C7FCF52A5D9890008F993C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -53,7 +57,6 @@
 		94C7FCFC2A5D9891008F993C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		94C7FCFE2A5D9891008F993C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		94C7FD022A5D9891008F993C /* TestingWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TestingWidgetExtension.entitlements; sourceTree = "<group>"; };
-		94D11F182A5D9E4D00AC3577 /* UserDefaults+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+Extension.swift"; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -102,6 +105,9 @@
 			children = (
 				94C7FCF82A5D9890008F993C /* TestingWidgetBundle.swift */,
 				94C7FCFA2A5D9890008F993C /* TestingWidget.swift */,
+				947F054C2A65CFD30088B4DC /* SimpleEntry.swift */,
+				947F054A2A65CF130088B4DC /* Provider.swift */,
+				947F05482A65C7E20088B4DC /* TestingWidgetEntryView.swift */,
 				94C7FCFC2A5D9891008F993C /* Assets.xcassets */,
 				94C7FCFE2A5D9891008F993C /* Info.plist */,
 			);
@@ -129,7 +135,6 @@
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
-				94D11F182A5D9E4D00AC3577 /* UserDefaults+Extension.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -278,8 +283,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				947F05502A65CFF10088B4DC /* TestingWidgetEntryView.swift in Sources */,
+				947F054F2A65CFED0088B4DC /* Provider.swift in Sources */,
+				947F054E2A65CFE90088B4DC /* SimpleEntry.swift in Sources */,
 				94C7FCFB2A5D9890008F993C /* TestingWidget.swift in Sources */,
-				94D11F1A2A5D9E5100AC3577 /* UserDefaults+Extension.swift in Sources */,
 				94C7FCF92A5D9890008F993C /* TestingWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -289,7 +296,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
-				94D11F192A5D9E4D00AC3577 /* UserDefaults+Extension.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -319,7 +325,7 @@
 				INFOPLIST_FILE = TestingWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TestingWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -351,7 +357,7 @@
 				INFOPLIST_FILE = TestingWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TestingWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -494,7 +500,7 @@
 				DEVELOPMENT_TEAM = CWQU2Q8UDJ;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -522,7 +528,7 @@
 				DEVELOPMENT_TEAM = CWQU2Q8UDJ;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

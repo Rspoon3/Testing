@@ -12,9 +12,6 @@ struct TestingApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .onOpenURL { url in
-                    print("Received deep link: \(url)")
-                }
         }
     }
 }
