@@ -16,28 +16,49 @@ struct BookReview: Codable {
 }
 
 struct PatrickHorizontal: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @StateObject private var canvasViewModel = PKCanvasViewModel()
     @State private var rating: CGFloat = 1.5
     private let bookWidth: CGFloat = 200
     private let bookPadding: CGFloat = 10
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            VStack(spacing: 30) {
-                bookDetails
-                
-                GeometryReader { geo in
-                    VStack(spacing: 30) {
-                        ForEach(0..<100, id: \.self) { _ in
-                            Divider()
-                        }
-                    }
+        GeometryReader { geo in
+            ZStack(alignment: .topLeading) {
+                VStack(spacing: 30) {
+                    bookDetails
+                    
+                                    GeometryReader { geo in
+                                        VStack(spacing: 30 / canvasViewModel.zoomScale) {
+                                            ForEach(0..<100, id: \.self) { _ in
+                                                Divider()
+                                            }
+                                        }
+//                                        .onChange(of: geo.size) { oldValue, newValue in
+//                                            canvasViewModel.viewDidLayoutSubviews()
+//                                        }
+                                    }
                 }
+                
+                PKCanvas(viewModel: canvasViewModel)
+                //                .id(canvasViewModel.canvasView.zoomScale)
+//                    .ignoresSafeArea(.all)
+//                    .border(Color.red)
+                
+                book
+                
+                
+//                VStack {
+//                    Text(geo.size.width.formatted())
+//                    Text(geo.size.height.formatted())
+//                }
             }
-            
-            PKCanvas()
-            
-            book
+//            .onChange(of: geo.size) { oldValue, newValue in
+//                canvasViewModel.viewDidLayoutSubviews()
+//            }
         }
+//        .ignoresSafeArea(.all)
+//        .border(Color.red)
     }
     
     var bookDetails: some View {

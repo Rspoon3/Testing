@@ -20,9 +20,9 @@ struct Patrick: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .layoutPriority(1)
         }
-        .overlay {
-            PKCanvas()
-        }
+//        .overlay {
+//            PKCanvas()
+//        }
     }
     
     var bookDetails: some View {

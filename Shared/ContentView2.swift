@@ -11,10 +11,11 @@ struct ContentView2: View {
     let test = ["Author", "Genre", "Pages", "Book Type", "Start Date", "End Date"]
     
     @State private var size: CGSize = .zero
+    @StateObject private var canvasViewModel = PKCanvasViewModel()
 
     var body: some View {
         ZStack(alignment: .top) {
-            PKCanvas()
+            PKCanvas(viewModel: canvasViewModel)
                 .border(Color.green)
             
             Color.blue

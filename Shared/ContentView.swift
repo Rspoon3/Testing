@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var canvasViewModel = PKCanvasViewModel()
     let test = ["Author", "Genre", "Pages", "Book Type", "Start Date", "End Date"]
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            PKCanvas()
+            PKCanvas(viewModel: canvasViewModel)
                 .border(Color.green)
             
             VStack(spacing: 10) {
