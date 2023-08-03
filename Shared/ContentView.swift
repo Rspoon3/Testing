@@ -12,6 +12,9 @@ struct ContentView: View {
     
     var body: some View {
         Text("Testing")
+            .onAppear {
+                WidgetCenter.shared.reloadAllTimelines()
+            }
     }
 }
 

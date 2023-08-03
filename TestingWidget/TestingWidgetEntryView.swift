@@ -13,14 +13,17 @@ struct TestingWidgetEntryView : View {
     var entry: Provider.Entry
     
     var body: some View {
+//        Text("This is a test im making")
+//            .containerBackground(Color.white, for: .widget)
+        
         ZStack(alignment: .bottom) {
             Image("personalRecord")
-            
+
             ZStack(alignment: .top) {
                 Triangle()
                     .frame(height: 50)
                     .foregroundColor(.blue)
-                
+
                 Text("12,495")
                     .font(.headline)
                     .padding(.all, 5)
@@ -37,10 +40,13 @@ struct TestingWidgetEntryView : View {
                         d[.leading]
                     }
                     .offset(x: -7)
-                
+
             }
                                 .rotationEffect(.degrees(-10))
         }
+        .containerBackground(Color.white, for: .widget)
+
+        
     }
 }
 
