@@ -8,12 +8,29 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var show = true
+    
+    var body: some View {
+        Button("test") {
+            show.toggle()
+        }
+        .fullScreenCover(isPresented: $show) {
+            ContentView3(show: $show)
+        }
+    }
+}
+
+struct ContentView3: View {
+    @State private var circleScale = 0.0
     @State private var showText = true
     @State private var scale: CGFloat = 1
     @State private var opacity: CGFloat = 1
     @State private var test: CGFloat = 300
     @State private var imageHeight: CGFloat = 0
     @Namespace var namespace
+    
+    @Binding var show: Bool
+    
     
     var body: some View {
         GeometryReader { geo in
@@ -35,7 +52,13 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity)
                     .ignoresSafeArea(edges: .top)
                     .padding(.bottom, 2)
-
+                    
+                    
+                    Image("door.offers.white")
+                        .resizable()
+                        .scaledToFit()
+                        .scaleEffect(scale)
+                    
                     Image("door.offers")
                         .resizable()
                         .scaledToFit()
@@ -47,8 +70,12 @@ struct ContentView: View {
                                     .onAppear {
                                         imageHeight = geo.size.height
                                     }
+                                Circle()
+                                    .scale(circleScale)
+                                    .foregroundColor(.white)
                             }
-                        }                }
+                        }
+                }
                 
                 if showText {
                     VStack(alignment: .leading, spacing: 0) {
@@ -65,7 +92,6 @@ struct ContentView: View {
                 }
             }
         }
-        .opacity(opacity)
         .onTapGesture {
             start()
         }
@@ -78,9 +104,27 @@ struct ContentView: View {
         
         Task {
             try await Task.sleep(for: .milliseconds(800))
-            withAnimation(.linear(duration: 1.5)) {
-                scale = (scale == 3 ? 1 : 3)
+            withAnimation(.linear(duration: 0.5)) {
+                scale = (scale == 1 ? 1.5 : 1)
                 opacity = (opacity == 1 ? 0 : 1)
+            }
+            
+            try await Task.sleep(for: .milliseconds(400))
+            
+            withAnimation(.linear(duration: 0.5)) {
+                circleScale = 3.5
+            }
+
+            try await Task.sleep(for: .milliseconds(1800))
+
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+
+             // add custom animation for presenting and dismissing the FullScreenCover
+             transaction.animation = .linear(duration: 1)
+            
+            withTransaction(transaction) {
+               show.toggle()
             }
         }
     }
