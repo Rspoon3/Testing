@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94096F3D2B221B8500A4E92B /* CarouselManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94096F3C2B221B8500A4E92B /* CarouselManager.swift */; };
+		94096F3E2B221B8500A4E92B /* CarouselManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94096F3C2B221B8500A4E92B /* CarouselManager.swift */; };
 		94DB476B2B20D364003E2350 /* CarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB476A2B20D364003E2350 /* CarouselView.swift */; };
 		94DB476C2B20D364003E2350 /* CarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB476A2B20D364003E2350 /* CarouselView.swift */; };
 		94DB47702B20D7EC003E2350 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 94DB476F2B20D7EC003E2350 /* SwiftUIIntrospect */; };
@@ -39,6 +41,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		94096F3C2B221B8500A4E92B /* CarouselManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarouselManager.swift; sourceTree = "<group>"; };
 		94DB476A2B20D364003E2350 /* CarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselView.swift; sourceTree = "<group>"; };
 		94DB47742B20E7DF003E2350 /* CarouselViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselViewModel.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
@@ -117,6 +120,7 @@
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				94DB476A2B20D364003E2350 /* CarouselView.swift */,
+				94096F3C2B221B8500A4E92B /* CarouselManager.swift */,
 				94DB47742B20E7DF003E2350 /* CarouselViewModel.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
@@ -335,6 +339,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				94DB476B2B20D364003E2350 /* CarouselView.swift in Sources */,
+				94096F3D2B221B8500A4E92B /* CarouselManager.swift in Sources */,
 				94DB47752B20E7DF003E2350 /* CarouselViewModel.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
@@ -345,6 +350,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				94DB476C2B20D364003E2350 /* CarouselView.swift in Sources */,
+				94096F3E2B221B8500A4E92B /* CarouselManager.swift in Sources */,
 				94DB47762B20E7DF003E2350 /* CarouselViewModel.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);

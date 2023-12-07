@@ -17,13 +17,12 @@ struct CarouselView: View {
         VStack {
             GeometryReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack {
+                    LazyHStack(spacing: 10) {
                         ForEach(0..<viewModel.maxValue, id: \.self) { i in
                             let v = i % colors.count
                             colors[v]
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .aspectRatio(16.0 / 9.0, contentMode: .fit)
-                                .frame(width: proxy.size.width - viewModel.safeAreaPadding * 2)
+                                .frame(width: viewModel.manager.cellWidth, height: viewModel.manager.cellHeight)
                                 .overlay {
                                     Text(i.formatted())
                                         .font(.largeTitle)
@@ -31,18 +30,24 @@ struct CarouselView: View {
                                 .visualEffect { [viewModel] content, geometryProxy in
                                     content
                                         .scaleEffect(
-                                            y: viewModel.yScale(using: geometryProxy)
+                                            y: viewModel.yScale(using: geometryProxy, i: i)
                                         )
                                 }
                         }
                     }
                     .scrollTargetLayout()
+                    .padding(.horizontal, 24)
                 }
                 .scrollTargetBehavior(.viewAligned)
-                .safeAreaPadding(.horizontal, viewModel.safeAreaPadding)
                 .scrollPosition(id: $viewModel.id)
                 .introspect(.scrollView, on: .iOS(.v13, .v14, .v15, .v16, .v17)) { scrollView in
                     viewModel.set(scrollView)
+                }
+                .task {
+                    try? await Task.sleep(for: .seconds(1))
+                    withAnimation {
+                        viewModel.id = 50
+                    }
                 }
             }
         }

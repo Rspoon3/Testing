@@ -16,6 +16,8 @@ final class CarouselViewModel: ObservableObject {
     let safeAreaPadding: CGFloat = 16
     let clock: any Clock<Duration>
     var timerTask: Task<Void, Error>?
+    
+    let manager = CarouselManager()
 
     // MARK: - Initializer
     
@@ -44,7 +46,7 @@ final class CarouselViewModel: ObservableObject {
         scrollView.panGestureRecognizer.addTarget(self, action: #selector(gestureRecognizerUpdate))
     }
     
-    nonisolated func yScale(using proxy: GeometryProxy) -> Double {
+    nonisolated func yScale(using proxy: GeometryProxy, i: Int) -> Double {
         let itemMidX = proxy.frame(in: .scrollView).midX
         
         guard let scrollViewWidth = proxy.bounds(of: .scrollView)?.width else {
@@ -53,9 +55,26 @@ final class CarouselViewModel: ObservableObject {
         
         let scrollViewMidX = scrollViewWidth / 2
         let distanceFromCenter = abs(scrollViewMidX - itemMidX)
-        let itemWidth = proxy.size.width
-        let percentageToMidX = 1 - (distanceFromCenter / (itemWidth - safeAreaPadding))
-        let calculatedScale = ((scale.max - scale.min) * percentageToMidX) + scale.min
-        return max(scale.min, calculatedScale)
+        
+        print(manager.interGroupSpacing, manager.collectionViewWidth)
+        
+//        if i == 1 {
+//            print(distanceFromCenter)
+//        }
+        
+//        let itemWidth = proxy.size.width
+//        let percentageToMidX = 1 - (distanceFromCenter / (itemWidth - safeAreaPadding))
+//        let calculatedScale = ((scale.max - scale.min) * percentageToMidX) + scale.min
+//        return max(scale.min, calculatedScale)
+        
+        
+        let width = manager.cellWidth + manager.interGroupSpacing
+        var percentageToMidX = 1 - (distanceFromCenter / width)
+        percentageToMidX = min(1, percentageToMidX)
+        percentageToMidX = max(0, percentageToMidX)
+        
+        let scale = manager.minScale + (1 - manager.minScale) * percentageToMidX
+        
+        return scale
     }
 }
