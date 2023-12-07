@@ -3,14 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		94DB476B2B20D364003E2350 /* CarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB476A2B20D364003E2350 /* CarouselView.swift */; };
 		94DB476C2B20D364003E2350 /* CarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB476A2B20D364003E2350 /* CarouselView.swift */; };
-		94DB47702B20D7EC003E2350 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 94DB476F2B20D7EC003E2350 /* SwiftUIIntrospect */; };
-		94DB47732B20DFED003E2350 /* Clocks in Frameworks */ = {isa = PBXBuildFile; productRef = 94DB47722B20DFED003E2350 /* Clocks */; };
 		94DB47752B20E7DF003E2350 /* CarouselViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB47742B20E7DF003E2350 /* CarouselViewModel.swift */; };
 		94DB47762B20E7DF003E2350 /* CarouselViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB47742B20E7DF003E2350 /* CarouselViewModel.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
@@ -62,8 +60,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94DB47702B20D7EC003E2350 /* SwiftUIIntrospect in Frameworks */,
-				94DB47732B20DFED003E2350 /* Clocks in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,8 +182,6 @@
 			);
 			name = "Testing (iOS)";
 			packageProductDependencies = (
-				94DB476F2B20D7EC003E2350 /* SwiftUIIntrospect */,
-				94DB47722B20DFED003E2350 /* Clocks */,
 			);
 			productName = "Testing (iOS)";
 			productReference = A6A262DB24E0BCB30091EA92 /* Testing.app */;
@@ -281,8 +275,6 @@
 			);
 			mainGroup = A6A262CE24E0BCB20091EA92;
 			packageReferences = (
-				94DB476D2B20D74D003E2350 /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
-				94DB47712B20DFBF003E2350 /* XCRemoteSwiftPackageReference "swift-clocks" */,
 			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
@@ -738,38 +730,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		94DB476D2B20D74D003E2350 /* XCRemoteSwiftPackageReference "swiftui-introspect" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/siteline/swiftui-introspect.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.1;
-			};
-		};
-		94DB47712B20DFBF003E2350 /* XCRemoteSwiftPackageReference "swift-clocks" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-clocks.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		94DB476F2B20D7EC003E2350 /* SwiftUIIntrospect */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 94DB476D2B20D74D003E2350 /* XCRemoteSwiftPackageReference "swiftui-introspect" */;
-			productName = SwiftUIIntrospect;
-		};
-		94DB47722B20DFED003E2350 /* Clocks */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 94DB47712B20DFBF003E2350 /* XCRemoteSwiftPackageReference "swift-clocks" */;
-			productName = Clocks;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A6A262CF24E0BCB20091EA92 /* Project object */;
 }
