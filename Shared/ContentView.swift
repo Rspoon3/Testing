@@ -10,7 +10,8 @@ import LoremSwiftum
 
 struct ContentView: View {
     @StateObject private var viewModel = ContentViewModel()
-    
+    @ObservedObject var offerIDSHolder = OfferIDSHolder.shared
+
     var body: some View {
         VStack {
             HStack(spacing: 3) {
@@ -18,7 +19,7 @@ struct ContentView: View {
                     .foregroundStyle(.yellow)
                     .frame(width: 15)
                     .foregroundStyle(.secondary)
-                Text(viewModel.totalPoints.formatted())
+                Text(offerIDSHolder.totalPoints.formatted())
                     .foregroundStyle(.primary)
                     .fontWeight(.bold)
                 
@@ -38,10 +39,18 @@ struct ContentView: View {
                 Image(systemName: "car.circle.fill")
                     .foregroundStyle(.blue)
                 
-                Text("Ralphs")
-                    .foregroundStyle(.primary)
-                    .fontWeight(.bold)
+                Picker(selection: $viewModel.store) {
+                    ForEach(StoreNames.allCases) {
+                        Text($0.rawValue)
+                            .tag($0)
+                            .foregroundStyle(.primary)
+                            .fontWeight(.bold)
+                    }
+                } label: {
+                    EmptyView()
+                }
             }
+            
             .padding(.vertical, 5)
             .padding(.horizontal, 30)
             .background {
@@ -77,7 +86,7 @@ struct ContentView: View {
                         .foregroundStyle(.yellow)
                         .frame(width: 15)
                         .foregroundStyle(.secondary)
-                    Text(viewModel.totalPoints.formatted())
+                    Text(offerIDSHolder.totalPoints.formatted())
                         .foregroundStyle(.primary)
                         .fontWeight(.bold)
                 }

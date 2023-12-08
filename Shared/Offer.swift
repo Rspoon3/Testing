@@ -18,4 +18,14 @@ struct Offer: Decodable, Identifiable, Sendable {
         imageUrl: "https://image-resize.fetchrewards.com/deals/06e6e768e4c185342a7ff25fe1abab51b7e93da2.jpeg",
         points: Int.random(in: 1..<10_000)
     )
+    
+    static func examples(count: Int = 14) -> [Offer] {
+        (0..<count).map { _ in
+            Offer(
+                offerId: UUID().uuidString,
+                imageUrl: "https://image-resize.fetchrewards.com/deals/06e6e768e4c185342a7ff25fe1abab51b7e93da2.jpeg",
+                points: Int.random(in: 1..<10_000)
+            )
+        }
+    }
 }
