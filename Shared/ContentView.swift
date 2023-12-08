@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    let cache = AsyncCache<Void>()
+    let cache = VoidCache.shared
     
     var body: some View {
         NavigationStack {

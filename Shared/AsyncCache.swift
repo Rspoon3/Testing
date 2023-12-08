@@ -9,16 +9,12 @@ import Foundation
 import Combine
 
 
-protocol AsyncCacheProtocol<T>: Actor {
+protocol AsyncCacheProtocol: Actor {
     associatedtype T
-    var cache: NSCache<NSString, CacheStatusWrapper<T>> { get }
-    var inProgressCount: CurrentValueSubject<Int, Never> { get }
-    var fetchedCount: CurrentValueSubject<Int, Never> { get }
 
-    
     var inProgressCountPublisher: AnyPublisher<Int,Never> { get }
     var fetchedCountPublisher: AnyPublisher<Int,Never> { get }
-
+    
     func clear() async
     func fetch(
         key _key: String,
@@ -26,7 +22,23 @@ protocol AsyncCacheProtocol<T>: Actor {
     ) async throws -> T
 }
 
-extension AsyncCacheProtocol {
+final actor AsyncCache<T> {
+    private let cache = NSCache<NSString, CacheStatusWrapper<T>>()
+    private let inProgressCount = CurrentValueSubject<Int, Never>(0)
+    private let fetchedCount = CurrentValueSubject<Int, Never>(0)
+    
+    nonisolated var inProgressCountPublisher: AnyPublisher<Int,Never> {
+        inProgressCount.eraseToAnyPublisher()
+    }
+    
+    nonisolated var fetchedCountPublisher: AnyPublisher<Int,Never> {
+        fetchedCount.eraseToAnyPublisher()
+    }
+    
+    
+    //MARK: - Public
+    
+    
     func clear() {
         cache.removeAllObjects()
         inProgressCount.send(0)
@@ -65,39 +77,4 @@ extension AsyncCacheProtocol {
             throw error
         }
     }
-}
-
-final actor IntCache: AsyncCacheProtocol {
-    let cache = NSCache<NSString, CacheStatusWrapper<Int>>()
-    let inProgressCount = CurrentValueSubject<Int, Never>(0)
-    let fetchedCount = CurrentValueSubject<Int, Never>(0)
-    
-    var inProgressCountPublisher: AnyPublisher<Int,Never> {
-        inProgressCount.eraseToAnyPublisher()
-    }
-    
-    var fetchedCountPublisher: AnyPublisher<Int,Never> {
-        fetchedCount.eraseToAnyPublisher()
-    }
-    
-    init(){}
-    
-}
-
-final actor AsyncCache<T>: AsyncCacheProtocol {
-    let cache = NSCache<NSString, CacheStatusWrapper<T>>()
-    let inProgressCount = CurrentValueSubject<Int, Never>(0)
-    let fetchedCount = CurrentValueSubject<Int, Never>(0)
-    
-    var inProgressCountPublisher: AnyPublisher<Int,Never> {
-        inProgressCount.eraseToAnyPublisher()
-    }
-    
-    var fetchedCountPublisher: AnyPublisher<Int,Never> {
-        fetchedCount.eraseToAnyPublisher()
-    }
-    
-    
-    //MARK: - Public
-
 }

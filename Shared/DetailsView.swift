@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DetailsView: View {
-    let cache: AsyncCache<Void>
+    let cache: VoidCache
     let i: Int
     @State private var inProgress = 0
     @State private var fetchedCount = 0
@@ -27,14 +27,14 @@ struct DetailsView: View {
         }
         .contentTransition(.numericText())
         .task {
-            for await value in await cache.inProgressCountPublisher.values {
+            for await value in cache.inProgressCountPublisher.values {
                 withAnimation {
                     inProgress = value
                 }
             }
         }
         .task {
-            for await value in await cache.fetchedCountPublisher.values {
+            for await value in cache.fetchedCountPublisher.values {
                 withAnimation {
                     fetchedCount = value
                 }
@@ -44,5 +44,5 @@ struct DetailsView: View {
 }
 
 #Preview("DetailsView") {
-    DetailsView(cache: .init(), i: 0)
+    DetailsView(cache: VoidCache.shared, i: 0)
 }
