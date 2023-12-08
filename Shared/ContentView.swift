@@ -1,21 +1,36 @@
 //
 //  ContentView.swift
-//  Shared
+//  Testing
 //
-//  Created by Richard Witherspoon on 8/9/20.
+//  Created by Richard Witherspoon on 12/8/23.
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    let cache = AsyncCache<Void>()
+    
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        NavigationStack {
+            List {
+                ForEach(0..<100, id: \.self) { i in
+                    NavigationLink {
+                        DetailsView(cache: cache, i: i)
+                    } label: {
+                        Text(i.formatted())
+                    }
+                    .task {
+                        try? await cache.fetch(key: "\(i)") {
+                            try await Task.sleep(for: .seconds(3))
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview("ContentView") {
+    ContentView()
 }
+
