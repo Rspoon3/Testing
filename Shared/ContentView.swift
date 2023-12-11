@@ -9,10 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
     private let heartSize: CGFloat = 20
-    private let circleSize: CGFloat = 18
+    private let circleSize: CGFloat = 20
     private let circleHStackSpacing: CGFloat = 6
     private let mainHStackSpacing: CGFloat = 10
-    private let strokeLineWidth: CGFloat = 3
+    private let strokeLineWidth: CGFloat = 2
     private let xOffset: CGFloat = 14
     @State private var likeCount = 2
     @State private var showMyAvatar = false
@@ -42,6 +42,7 @@ struct ContentView: View {
             }
             .font(.largeTitle)
         }
+        
         .animation(.easeInOut, value: showMyAvatar)
         .padding()
     }
@@ -50,8 +51,7 @@ struct ContentView: View {
         HStack(spacing: mainHStackSpacing) {
             ZStack {
                 Circle()
-                    .stroke(.white, lineWidth: strokeLineWidth)
-                    .fill(.blue)
+                    .fill(.blue, strokeBorder: .white, lineWidth: strokeLineWidth)
                     .frame(width: circleSize, height: circleSize)
                     .offset(x: myAvatarXOffset)
                     .opacity(showMyAvatar ? 1 : 0)
@@ -62,18 +62,15 @@ struct ContentView: View {
                     .scaledToFit()
                     .frame(width: heartSize, height: heartSize)
                     .foregroundStyle(showMyAvatar ? Color.pink : .gray)
-                    .symbolEffect(.bounce, value: showMyAvatar)
             }
             .zIndex(1.0)
             
             HStack(spacing: 4) {
                 Circle()
-                    .stroke(.white, lineWidth: strokeLineWidth)
-                    .fill(.green)
+                    .fill(.orange, strokeBorder: .white, lineWidth: strokeLineWidth)
                     .frame(width: circleSize, height: circleSize)
                 
                 Text(likeCount.formatted(.number.notation(.compactName)))
-                    .contentTransition(.numericText())
             }
             .offset(x: showMyAvatar ? xOffset : 0)
         }
@@ -83,12 +80,10 @@ struct ContentView: View {
         ZStack {
             Group {
                 Text(likeCount.formatted(.number.notation(.compactName)))
-                    .contentTransition(.numericText())
                     .offset(x: myAvatarXOffset + 10 + 10)
-
+                
                 Circle()
-                    .stroke(.white, lineWidth: strokeLineWidth)
-                    .fill(.blue)
+                    .fill(.blue, strokeBorder: .white, lineWidth: strokeLineWidth)
                     .frame(width: circleSize, height: circleSize)
                     .offset(x: myAvatarXOffset)
             }
@@ -100,7 +95,6 @@ struct ContentView: View {
                 .scaledToFit()
                 .frame(width: heartSize, height: heartSize)
                 .foregroundStyle(showMyAvatar ? Color.pink : .gray)
-                .symbolEffect(.bounce, value: showMyAvatar)
         }
     }
     
@@ -114,12 +108,12 @@ struct ContentView: View {
             HStack(spacing: 6) {
                 HStack(spacing: -circleHStackSpacing) {
                     Circle()
-                        .stroke(.white, lineWidth: strokeLineWidth)
-                        .fill(.gray)
+                        .fill(.gray, strokeBorder: .white, lineWidth: strokeLineWidth)
                         .frame(width: circleSize, height: circleSize)
                         .zIndex(2.0)
                     
                     Circle()
+                        .fill(.gray, strokeBorder: .white, lineWidth: strokeLineWidth)
                         .frame(width: circleSize, height: circleSize)
                 }
                 
@@ -135,39 +129,35 @@ struct ContentView: View {
         HStack(spacing: mainHStackSpacing) {
             ZStack {
                 Circle()
-                    .stroke(.white, lineWidth: strokeLineWidth)
-                    .fill(.blue)
+                    .fill(.blue, strokeBorder: .white, lineWidth: strokeLineWidth)
                     .frame(width: circleSize, height: circleSize)
                     .offset(x: myAvatarXOffset)
                     .opacity(showMyAvatar ? 1 : 0)
                     .scaleEffect(showMyAvatar ? 1 : 0)
-
+                
                 Image(systemName: showMyAvatar ? "heart.fill" : "heart")
                     .resizable()
                     .scaledToFit()
                     .frame(width: heartSize, height: heartSize)
                     .foregroundStyle(showMyAvatar ? Color.pink : .gray)
-                    .symbolEffect(.bounce, value: showMyAvatar)
             }
             .zIndex(1.0)
             
             HStack(spacing: 4) {
                 HStack(spacing: -circleHStackSpacing) {
                     Circle()
-                        .stroke(.white, lineWidth: strokeLineWidth)
-                        .fill(.green)
+                        .fill(.orange, strokeBorder: .white, lineWidth: strokeLineWidth)
                         .frame(width: circleSize, height: circleSize)
                         .zIndex(2.0)
                         .offset(x: showMyAvatar ? xOffset : 0)
                     
                     Circle()
-                        .foregroundStyle(.red)
+                        .fill(.red, strokeBorder: .white, lineWidth: strokeLineWidth)
                         .frame(width: circleSize, height: circleSize)
                         .zIndex(1.0)
                 }
                 
                 Text(likeCount.formatted(.number.notation(.compactName)))
-                    .contentTransition(.numericText())
             }
         }
     }
@@ -187,4 +177,13 @@ enum Status {
     case noLikes
     case oneLike
     case multipleLikes
+}
+
+
+extension Shape {
+    func fill<Fill: ShapeStyle, Stroke: ShapeStyle>(_ fillStyle: Fill, strokeBorder strokeStyle: Stroke, lineWidth: Double = 1) -> some View {
+        self
+            .stroke(strokeStyle, lineWidth: lineWidth)
+            .background(self.fill(fillStyle))
+    }
 }
