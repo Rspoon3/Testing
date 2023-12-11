@@ -51,12 +51,14 @@ final actor AsyncCache<T> {
     ) async throws -> T {
         let key = _key as NSString
         
+        //Await debounce
+        
         if let wrapper = cache.object(forKey: key) {
             switch wrapper.status {
             case .inProgress(let task):
                 return try await task.value
-            case .fetched(let image):
-                return image
+            case .fetched(let value):
+                return value
             }
         }
 
