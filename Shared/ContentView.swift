@@ -37,13 +37,14 @@ struct ContentView: View {
             multipleLikes
             
             Button("Toggle") {
-                showMyAvatar.toggle()
+                withAnimation(.easeInOut) {
+                    showMyAvatar.toggle()
+                }
+                
                 likeCount = showMyAvatar ? 3 : 2
             }
             .font(.largeTitle)
         }
-        
-        .animation(.easeInOut, value: showMyAvatar)
         .padding()
     }
     
@@ -67,10 +68,12 @@ struct ContentView: View {
             
             HStack(spacing: 4) {
                 Circle()
-                    .fill(.orange, strokeBorder: .white, lineWidth: strokeLineWidth)
+                    .fill(.green, strokeBorder: .white, lineWidth: strokeLineWidth)
                     .frame(width: circleSize, height: circleSize)
                 
                 Text(likeCount.formatted(.number.notation(.compactName)))
+                    .backDeployedContentTransition(.numericText())
+                    .animation(.default, value: likeCount)
             }
             .offset(x: showMyAvatar ? xOffset : 0)
         }
@@ -81,10 +84,14 @@ struct ContentView: View {
             Group {
                 Text(likeCount.formatted(.number.notation(.compactName)))
                     .offset(x: myAvatarXOffset + 10 + 10)
+
                 
-                Circle()
-                    .fill(.blue, strokeBorder: .white, lineWidth: strokeLineWidth)
+                Image("taylor")
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: circleSize, height: circleSize)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
                     .offset(x: myAvatarXOffset)
             }
             .opacity(showMyAvatar ? 1 : 0)
@@ -157,7 +164,9 @@ struct ContentView: View {
                         .zIndex(1.0)
                 }
                 
-                Text(likeCount.formatted(.number.notation(.compactName)))
+                Text(likeCount.formatted())
+                    .animation(.default, value: likeCount)
+                    .backDeployedContentTransition(.numericText())
             }
         }
     }
@@ -185,5 +194,22 @@ extension Shape {
         self
             .stroke(strokeStyle, lineWidth: lineWidth)
             .background(self.fill(fillStyle))
+    }
+}
+
+
+struct BackDeployedContentTransition {
+    public static func numericText() -> Self {
+        return BackDeployedContentTransition()
+    }
+}
+extension View {
+    func backDeployedContentTransition(_ transition: BackDeployedContentTransition) -> some View {
+        if #available(iOS 16.0, *) {
+            return self
+                .contentTransition(.numericText())
+        } else {
+            return self
+        }
     }
 }
