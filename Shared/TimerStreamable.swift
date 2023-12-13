@@ -9,16 +9,16 @@ import Foundation
 
 public protocol TimerStreamable {
     static func stream(
-        every interval: TimerDuration,
+        every interval: Duration,
         tolerance: TimeInterval?,
-        endIn endInterval: TimerDuration?
+        endIn endInterval: Duration?
     ) -> AsyncStream<Date>
 }
 
 public extension TimerStreamable {
     static func stream(
-        every interval: TimerDuration,
-        endIn endInterval: TimerDuration?
+        every interval: Duration,
+        endIn endInterval: Duration?
     ) -> AsyncStream<Date> {
         stream(
             every: interval,
@@ -38,9 +38,9 @@ extension Timer: TimerStreamable, @unchecked Sendable {
     ///   - endInterval: An optional time interval to end the stream. If it's less than the timer interval, the stream will automatically finish.
     /// - Returns: An `AsyncPublisher` that repeatedly emits the current date on the given interval.
     public static func stream(
-        every interval: TimerDuration,
+        every interval: Duration,
         tolerance: TimeInterval? = nil,
-        endIn endInterval: TimerDuration? = nil
+        endIn endInterval: Duration? = nil
     ) -> AsyncStream<Date> {
         AsyncStream { continuation in
             let timer = Timer.scheduledTimer(withTimeInterval: interval.timeInterval, repeats: true) { timer in
@@ -77,9 +77,9 @@ extension Timer: TimerStreamable, @unchecked Sendable {
 public enum MockTimerStreamable: TimerStreamable {
     
     public static func stream(
-        every interval: TimerDuration,
+        every interval: Duration,
         tolerance: TimeInterval?,
-        endIn endInterval: TimerDuration?
+        endIn endInterval: Duration?
     ) -> AsyncStream<Date> {
         AsyncStream { continuation in
             if let timeInterval = endInterval?.timeInterval {

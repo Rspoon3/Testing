@@ -27,7 +27,7 @@ struct ContentView: View {
                     }
                 }
                 .task {
-                    for await date in Timer.stream(every: .seconds(0.5), endIn: .seconds(35)) {
+                    for await date in Timer.stream(every: .seconds(1), endIn: .minutes(1)) {
                         withAnimation {
                             proxy.scrollTo(dates.last)
                         }

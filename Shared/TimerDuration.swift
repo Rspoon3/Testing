@@ -7,26 +7,25 @@
 
 import Foundation
 
-public enum TimerDuration: Sendable, Comparable {
-    case hour(Double)
-    case minutes(Double)
-    case seconds(Double)
-    case milliseconds(Double)
-    
-    var timeInterval: TimeInterval {
-        switch self {
-        case .hour(let value):
-            return TimeInterval(value * 3600)
-        case .minutes(let value):
-            return TimeInterval(value * 60)
-        case .seconds(let value):
-            return TimeInterval(value)
-        case .milliseconds(let value):
-            return TimeInterval(value) / TimeInterval(MSEC_PER_SEC)
-        }
+
+extension Duration {
+    public var timeInterval: TimeInterval {
+        TimeInterval(components.seconds)
     }
     
-    public static func <(lhs: TimerDuration, rhs: TimerDuration) -> Bool {
-        return lhs.timeInterval < rhs.timeInterval
+    public static func minutes(_ minutes: Double) -> Duration {
+        return .seconds(minutes * 60)
+    }
+    
+    public static func hours(_ hours: Double) -> Duration {
+        return .seconds(hours * 3_600)
+    }
+    
+    public static func days(_ days: Double) -> Duration {
+        return .seconds(days * 86_400)
+    }
+    
+    public static func weeks(_ weeks: Double) -> Duration {
+        return .seconds(weeks * 604_800)
     }
 }
