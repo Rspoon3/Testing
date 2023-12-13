@@ -7,10 +7,37 @@
 
 import SwiftUI
 
+@MainActor
 struct ContentView: View {
+    @State private var count = 0
+    @State private var dates: [Date] = []
+    
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        NavigationStack {
+            ScrollViewReader { proxy in
+                List {
+                    Text(count.formatted())
+                        .monospaced()
+                        .animation(.default, value: count)
+                        .contentTransition(.numericText())
+                    
+                    ForEach(dates, id: \.self) { date in
+                        Text(date.formatted())
+                            .id(date)
+                    }
+                }
+                .task {
+                    for await date in Timer.stream(every: .seconds(0.5), endIn: .seconds(35)) {
+                        withAnimation {
+                            proxy.scrollTo(dates.last)
+                        }
+                        dates.append(date)
+                        count += 1
+                    }
+                }
+            }
+            .navigationTitle("List")
+        }
     }
 }
 
