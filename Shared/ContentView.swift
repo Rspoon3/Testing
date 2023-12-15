@@ -8,23 +8,23 @@
 import SwiftUI
 
 struct ContentView: View {
-    let cache = IntCache.shared
+    let repository = Repository()
     
     var body: some View {
         NavigationStack {
             List {
                 ForEach(0..<100, id: \.self) { i in
                     NavigationLink {
-                        Text("DONE")
 //                        DetailsView(cache: cache, i: i)
                     } label: {
                         Text(i.formatted())
                     }
                     .task {
-                        try? await cache.fetch(key: "\(i)") {
-                            try await Task.sleep(for: .seconds(3))
-                            print("Done")
-                            return Int.random(in: 0..<10_000)
+                        do {
+//                            let _ = try await cache.fetch(input: i)
+                            let value = try await repository.fetchCache(input: i)
+                        } catch {
+                            print(error.localizedDescription)
                         }
                     }
                 }
