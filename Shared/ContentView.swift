@@ -22,7 +22,7 @@ struct ContentView: View {
                     .task {
                         do {
 //                            let _ = try await cache.fetch(input: i)
-                            let value = try await repository.fetchCache(input: i)
+                            let value = try await repository.fetch(input: i)
                         } catch {
                             print(error.localizedDescription)
                         }

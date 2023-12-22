@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum CacheStatus<T> {
+enum CacheStatus<T: Sendable>: Sendable {
     case inProgress(Task<T, Error>)
     case fetched(T)
 }

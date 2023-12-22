@@ -9,10 +9,9 @@ import Foundation
 import Combine
 
 final actor Repository {
-    private let channel = AsyncSingleChannel<Int, String>()
+    private let asyncCache = AsyncCache<Int, String>()
     private let passThrough = PassthroughSubject<Int, Never>()
     private var passThroughCancellable: AnyCancellable?
-    private let cache = AsyncCache<NSNumber, String>()
     
     //MARK: - Public
     
@@ -23,35 +22,44 @@ final actor Repository {
     }
     
     private func start() async {
-        let groupedIDs = await withCheckedContinuation { continuation in
-            passThroughCancellable = passThrough
-                .collect(.byTime(RunLoop.main, .seconds(1.5)))
-                .sink { groupedIDs in
-                    continuation.resume(returning: groupedIDs)
-                }
-        }
+        let values = passThrough
+            .collect(.byTime(RunLoop.main, .seconds(1.5)))
+            .values
         
-        do {
-            try await Task.sleep(for: .seconds(2))
-            
-            for id in groupedIDs {
-                await self.channel.setValue(id.formatted(), forKey: id)
+//            .sink { [weak self] groupedIDs in
+        //                guard let self else { return }
+        
+        Task {
+            for await groupedIDs in values {
+                do {
+                    try await Task.sleep(for: .seconds(2))
+                    let values = groupedIDs.map { (value: $0.formatted(), key: $0) }
+                    //            await asyncCache.set(values: values)
+                    for value in values {
+                        await self.asyncCache.setValue(value.value, forKey: value.key)
+                    }
+                } catch {
+                    await self.asyncCache.cancelContinuations(ids: Set(groupedIDs))
+                }
             }
-        } catch {
-            await self.channel.cancelContinuations(ids: Set(groupedIDs))
         }
     }
     
     func fetch(input: Int) async throws -> String {
-        passThrough.send(input)
-        let result = try await channel.value(for: input)
-        return result
-    }
-    
-    func fetchCache(input: Int) async throws -> String {
-        try await cache.fetch(key: input as NSNumber) {
-            try await Task.sleep(for: .seconds(2))
-            return input.formatted()
-        }
+//        if Bool.random() {
+            passThrough.send(input)
+            print("Multiple")
+            let v = try await asyncCache.value(for: input)
+            print("M \(await asyncCache.cache.count)")
+            return v
+//        } else {
+//            print("Single")
+//            let v = try await asyncCache.value(key: input) {
+//                try await Task.sleep(for: .seconds(2))
+//                return input.formatted()
+//            }
+//            print("S \(await asyncCache.cache.count)")
+//            return v
+//        }
     }
 }
