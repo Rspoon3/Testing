@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		949B00F22B50538E0019A45D /* SwiftCSV in Frameworks */ = {isa = PBXBuildFile; productRef = 949B00F12B50538E0019A45D /* SwiftCSV */; };
+		949B00F52B505A8C0019A45D /* versions.csv in Resources */ = {isa = PBXBuildFile; fileRef = 949B00F42B505A8C0019A45D /* versions.csv */; };
+		949B00F62B505A8C0019A45D /* versions.csv in Resources */ = {isa = PBXBuildFile; fileRef = 949B00F42B505A8C0019A45D /* versions.csv */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -35,6 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		949B00F42B505A8C0019A45D /* versions.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = versions.csv; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,6 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				949B00F22B50538E0019A45D /* SwiftCSV in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +89,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		949B00F02B50538E0019A45D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		A6A262CE24E0BCB20091EA92 = {
 			isa = PBXGroup;
 			children = (
@@ -94,6 +106,7 @@
 				A6A262EE24E0BCB30091EA92 /* Tests iOS */,
 				A6A262F924E0BCB30091EA92 /* Tests macOS */,
 				A6A262DC24E0BCB30091EA92 /* Products */,
+				949B00F02B50538E0019A45D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -102,6 +115,7 @@
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				949B00F42B505A8C0019A45D /* versions.csv */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -169,6 +183,9 @@
 			dependencies = (
 			);
 			name = "Testing (iOS)";
+			packageProductDependencies = (
+				949B00F12B50538E0019A45D /* SwiftCSV */,
+			);
 			productName = "Testing (iOS)";
 			productReference = A6A262DB24E0BCB30091EA92 /* Testing.app */;
 			productType = "com.apple.product-type.application";
@@ -261,6 +278,9 @@
 				Base,
 			);
 			mainGroup = A6A262CE24E0BCB20091EA92;
+			packageReferences = (
+				949B00EF2B50535F0019A45D /* XCRemoteSwiftPackageReference "SwiftCSV" */,
+			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -279,6 +299,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */,
+				949B00F52B505A8C0019A45D /* versions.csv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,6 +308,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630224E0BCB30091EA92 /* Assets.xcassets in Resources */,
+				949B00F62B505A8C0019A45D /* versions.csv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -717,6 +739,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		949B00EF2B50535F0019A45D /* XCRemoteSwiftPackageReference "SwiftCSV" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftcsv/SwiftCSV.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		949B00F12B50538E0019A45D /* SwiftCSV */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 949B00EF2B50535F0019A45D /* XCRemoteSwiftPackageReference "SwiftCSV" */;
+			productName = SwiftCSV;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A6A262CF24E0BCB20091EA92 /* Project object */;
 }
