@@ -7,6 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		945155EF2B52D86C0031C720 /* ExerciseSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155E92B52D86C0031C720 /* ExerciseSet.swift */; };
+		945155F02B52D86C0031C720 /* ExerciseSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155E92B52D86C0031C720 /* ExerciseSet.swift */; };
+		945155F32B52D86C0031C720 /* Exercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155EB2B52D86C0031C720 /* Exercise.swift */; };
+		945155F42B52D86C0031C720 /* Exercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155EB2B52D86C0031C720 /* Exercise.swift */; };
+		945155F52B52D86C0031C720 /* WOUnitMass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155EC2B52D86C0031C720 /* WOUnitMass.swift */; };
+		945155F62B52D86C0031C720 /* WOUnitMass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155EC2B52D86C0031C720 /* WOUnitMass.swift */; };
+		945155F72B52D86C0031C720 /* Workout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155ED2B52D86C0031C720 /* Workout.swift */; };
+		945155F82B52D86C0031C720 /* Workout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155ED2B52D86C0031C720 /* Workout.swift */; };
+		945155F92B52D86C0031C720 /* WorkoutEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155EE2B52D86C0031C720 /* WorkoutEntry.swift */; };
+		945155FA2B52D86C0031C720 /* WorkoutEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155EE2B52D86C0031C720 /* WorkoutEntry.swift */; };
+		945155FC2B52D90B0031C720 /* MassUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155FB2B52D90B0031C720 /* MassUnit.swift */; };
+		945155FD2B52D90B0031C720 /* MassUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155FB2B52D90B0031C720 /* MassUnit.swift */; };
+		945155FF2B52DA5D0031C720 /* MuscleGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155FE2B52DA5D0031C720 /* MuscleGroup.swift */; };
+		945156002B52DA5D0031C720 /* MuscleGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945155FE2B52DA5D0031C720 /* MuscleGroup.swift */; };
+		945156052B52DF280031C720 /* UIColor+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945156042B52DF280031C720 /* UIColor+Random.swift */; };
+		945156062B52DF280031C720 /* UIColor+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945156042B52DF280031C720 /* UIColor+Random.swift */; };
 		949B00FB2B50D5B20019A45D /* LoremSwiftum in Frameworks */ = {isa = PBXBuildFile; productRef = 949B00FA2B50D5B20019A45D /* LoremSwiftum */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
@@ -36,6 +52,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		945155E92B52D86C0031C720 /* ExerciseSet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExerciseSet.swift; sourceTree = "<group>"; };
+		945155EB2B52D86C0031C720 /* Exercise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Exercise.swift; sourceTree = "<group>"; };
+		945155EC2B52D86C0031C720 /* WOUnitMass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WOUnitMass.swift; sourceTree = "<group>"; };
+		945155ED2B52D86C0031C720 /* Workout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Workout.swift; sourceTree = "<group>"; };
+		945155EE2B52D86C0031C720 /* WorkoutEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutEntry.swift; sourceTree = "<group>"; };
+		945155FB2B52D90B0031C720 /* MassUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassUnit.swift; sourceTree = "<group>"; };
+		945155FE2B52DA5D0031C720 /* MuscleGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroup.swift; sourceTree = "<group>"; };
+		945156042B52DF280031C720 /* UIColor+Random.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Random.swift"; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -103,7 +127,15 @@
 			isa = PBXGroup;
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
+				945155ED2B52D86C0031C720 /* Workout.swift */,
+				945155EE2B52D86C0031C720 /* WorkoutEntry.swift */,
+				945155E92B52D86C0031C720 /* ExerciseSet.swift */,
+				945155EB2B52D86C0031C720 /* Exercise.swift */,
+				945155FE2B52DA5D0031C720 /* MuscleGroup.swift */,
+				945155EC2B52D86C0031C720 /* WOUnitMass.swift */,
+				945155FB2B52D90B0031C720 /* MassUnit.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				945156042B52DF280031C720 /* UIColor+Random.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -319,8 +351,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				945155EF2B52D86C0031C720 /* ExerciseSet.swift in Sources */,
+				945155F92B52D86C0031C720 /* WorkoutEntry.swift in Sources */,
+				945155F52B52D86C0031C720 /* WOUnitMass.swift in Sources */,
+				945155F72B52D86C0031C720 /* Workout.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				945155FC2B52D90B0031C720 /* MassUnit.swift in Sources */,
+				945155F32B52D86C0031C720 /* Exercise.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				945156052B52DF280031C720 /* UIColor+Random.swift in Sources */,
+				945155FF2B52DA5D0031C720 /* MuscleGroup.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,8 +368,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				945155F02B52D86C0031C720 /* ExerciseSet.swift in Sources */,
+				945155FA2B52D86C0031C720 /* WorkoutEntry.swift in Sources */,
+				945155F62B52D86C0031C720 /* WOUnitMass.swift in Sources */,
+				945155F82B52D86C0031C720 /* Workout.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				945155FD2B52D90B0031C720 /* MassUnit.swift in Sources */,
+				945155F42B52D86C0031C720 /* Exercise.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				945156062B52DF280031C720 /* UIColor+Random.swift in Sources */,
+				945156002B52DA5D0031C720 /* MuscleGroup.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
