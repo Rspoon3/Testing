@@ -13,28 +13,12 @@ import SwiftUI
 public class MuscleGroup {
     public var title: String
     private(set) var creationDate: Date
-    
+    private var colorComponents: ColorComponents
+    public var color: Color { colorComponents.color }
 
-    init(title: String, uiColor: UIColor) {
+    init(title: String, color: Color) {
         self.title = title
         self.creationDate = .now
-    }
-}
-struct ColorComponents: Codable {
-    let red: Float
-    let green: Float
-    let blue: Float
-
-    var color: Color {
-        Color(red: Double(red), green: Double(green), blue: Double(blue))
-    }
-
-    static func fromColor(_ color: Color) -> ColorComponents {
-        let resolved = color.resolve(in: EnvironmentValues())
-        return ColorComponents(
-            red: resolved.red,
-            green: resolved.green,
-            blue: resolved.blue
-        )
+        self.colorComponents = .init(color: color)
     }
 }

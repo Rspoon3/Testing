@@ -29,9 +29,9 @@ struct ContentView: View {
                     ForEach(muscleGroups) { item in
                         HStack {
                             Text(item.title)
-//                            Circle()
-//                                .foregroundStyle(Color(item.uiColor))
-//                                .frame(width: 20, height: 20)
+                            Circle()
+                                .foregroundStyle(item.color)
+                                .frame(width: 20, height: 20)
                         }
                     }
                 }
@@ -70,51 +70,83 @@ struct ContentView: View {
             }
             .navigationTitle(massUnits.count.description)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Delete", role: .destructive) {
+                        try? modelContext.delete(model: Workout.self)
+                        try? modelContext.delete(model: Exercise.self)
+                        try? modelContext.delete(model: MuscleGroup.self)
+                    }.tint(.red)
+                }
+                
                 ToolbarItem {
                     Button("Add Item") {
-                        addExcersises()
-                        //
-                        let workout = Workout(title: Lorem.title, startDate: .now)
-                        let unit = MassUnit(weight: 11, unit: .pounds)
-                        let set = ExerciseSet(creationDate: .now, reps: 10, repGoal: 10, massUnit: unit)
-                        let set2 = ExerciseSet(creationDate: .now, reps: 4, repGoal: 3, massUnit: unit)
-                        let set3 = ExerciseSet(creationDate: .now, reps: 4, repGoal: 3, massUnit: unit)
-                        let set4 = ExerciseSet(creationDate: .now, reps: 4, repGoal: 3, massUnit: unit)
-                        let entry = WorkoutEntry(
-                            exercise: exercises.randomElement()!,
-                            note: "test note",
-                            sets: [set,set2,set3,set4],
-                            creationDate: .now
-                        )
-                        workout.entires.append(entry)
-                        
-                        modelContext.insert(workout)
+                        addMuscleGroups()
+                        addExercises()
+                        addWorkout()
                     }
-                }
-                ToolbarItem(placement: .destructiveAction) {
-                    Button("Delete") {
-                        for muscleGroup in muscleGroups {
-                            modelContext.delete(muscleGroup)
-                        }
-                    }
-                }
-            }
-            .onAppear {
-                let descriptor = FetchDescriptor<MuscleGroup>()
-                let count = (try? modelContext.fetchCount(descriptor)) ?? 0
-                guard count == 0 else { return }
-                
-                let groups = ["Arms", "Back", "Chest", "Core", "Legs", "Shoulders", "Full Body", "Glutes", "Other"]
-                
-                for group in groups {
-                    let muscleGroup = MuscleGroup(title: group, uiColor: .random())
-                    modelContext.insert(muscleGroup)
                 }
             }
         }
     }
     
-    func addExcersises() {
+    private func addWorkout() {
+        let workout = Workout(title: Lorem.title, startDate: .now)
+        let set = ExerciseSet(
+            creationDate: .now,
+            reps: 10,
+            repGoal: 10,
+            massUnit: MassUnit(weight: 11, unit: .pounds)
+        )
+        let set2 = ExerciseSet(
+            creationDate: .now,
+            reps: 4,
+            repGoal: 3,
+            massUnit: MassUnit(weight: 11, unit: .pounds)
+        )
+        let set3 = ExerciseSet(
+            creationDate: .now,
+            reps: 4,
+            repGoal: 3,
+            massUnit: MassUnit(weight: 11, unit: .pounds)
+        )
+        let set4 = ExerciseSet(
+            creationDate: .now,
+            reps: 4,
+            repGoal: 3,
+            massUnit: MassUnit(weight: 11, unit: .pounds)
+        )
+        let entry = WorkoutEntry(
+            exercise: exercises.randomElement()!,
+            note: "test note",
+            sets: [set,set2,set3,set4],
+            creationDate: .now
+        )
+        workout.entires.append(entry)
+        
+        modelContext.insert(workout)
+    }
+    
+    private func addMuscleGroups() {
+        let descriptor = FetchDescriptor<MuscleGroup>()
+        let count = (try? modelContext.fetchCount(descriptor)) ?? 0
+        guard count == 0 else { return }
+        
+        let groups = ["Arms", "Back", "Chest", "Core", "Legs", "Shoulders", "Full Body", "Glutes", "Other"]
+        
+        for group in groups {
+            let muscleGroup = MuscleGroup(
+                title: group,
+                color: Color(
+                    .random()
+                )
+            )
+            modelContext.insert(muscleGroup)
+        }
+        
+        try? modelContext.save()
+    }
+    
+    private func addExercises() {
         let descriptor = FetchDescriptor<Exercise>()
         let count = (try? modelContext.fetchCount(descriptor)) ?? 0
         guard count == 0 else { return }
