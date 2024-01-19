@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94AB873C2B577B6A00024CA6 /* HeartIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB873B2B577B6A00024CA6 /* HeartIcon.swift */; };
+		94AB873D2B577B6A00024CA6 /* HeartIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB873B2B577B6A00024CA6 /* HeartIcon.swift */; };
+		94AB873F2B577BA600024CA6 /* HeartRateMeasuringAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB873E2B577BA600024CA6 /* HeartRateMeasuringAnimation.swift */; };
+		94AB87402B577BA600024CA6 /* HeartRateMeasuringAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB873E2B577BA600024CA6 /* HeartRateMeasuringAnimation.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -35,6 +39,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		94AB873B2B577B6A00024CA6 /* HeartIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartIcon.swift; sourceTree = "<group>"; };
+		94AB873E2B577BA600024CA6 /* HeartRateMeasuringAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateMeasuringAnimation.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -101,7 +107,9 @@
 			isa = PBXGroup;
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
+				94AB873B2B577B6A00024CA6 /* HeartIcon.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				94AB873E2B577BA600024CA6 /* HeartRateMeasuringAnimation.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -312,6 +320,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94AB873F2B577BA600024CA6 /* HeartRateMeasuringAnimation.swift in Sources */,
+				94AB873C2B577B6A00024CA6 /* HeartIcon.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -321,6 +331,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94AB87402B577BA600024CA6 /* HeartRateMeasuringAnimation.swift in Sources */,
+				94AB873D2B577B6A00024CA6 /* HeartIcon.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
