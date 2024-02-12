@@ -7,13 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		944C071D2B68B02C007F81CF /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944C071C2B68B024007F81CF /* Shimmer.swift */; };
-		94D700242B6C30D400DD33AE /* ShimmerLegacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D700232B6C30D400DD33AE /* ShimmerLegacy.swift */; };
-		94D700252B6C30D400DD33AE /* ShimmerLegacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D700232B6C30D400DD33AE /* ShimmerLegacy.swift */; };
+		942B9D252B767B490015A703 /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 942B9D242B767B490015A703 /* Shimmer.swift */; };
+		942B9D262B767B490015A703 /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 942B9D242B767B490015A703 /* Shimmer.swift */; };
 		94D700272B6C30FE00DD33AE /* ReactionButtonAnimationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D700262B6C30FE00DD33AE /* ReactionButtonAnimationManager.swift */; };
 		94D700282B6C30FE00DD33AE /* ReactionButtonAnimationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D700262B6C30FE00DD33AE /* ReactionButtonAnimationManager.swift */; };
-		94D7002A2B6C32DA00DD33AE /* ShimmerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D700292B6C32DA00DD33AE /* ShimmerV2.swift */; };
-		94D7002B2B6C32DA00DD33AE /* ShimmerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D700292B6C32DA00DD33AE /* ShimmerV2.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -42,10 +39,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		944C071C2B68B024007F81CF /* Shimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
-		94D700232B6C30D400DD33AE /* ShimmerLegacy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerLegacy.swift; sourceTree = "<group>"; };
+		942B9D242B767B490015A703 /* Shimmer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
 		94D700262B6C30FE00DD33AE /* ReactionButtonAnimationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionButtonAnimationManager.swift; sourceTree = "<group>"; };
-		94D700292B6C32DA00DD33AE /* ShimmerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerV2.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -113,10 +108,8 @@
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				942B9D242B767B490015A703 /* Shimmer.swift */,
 				94D700262B6C30FE00DD33AE /* ReactionButtonAnimationManager.swift */,
-				944C071C2B68B024007F81CF /* Shimmer.swift */,
-				94D700292B6C32DA00DD33AE /* ShimmerV2.swift */,
-				94D700232B6C30D400DD33AE /* ShimmerLegacy.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -327,10 +320,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				94D700272B6C30FE00DD33AE /* ReactionButtonAnimationManager.swift in Sources */,
-				94D700242B6C30D400DD33AE /* ShimmerLegacy.swift in Sources */,
+				942B9D252B767B490015A703 /* Shimmer.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
-				94D7002A2B6C32DA00DD33AE /* ShimmerV2.swift in Sources */,
-				944C071D2B68B02C007F81CF /* Shimmer.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -339,9 +330,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94D7002B2B6C32DA00DD33AE /* ShimmerV2.swift in Sources */,
-				94D700252B6C30D400DD33AE /* ShimmerLegacy.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				942B9D262B767B490015A703 /* Shimmer.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				94D700282B6C30FE00DD33AE /* ReactionButtonAnimationManager.swift in Sources */,
 			);
