@@ -71,7 +71,7 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            List {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(viewModel.title)
                        
@@ -90,7 +90,7 @@ struct ContentView: View {
                         Text(viewModel.addItemsText)
                         
                         Button {
-                            
+                            print("ADDDD")
                         } label: {
                             Text("Add Items")
                                 .padding()
@@ -99,14 +99,17 @@ struct ContentView: View {
                         }
                     }
                     .padding(.top, 20)
-                    
-                    ForEach(0..<10, id: \.self) { _ in
-                        Color.red
-                            .frame(height: 100)
-                    }
                 }
-                .padding(.horizontal)
+                .buttonStyle(.plain)
+                
+                ForEach(0..<10, id: \.self) { _ in
+                    Color.red
+                        .frame(height: 100)
+                }.onDelete {  _ in
+                    
+                }
             }
+            .listStyle(.plain)
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle(viewModel.navigationTitle)
             .toolbar {
@@ -331,3 +334,122 @@ extension UIColor {
     }
 }
 
+class NumericAbbreviationFormatter: Formatter {
+    
+    /// Value at which the number should begin abbreviating
+    var threshold: CGFloat = 1000
+    
+    /// If you want the value to be rounded up or down
+    var roundingDirection: NumericAbbreviation.RoundingDirection = .down
+    
+    /// How many decimal places to follow the whole number
+    var decimalPlaces: Int = 1
+    
+    /// If the abbreviated suffix string should be capitalized
+    var isCapitalized: Bool = false
+    
+    /// Should return 0 if the value is zero
+    var showsZeroValue: Bool = false
+    
+    override func string(for obj: Any?) -> String? {
+        guard let value = obj as? CGFloat else { return nil }
+        
+        if value == 0 && !showsZeroValue { return nil }
+        
+        if value >= threshold,
+           let placeValue = NumericAbbreviation.PlaceValue.allCases.first(where: { value < $0.value * 10 }) {
+            
+            let decimalValue = value / placeValue.rawValue
+            let formatter = abbreviationFormatter(placeValue: placeValue)
+            
+            return formatter.string(from: decimalValue as NSNumber)
+        }
+        
+        return String(describing: value as NSNumber)
+    }
+    
+    private func abbreviationFormatter(placeValue: NumericAbbreviation.PlaceValue) -> NumberFormatter {
+        let formatter = NumberFormatter()
+        
+        formatter.maximumFractionDigits = decimalPlaces
+        formatter.roundingMode = roundingDirection == .up ? .up : .down
+        
+        let abbreviation = isCapitalized ? placeValue.abbreviation.capitalized : placeValue.abbreviation
+        formatter.positiveSuffix = abbreviation
+        formatter.negativeSuffix = abbreviation
+
+        return formatter
+    }
+}
+
+
+enum NumericAbbreviation {
+    enum PlaceValue: CGFloat, CaseIterable {
+        case thousand = 1_000
+        case million = 1_000_000
+        case billion = 1_000_000_000
+        case trillion = 1_000_000_000_000
+        
+        /// Abbreviated string for the order of magnitude
+        var abbreviation: String {
+            switch self {
+            case .thousand: return "k"
+            case .million: return "mill"
+            case .billion: return "bill"
+            case .trillion: return "trill"
+            }
+        }
+        
+        /// Multiplier used to calculate the total value
+        private var multiplier: CGFloat {
+            (self.rawValue.truncatingRemainder(dividingBy: 3) + 1) * 10
+        }
+        
+        /// Value of the place value
+        var value: CGFloat {
+            self.rawValue * self.multiplier
+        }
+    }
+
+    enum RoundingDirection {
+        case up, down
+    }
+}
+
+@available(iOS, deprecated: 16, obsoleted: 16, message: "This extension can be removed and the built in iOS 16 API will just work instead.")
+public struct BackDeployedContentTransition {
+    let value: Double
+    
+    /// Creates a content transition intended to be used with `Text`
+    /// views displaying numeric text. In certain environments changes
+    /// to the text will enable a nonstandard transition tailored to
+    /// numeric characters that count up or down.
+    ///
+    /// - Returns: a new content transition.
+    public static func numericText(value: Double) -> Self {
+        return BackDeployedContentTransition(value: value)
+    }
+}
+
+extension View {
+    /// A back deployed version of `contentTransition`
+    ///
+    /// https://developer.apple.com/documentation/swiftui/view/contenttransition(_:)
+    ///
+    /// Odd availability check formatting due to [this](https://stackoverflow.com/questions/73278501/code-behind-availableios-16-0-check-is-called-on-ios-15-causing-crash-on) apple bug
+    @available(iOS, deprecated: 16, obsoleted: 16, message: "This extension can be removed and the built in iOS 16 API will just work instead.")
+    public func backDeployedContentTransition(_ transition: BackDeployedContentTransition) -> some View {
+        if #available(iOS 17.0, *) {
+            return self
+                .contentTransition(.numericText(value: transition.value))
+        }
+        
+        if #available(iOS 16.0, *) {
+            return self
+                .contentTransition(.numericText())
+        }
+        
+        return self
+            .animation(.none)
+    }
+}
