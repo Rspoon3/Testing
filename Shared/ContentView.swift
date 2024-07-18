@@ -8,9 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    let player = MusicPlayer()
+    
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        VStack(spacing: 50) {
+            Button("Start") {
+                Task {
+                    await player.start()
+                }
+            }
+            
+            Button("New Song") {
+                player.newSong()
+            }
+        }
+        .font(.largeTitle)
     }
 }
 
@@ -19,3 +31,4 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
+
