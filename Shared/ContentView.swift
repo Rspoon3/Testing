@@ -9,8 +9,20 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        VStack(spacing: 50) {
+            LineAndHalfCircleShape()
+                .stroke(Color.blue, lineWidth: 15)
+                .overlay {
+                    HalfCircleDots()
+                }
+            
+            LineAndHalfCircleShape()
+                .stroke(Color.blue, lineWidth: 15)
+                .overlay {
+                    HalfCircleDots()
+                }
+                .rotationEffect(.degrees(180))
+        }
     }
 }
 
