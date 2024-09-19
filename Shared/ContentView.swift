@@ -7,21 +7,18 @@
 
 import SwiftUI
 
-public enum Tab {
+enum Tab {
     case home, settings
 }
 
 struct ContentView: View {
-    @State public var selectedTab: Tab = .home
+    @State private var selectedTab: Tab = .home
     @State private var test = false
     
-    // MARK: - Initializer
-    
-    public init() {}
     
     // MARK: - Body
     
-    public var body: some View {
+    var body: some View {
         TabView(selection: $selectedTab) {
             Text("Home")
                 .tabItem {
