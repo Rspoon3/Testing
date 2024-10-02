@@ -6,49 +6,80 @@
 //
 
 import SwiftUI
+import Combine
 
 struct ContentView: View {
     let value = "12345678901234"
+    @State var value2 = "12345678901234"
     let number1 = PhoneNumber(areaCode: "123", exchange: "456", number: "7890")
     let number2 = PhoneNumber("12345678901234")
     let number3 = PhoneNumber(areaCode: 123, exchange: 456, number: 7890)
     let number4 = PhoneNumber(12345678901234)
     let number5 = PhoneNumber()
     @State private var number6 = PhoneNumber()
+    @State var someNumber = 123.0
+    
+    var forLoop: some View {
+        ForEach(1..<value.count, id: \.self) { i in
+            let string = String(value.prefix(i))
 
+            VStack(alignment: .leading) {
+                Text(string)
+                Text(PhoneNumber(string).formatted(.areaCode) ?? "")
+                Text(PhoneNumber(string).formatted(.excludingAreaCode) ?? "bad")
+                Text(PhoneNumber(string).formatted(.full) ?? "bad")
+            }
+        }
+    }
+    
     var body: some View {
-//        Form {
-//            ForEach(1..<value.count, id: \.self) { i in
-                let string = String(value.prefix(10))
-                
-                VStack(alignment: .leading) {
-                    Text(number6.formatted(.areaCode))
-                    Text(number6.formatted(.excludingAreaCode))
-                    Text(number6.formatted(.full))
-                    Text(number6.formatted())
-                    TextField("Phone Number", value: $number6, format: .phoneNumber)
-                    TextField("Phone Number", value: $number6, format: .full)
+        Form {
+            textFields
+        }
+    }
+    
+    var textFields: some View {
+        VStack(alignment: .leading) {
+            TextField(
+                phoneNumber: $number6,
+                prompt: Text("Testing")
+            ) {
+                Text(number6.formatted() ?? "")
+            }
+            
+            TextField("Placeholder", text: $value2)
+                .onChange(of: value2) { oldValue, newValue in
+                    if newValue.contains("(") && !newValue.contains(")") {
+                        let cleaned = newValue.replacingOccurrences(of: "(", with: "")
+                        let dropped = String(cleaned.dropLast())
+                        value2 = PhoneNumber(dropped).formatted() ?? ""
+                    } else {
+                        value2 = PhoneNumber(newValue).formatted() ?? ""
+                    }
                 }
-                
-//                VStack(alignment: .leading) {
-//                    Text(string)
-//                    Text(applyUSAFormat(to: string))
-////                    Text(string.formatted(.phoneNumber))
-//                    Text(189.formatted(.percent))
-//                    Text(Date.now.formatted(.dateTime))
-//                    Text(number4.formatted() ?? "No format")
-//                    Text(number4.formatted(.areaCode()))
-//                    Text(number5.formatted() ?? "No format")
-////                    Text(number5.formatted(.full()))
-//                    TextField("Phone Number", value: $number6, formatter: .phoneNumber)
-//                }
-//            }
-//        }
+        }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+    }
+}
+
+
+extension TextField where Label == Text {
+    init(phoneNumber: Binding<PhoneNumber>, prompt: Text? = nil, @ViewBuilder label: () -> Label) {
+        let phoneNumberString = Binding<String>(
+            get: {
+                phoneNumber.wrappedValue.formatted() ?? ""
+            },
+            set: { newValue in
+                phoneNumber.wrappedValue = PhoneNumber(newValue)
+            }
+        )
+        
+        // Initialize TextField with the custom label and optional prompt
+        self.init(text: phoneNumberString, prompt: prompt, label: label)
     }
 }

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Representation of U.S. phone number
-public struct PhoneNumber: Codable, Hashable, Sendable {
+public struct PhoneNumber: Codable {
     
     /// Area code
     public var areaCode: String?
@@ -59,7 +59,7 @@ public struct PhoneNumber: Codable, Hashable, Sendable {
     }
     
     // Static method to format a phone number using the full format (xxx) xxx-xxxx
-    public func formatted(_ formatStyle: PhoneNumberFormatStyle = .full) -> String {
+    public func formatted(_ formatStyle: PhoneNumberFormatStyle = .full) -> String? {
         return formatStyle.format(self)
     }
 }
@@ -71,7 +71,12 @@ private extension String {
     }
 }
 
-public struct PhoneNumberFormatStyle: ParseableFormatStyle {
+
+import Foundation
+import RegexBuilder
+
+// Define different format styles for PhoneNumber
+public struct PhoneNumberFormatStyle: FormatStyle, Codable {
     
     public enum Style: String, Codable {
         case areaCode
@@ -85,43 +90,57 @@ public struct PhoneNumberFormatStyle: ParseableFormatStyle {
         self.style = style
     }
     
-    // Parse strategy to convert String to PhoneNumber
-    public var parseStrategy: PhoneNumberParseStrategy {
-        return PhoneNumberParseStrategy()
-    }
-    
-    // ParseableFormatStyle requires this nested ParseStrategy
-    public struct PhoneNumberParseStrategy: ParseStrategy {
-        public func parse(_ value: String) throws -> PhoneNumber {
-            let cleanedInput = value.digitsOnly()
-            
-            let areaCode = String(cleanedInput.prefix(3))
-            let exchange = String(cleanedInput.dropFirst(3).prefix(3))
-            let number = String(cleanedInput.suffix(4))
-            return PhoneNumber(areaCode: areaCode, exchange: exchange, number: number)
+    // Implement the format method based on the chosen style
+    public func format(_ value: PhoneNumber) -> String? {
+        let full = [value.areaCode, value.exchange, value.number].compactMap{$0}.joined()
+        let cleanedInput = full.replacingOccurrences(of: "\\D", with: "", options: .regularExpression)
+        
+        // Using RegexBuilder to create more readable and safe patterns
+        let fullPhonePattern = Regex {
+            Capture {
+                Repeat(.digit, count: 3)
+            }
+            Optionally {
+                Capture {
+                    Repeat(.digit, 1...3)
+                }
+            }
+            Optionally {
+                Capture {
+                    Repeat(.digit, 1...4)
+                }
+            }
         }
-    }
-    
-    // Formatting logic (convert PhoneNumber to String)
-    public func format(_ value: PhoneNumber) -> String {
+        
         switch style {
         case .areaCode:
-            return value.areaCode ?? ""
+             // Area code xxx
+            return value.areaCode
         case .excludingAreaCode:
-            if let exchange = value.exchange, let number = value.number {
-                return "\(exchange)-\(number)"
-            } else {
-                return "Incomplete phone number"
-            }
-        case .full:
-            guard let areaCode = value.areaCode else { return "" }
-            guard areaCode.count == 3 else {
-                return "\(areaCode)"
+            // Excluding area code xxx-xxxx
+            guard let match = try? fullPhonePattern.firstMatch(in: cleanedInput) else {
+                return nil
             }
             
-            if let exchange = value.exchange, !exchange.isEmpty {
-                if let number = value.number, !number.isEmpty {
-                    return "(\(areaCode)) \(exchange)-\(number)"
+            guard let exchange = match.2, !exchange.isEmpty else { return nil }
+            
+            if let lineNumber = match.3, !lineNumber.isEmpty {
+                return "\(exchange)-\(lineNumber)"
+            } else {
+                return String(exchange)
+            }
+        case .full:
+            // Full phone number (xxx) xxx-xxxx
+            guard let match = try? fullPhonePattern.firstMatch(in: cleanedInput) else {
+                // Return the cleaned input if it's too short for formatting
+                return cleanedInput
+            }
+            
+            let areaCode = match.1
+            
+            if let exchange = match.2, !exchange.isEmpty {
+                if let lineNumber = match.3, !lineNumber.isEmpty {
+                    return "(\(areaCode)) \(exchange)-\(lineNumber)"
                 } else {
                     return "(\(areaCode)) \(exchange)"
                 }
@@ -130,19 +149,26 @@ public struct PhoneNumberFormatStyle: ParseableFormatStyle {
             }
         }
     }
-}
-
-// Extension for ParseableFormatStyle convenience
-extension ParseableFormatStyle where Self == PhoneNumberFormatStyle {
-    static var phoneNumber: PhoneNumberFormatStyle {
-        .full
+    
+    // Implement the required Encodable and Decodable conformance
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(style.rawValue)
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let styleString = try container.decode(String.self)
+        if let style = Style(rawValue: styleString) {
+            self.style = style
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid format style")
+        }
     }
 }
 
-
 // Extension to support `.areaCode()` and `.full()` format styles
 extension FormatStyle where Self == PhoneNumberFormatStyle {
-    
     public static var areaCode: PhoneNumberFormatStyle {
         PhoneNumberFormatStyle(.areaCode)
     }
@@ -155,6 +181,3 @@ extension FormatStyle where Self == PhoneNumberFormatStyle {
         PhoneNumberFormatStyle(.full)
     }
 }
-
-
-

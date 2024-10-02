@@ -15,47 +15,47 @@ import Foundation
 //    typealias FormatOutput = String
 //
 //    // Implement the format method that applies the USA phone number format
-//    func format(_ value: String) -> String {
-//        // Remove all non-digit characters
-//        let cleanedInput = value.replacingOccurrences(of: "\\D", with: "", options: .regularExpression)
-//        
-//        // Using RegexBuilder to create more readable and safe patterns
-//        let fullPhonePattern = Regex {
-//            Capture {
-//                Repeat(.digit, count: 3)
-//            }
-//            Optionally {
-//                Capture {
-//                    Repeat(.digit, 1...3)
-//                }
-//            }
-//            Optionally {
-//                Capture {
-//                    Repeat(.digit, 1...4)
-//                }
-//            }
-//        }
-//        
-//        // Full phone number (xxx) xxx-xxxx
-//        guard let match = try? fullPhonePattern.firstMatch(in: cleanedInput) else {
-//            // Return the cleaned input if it's too short for formatting
-//            return cleanedInput
-//        }
-//        
-//        let areaCode = match.1
-//        let exchange = match.2
-//        let lineNumber = match.3
-//        
-//        if let exchange, !exchange.isEmpty {
-//            if let lineNumber, !lineNumber.isEmpty {
-//                return "(\(areaCode)) \(exchange)-\(lineNumber)"
-//            } else {
-//                return "(\(areaCode)) \(exchange)"
-//            }
-//        } else {
-//            return "(\(areaCode))"
-//        }
-//    }
+    func format(_ value: String) -> String {
+        // Remove all non-digit characters
+        let cleanedInput = value.replacingOccurrences(of: "\\D", with: "", options: .regularExpression)
+        
+        // Using RegexBuilder to create more readable and safe patterns
+        let fullPhonePattern = Regex {
+            Capture {
+                Repeat(.digit, count: 3)
+            }
+            Optionally {
+                Capture {
+                    Repeat(.digit, 1...3)
+                }
+            }
+            Optionally {
+                Capture {
+                    Repeat(.digit, 1...4)
+                }
+            }
+        }
+        
+        // Full phone number (xxx) xxx-xxxx
+        guard let match = try? fullPhonePattern.firstMatch(in: cleanedInput) else {
+            // Return the cleaned input if it's too short for formatting
+            return cleanedInput
+        }
+        
+        let areaCode = match.1
+        let exchange = match.2
+        let lineNumber = match.3
+        
+        if let exchange, !exchange.isEmpty {
+            if let lineNumber, !lineNumber.isEmpty {
+                return "(\(areaCode)) \(exchange)-\(lineNumber)"
+            } else {
+                return "(\(areaCode)) \(exchange)"
+            }
+        } else {
+            return "(\(areaCode))"
+        }
+    }
 //}
 //
 //// Extend String so that it can easily use the custom PhoneNumberFormatStyle
