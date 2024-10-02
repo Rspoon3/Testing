@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94C1A9212CACF83700AC6D8D /* prefix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C1A9202CACF83700AC6D8D /* prefix.swift */; };
+		94C1A9222CACF83700AC6D8D /* prefix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C1A9202CACF83700AC6D8D /* prefix.swift */; };
+		94C1A9242CACF85F00AC6D8D /* PhoneNumberFormatStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C1A9232CACF85F00AC6D8D /* PhoneNumberFormatStyle.swift */; };
+		94C1A9252CACF85F00AC6D8D /* PhoneNumberFormatStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C1A9232CACF85F00AC6D8D /* PhoneNumberFormatStyle.swift */; };
+		94C1A9272CACF88000AC6D8D /* PhoneNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C1A9262CACF88000AC6D8D /* PhoneNumber.swift */; };
+		94C1A9282CACF88000AC6D8D /* PhoneNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C1A9262CACF88000AC6D8D /* PhoneNumber.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -35,6 +41,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		94C1A9202CACF83700AC6D8D /* prefix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = prefix.swift; sourceTree = "<group>"; };
+		94C1A9232CACF85F00AC6D8D /* PhoneNumberFormatStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneNumberFormatStyle.swift; sourceTree = "<group>"; };
+		94C1A9262CACF88000AC6D8D /* PhoneNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneNumber.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -110,6 +119,9 @@
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				94C1A9232CACF85F00AC6D8D /* PhoneNumberFormatStyle.swift */,
+				94C1A9262CACF88000AC6D8D /* PhoneNumber.swift */,
+				94C1A9202CACF83700AC6D8D /* prefix.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -323,7 +335,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94C1A9242CACF85F00AC6D8D /* PhoneNumberFormatStyle.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94C1A9212CACF83700AC6D8D /* prefix.swift in Sources */,
+				94C1A9272CACF88000AC6D8D /* PhoneNumber.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -332,7 +347,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94C1A9252CACF85F00AC6D8D /* PhoneNumberFormatStyle.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94C1A9222CACF83700AC6D8D /* prefix.swift in Sources */,
+				94C1A9282CACF88000AC6D8D /* PhoneNumber.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
