@@ -43,7 +43,7 @@ jobs:
             // Log the number of current approvals
             console.log(`Number of current approvals: ${approvals.length}`);
 
-            // Return both approvals and slackUser
+            // Return both approvals and slackUser 1
             return { approvals: approvalsTest, slackUser };
 
       - name: Exit if approval count is not met
