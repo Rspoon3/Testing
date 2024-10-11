@@ -20,7 +20,7 @@ jobs:
           retries: 3  # Retry the action 3 times if it fails
           retry-exempt-status-codes: 400,401,403  # Do not retry if these status codes are encountered
           script: |
-            const approvals = 2;
+            const approvalsLength = 2;
 
             // Parse GitHub to Slack mapping from the environment variable
             const githubToSlackMap = JSON.parse(process.env.GITHUB_TO_SLACK_MAP);
@@ -37,10 +37,10 @@ jobs:
             }
 
             // Log the number of current approvals
-            console.log(`Number of current approvals: ${approvals.length}`);
+            console.log(`Number of current approvals: ${approvalsLength}`);
 
             // Return both approvals and slackUser RSW comment for push
-            return { approvals: approvalsTest, slackUser };
+            return { approvals: approvalsLength, slackUser };
 
       - name: Exit if approval count is not met
         uses: actions/github-script@v7
