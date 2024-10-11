@@ -20,7 +20,6 @@ jobs:
           retries: 3  # Retry the action 3 times if it fails
           retry-exempt-status-codes: 400,401,403  # Do not retry if these status codes are encountered
           script: |
-            const core = require('@actions/core');
             const approvalsLength = 2;
 
             // Parse GitHub to Slack mapping from the environment variable
