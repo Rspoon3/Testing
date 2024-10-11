@@ -36,25 +36,22 @@ jobs:
             // Log the number of current approvals
             console.log(`Number of current approvals: ${approvalsLength}`);
 
-            // Set outputs for next steps
-            return { approvals: approvalsLength, slackUser };
-        outputs:
-          approvals: ${{ steps.approval_check.outputs.approvals }}
-          slackUser: ${{ steps.approval_check.outputs.slackUser }}
+            // Set the outputs for next steps
+            core.setOutput("approvals", approvalsLength);
+            core.setOutput("slackUser", slackUser);
 
       - name: Exit if approval count is not met
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const approvals = parseInt(`${{ steps.approval_check.outputs.approvals }}`);
-            const required = parseInt(`${{ env.REQUIRED_APPROVALS }}`);
+        run: |
+          approvals=${{ steps.approval_check.outputs.approvals }}
+          slackUser=${{ steps.approval_check.outputs.slackUser }}
+          required=${{ env.REQUIRED_APPROVALS }}
 
-            console.log(`Debugging 1: steps.approval_check.outputs.approvals: ${approvals}`);
-            console.log(`Debugging 2: env.REQUIRED_APPROVALS: ${required}`);
-          
-            if (approvals !== required) {
-              console.log("Approval count not met, stopping action.");
-              process.exit(1);  // Exit if approvals do not match required
-            } else {
-              console.log("Approval count met.");
-            }
+          echo "Approvals: $approvals, Required: $required"
+          echo "slackUser: $slackUser, Required: $required"
+
+          if [ "$approvals" -ne "$required" ]; then
+            echo "Approval count not met, stopping action."
+            exit 1
+          else
+            echo "Approval count met."
+          fi
