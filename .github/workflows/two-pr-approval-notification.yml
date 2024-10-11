@@ -55,3 +55,19 @@ jobs:
           else
             echo "Approval count met."
           fi
+
+      - name: Send message to Slack
+        run: |
+          approvals=${{ steps.approval_check.outputs.approvals }}
+          slackUser=${{ steps.approval_check.outputs.slackUser }}
+          required=${{ env.REQUIRED_APPROVALS }}
+
+          echo "Approvals slack: $approvals, Required: $required"
+          echo "slackUser slack: $slackUser, Required: $required"
+
+          if [ "$approvals" -ne "$required" ]; then
+            echo "Approval count not met, stopping action."
+            exit 1
+          else
+            echo "Approval count met."
+          fi
