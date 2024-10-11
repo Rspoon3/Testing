@@ -27,10 +27,10 @@ jobs:
             const githubToSlackMap = JSON.parse(process.env.GITHUB_TO_SLACK_MAP);
 
             // Get PR creator's GitHub username
-            const prCreator = context.payload.pull_request.user.login;
+            // const prCreator = context.payload.pull_request.user.login;
 
             // Get corresponding Slack ID
-            const slackUser = githubToSlackMap[prCreator] || null;
+            const slackUser = githubToSlackMap["Rspoon3"] || null;
 
             if (!slackUser) {
               console.log(`No Slack mapping found for GitHub user: ${prCreator}`);
