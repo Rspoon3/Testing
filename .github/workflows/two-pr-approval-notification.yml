@@ -25,9 +25,6 @@ jobs:
             // Parse GitHub to Slack mapping from the environment variable
             const githubToSlackMap = JSON.parse(process.env.GITHUB_TO_SLACK_MAP);
 
-            // Get PR creator's GitHub username
-            // const prCreator = context.payload.pull_request.user.login;
-
             // Get corresponding Slack ID
             const slackUser = githubToSlackMap["Rspoon3"] || null;
 
@@ -39,8 +36,12 @@ jobs:
             // Log the number of current approvals
             console.log(`Number of current approvals: ${approvalsLength}`);
 
-            // Return both approvals and slackUser RSW comment for push
+            // Set outputs for next steps
             return { approvals: approvalsLength, slackUser };
+
+        outputs:
+          approvals: ${{ steps.approval_check.outputs.approvals }}
+          slackUser: ${{ steps.approval_check.outputs.slackUser }}
 
       - name: Exit if approval count is not met
         uses: actions/github-script@v7
@@ -49,9 +50,8 @@ jobs:
             const approvals = parseInt(`${{ steps.approval_check.outputs.approvals }}`);
             const required = parseInt(`${{ env.REQUIRED_APPROVALS }}`);
 
-            console.log(`Debugging 1: steps.approval_check.outputs.approvals: ${steps.approval_check.outputs.approvals}`);
-            console.log(`Debugging 2: steps.approval_check.outputs.approvals: ${approvals}`);
-            console.log(`Debugging 3: env.REQUIRED_APPROVALS: ${required}`);
+            console.log(`Debugging 1: steps.approval_check.outputs.approvals: ${approvals}`);
+            console.log(`Debugging 2: env.REQUIRED_APPROVALS: ${required}`);
           
             if (approvals !== required) {
               console.log("Approval count not met, stopping action.");
