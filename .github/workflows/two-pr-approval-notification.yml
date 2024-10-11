@@ -16,6 +16,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string  # Ensure output is in string format
+          retries: 3  # Retry the action 3 times if it fails
+          retry-exempt-status-codes: 400,401,403  # Do not retry if these status codes are encountered
           script: |
             const approvalsLength = 2;
 
@@ -26,24 +29,25 @@ jobs:
             const slackUser = githubToSlackMap["Rspoon3"] || null;
 
             if (!slackUser) {
-              console.log(`No Slack mapping found for GitHub user: Rspoon3`);
+              console.log(`No Slack mapping found for GitHub user: ${prCreator}`);
               return { approvals: 0 };
             }
 
             // Log the number of current approvals
             console.log(`Number of current approvals: ${approvalsLength}`);
 
-            // Return approvals and slackUser to be used in the next steps
-            return { approvals: approvalsLength, slackUser };
+            // Set the outputs for next steps
+            core.setOutput("approvals", approvalsLength);
+            core.setOutput("slackUser", slackUser);
 
       - name: Exit if approval count is not met
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const approvals = parseInt(steps.approval_check.outputs.approvals);
+            const approvals = parseInt(core.getInput('approvals')) || 404;
             const required = parseInt(process.env.REQUIRED_APPROVALS);
-            const slackUser = steps.approval_check.outputs.slackUser;
+            const slackUser = core.getInput('slackUser');
 
             console.log(`Approvals: ${approvals}, Required: ${required}`);
             console.log(`Slack User: ${slackUser}`);
@@ -60,9 +64,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const approvals = parseInt(steps.approval_check.outputs.approvals);
+            const approvals = parseInt(core.getInput('approvals')) || 0;
             const required = parseInt(process.env.REQUIRED_APPROVALS);
-            const slackUser = steps.approval_check.outputs.slackUser;
+            const slackUser = core.getInput('slackUser');
 
             console.log(`Approvals slack: ${approvals}, Required: ${required}`);
             console.log(`Slack User slack: ${slackUser}`);
