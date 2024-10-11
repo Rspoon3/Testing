@@ -46,7 +46,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require('@actions/core');
             const approvals = parseInt(core.getInput('approvals')) || 0;
             const required = parseInt(process.env.REQUIRED_APPROVALS);
             const slackUser = core.getInput('slackUser');
@@ -66,7 +65,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require('@actions/core');
             const approvals = parseInt(core.getInput('approvals')) || 0;
             const required = parseInt(process.env.REQUIRED_APPROVALS);
             const slackUser = core.getInput('slackUser');
