@@ -51,7 +51,7 @@ jobs:
 
             console.log(`Approvals: ${approvals}`);
             console.log(`Slack User: ${slackUser}`);
-            console.log("Required: ${required}");
+            console.log(`Required: ${required}`);
 
             if (approvals !== required) {
               console.log("Approval count not met, stopping action.");
@@ -65,16 +65,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const approvals = parseInt(core.getInput('approvals')) || 0;
+            const approvals = parseInt('${{ steps.approval_check.outputs.approvals }}') || 0;
+            const slackUser = parseInt('${{ steps.approval_check.outputs.slackUser }}');
             const required = parseInt(process.env.REQUIRED_APPROVALS);
-            const slackUser = core.getInput('slackUser');
 
-            console.log(`Approvals slack: ${approvals}, Required: ${required}`);
-            console.log(`Slack User slack: ${slackUser}`);
-
-            if (approvals !== required) {
-              console.log("Slack approval count not met, stopping action.");
-              process.exit(1);
-            } else {
-              console.log("Slack approval count met.");
-            }
+            console.log(`Approvals: ${approvals}`);
+            console.log(`Slack User: ${slackUser}`);
+            console.log(`Required: ${required}`);
