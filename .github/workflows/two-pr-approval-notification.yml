@@ -24,10 +24,10 @@ jobs:
             const githubToSlackMap = JSON.parse(process.env.GITHUB_TO_SLACK_MAP);
 
             // Get PR creator's GitHub username
-            const prCreator = context.payload.pull_request.user.login;
+            // const prCreator = context.payload.pull_request.user.login;
 
             // Get corresponding Slack ID
-            const slackUser = githubToSlackMap[prCreator] || null;
+            const slackUser = githubToSlackMap["Rspoon3"] || null;
 
             if (!slackUser) {
               console.log(`No Slack mapping found for GitHub user: ${prCreator}`);
@@ -40,7 +40,7 @@ jobs:
             // Log the number of current approvals
             console.log(`Number of current approvals: ${approvals.length}`);
 
-            // Return both approvals and slackUser
+            // Return both approvals and slackUser RSW comment for push
             return { approvals: approvalsTest, slackUser };
 
       - name: Exit if approval count is not met
