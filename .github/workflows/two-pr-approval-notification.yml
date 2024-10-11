@@ -49,7 +49,10 @@ jobs:
             const required = parseInt(process.env.REQUIRED_APPROVALS);
             const slackUser = core.getInput('slackUser');
 
+            const approvalsTwo = parseInt('${{ steps.approval_check.outputs.approvals }}') || 505;
+
             console.log(`Approvals: ${approvals}, Required: ${required}`);
+            console.log(`approvalsTwo: ${approvalsTwo}, Required: ${required}`);
             console.log(`Slack User: ${slackUser}`);
 
             if (approvals !== required) {
