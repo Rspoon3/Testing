@@ -20,6 +20,7 @@ jobs:
           retries: 3  # Retry the action 3 times if it fails
           retry-exempt-status-codes: 400,401,403  # Do not retry if these status codes are encountered
           script: |
+            const core = require('@actions/core');
             const approvalsLength = 2;
 
             // Parse GitHub to Slack mapping from the environment variable
@@ -40,18 +41,15 @@ jobs:
             core.setOutput("approvals", approvalsLength);
             core.setOutput("slackUser", slackUser);
 
-        outputs:
-          approvals: ${{ steps.approval_check.outputs.approvals }}
-          slackUser: ${{ steps.approval_check.outputs.slackUser }}
-
       - name: Exit if approval count is not met
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const approvals = parseInt(core.getInput('approvals', { required: true }));
+            const core = require('@actions/core');
+            const approvals = parseInt(core.getInput('approvals')) || 0;
             const required = parseInt(process.env.REQUIRED_APPROVALS);
-            const slackUser = core.getInput('slackUser', { required: true });
+            const slackUser = core.getInput('slackUser');
 
             console.log(`Approvals: ${approvals}, Required: ${required}`);
             console.log(`Slack User: ${slackUser}`);
@@ -68,9 +66,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const approvals = parseInt(core.getInput('approvals', { required: true }));
+            const core = require('@actions/core');
+            const approvals = parseInt(core.getInput('approvals')) || 0;
             const required = parseInt(process.env.REQUIRED_APPROVALS);
-            const slackUser = core.getInput('slackUser', { required: true });
+            const slackUser = core.getInput('slackUser');
 
             console.log(`Approvals slack: ${approvals}, Required: ${required}`);
             console.log(`Slack User slack: ${slackUser}`);
