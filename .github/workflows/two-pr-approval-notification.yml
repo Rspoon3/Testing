@@ -45,15 +45,13 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const approvals = parseInt(core.getInput('approvals')) || 404;
+            const approvals = parseInt('${{ steps.approval_check.outputs.approvals }}') || 0;
+            const slackUser = parseInt('${{ steps.approval_check.outputs.slackUser }}');
             const required = parseInt(process.env.REQUIRED_APPROVALS);
-            const slackUser = core.getInput('slackUser');
 
-            const approvalsTwo = parseInt('${{ steps.approval_check.outputs.approvals }}') || 505;
-
-            console.log(`Approvals: ${approvals}, Required: ${required}`);
-            console.log(`approvalsTwo: ${approvalsTwo}, Required: ${required}`);
+            console.log(`Approvals: ${approvals}`);
             console.log(`Slack User: ${slackUser}`);
+            console.log("Required: ${required}");
 
             if (approvals !== required) {
               console.log("Approval count not met, stopping action.");
