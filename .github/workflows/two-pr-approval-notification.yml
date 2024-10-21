@@ -60,6 +60,7 @@ jobs:
             }
 
       - name: Send message to Slack
+        if: ${{ parseInt(steps.approval_check.outputs.approvals) == env.REQUIRED_APPROVALS && steps.approval_check.outputs.slackUser }}
         uses: actions/github-script@v7
         with:
           script: |
