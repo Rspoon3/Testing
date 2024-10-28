@@ -1,22 +1,33 @@
 //
-//  PhoneNumberFormatStyle.swift
+//  PhoneNumberFormatStyle 2.swift
 //  Testing
 //
-//  Created by Ricky on 10/1/24.
+//  Created by Ricky on 10/28/24.
 //
 
-import RegexBuilder
+
+
+
 import Foundation
-//
-//// Define a custom FormatStyle for formatting phone numbers
-//struct PhoneNumberFormatStyle: FormatStyle {
-//    // Define the input and output types of the format style
-//    typealias FormatInput = String
-//    typealias FormatOutput = String
-//
-//    // Implement the format method that applies the USA phone number format
-    func format(_ value: String) -> String {
-        // Remove all non-digit characters
+import RegexBuilder
+
+// Define different format styles for PhoneNumber
+public struct PhoneNumberFormatStyle: FormatStyle, Codable {
+    
+    public enum Style: String, Codable {
+        case areaCode
+        case excludingAreaCode
+        case full
+    }
+    
+    public var style: Style
+    
+    public init(_ style: Style) {
+        self.style = style
+    }
+    
+    // Implement the format method based on the chosen style
+    public func format(_ value: String) -> String? {
         let cleanedInput = value.replacingOccurrences(of: "\\D", with: "", options: .regularExpression)
         
         // Using RegexBuilder to create more readable and safe patterns
@@ -36,62 +47,75 @@ import Foundation
             }
         }
         
-        // Full phone number (xxx) xxx-xxxx
-        guard let match = try? fullPhonePattern.firstMatch(in: cleanedInput) else {
-            // Return the cleaned input if it's too short for formatting
-            return cleanedInput
-        }
-        
-        let areaCode = match.1
-        let exchange = match.2
-        let lineNumber = match.3
-        
-        if let exchange, !exchange.isEmpty {
-            if let lineNumber, !lineNumber.isEmpty {
-                return "(\(areaCode)) \(exchange)-\(lineNumber)"
-            } else {
-                return "(\(areaCode)) \(exchange)"
+        switch style {
+        case .areaCode:
+            guard let match = try? fullPhonePattern.firstMatch(in: cleanedInput) else {
+                return value
             }
-        } else {
-            return "(\(areaCode))"
+
+            return String(match.1)
+        case .excludingAreaCode:
+            // Excluding area code xxx-xxxx
+            guard let match = try? fullPhonePattern.firstMatch(in: cleanedInput) else {
+                return nil
+            }
+            
+            guard let exchange = match.2, !exchange.isEmpty else { return nil }
+            
+            if let lineNumber = match.3, !lineNumber.isEmpty {
+                return "\(exchange)-\(lineNumber)"
+            } else {
+                return String(exchange)
+            }
+        case .full:
+            // Full phone number (xxx) xxx-xxxx
+            guard let match = try? fullPhonePattern.firstMatch(in: cleanedInput) else {
+                // Return the cleaned input if it's too short for formatting
+                return cleanedInput
+            }
+            
+            let areaCode = match.1
+            
+            if let exchange = match.2, !exchange.isEmpty {
+                if let lineNumber = match.3, !lineNumber.isEmpty {
+                    return "(\(areaCode)) \(exchange)-\(lineNumber)"
+                } else {
+                    return "(\(areaCode)) \(exchange)"
+                }
+            } else {
+                return "(\(areaCode))"
+            }
         }
     }
-//}
-//
-//// Extend String so that it can easily use the custom PhoneNumberFormatStyle
-//extension FormatStyle where Self == PhoneNumberFormatStyle {
-//    static var phoneNumber: PhoneNumberFormatStyle {
-//        return PhoneNumberFormatStyle()
-//    }
-//}
+    
+    // Implement the required Encodable and Decodable conformance
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(style.rawValue)
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let styleString = try container.decode(String.self)
+        if let style = Style(rawValue: styleString) {
+            self.style = style
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid format style")
+        }
+    }
+}
 
-
-
-
-
-
-
-
-
-
-
-
-//extension PhoneNumber {
-//    public func formatted() -> String? {
-//        guard let areaCode else { return nil }
-//
-//        guard areaCode.count == 3 else {
-//            return "\(areaCode)"
-//        }
-//
-//        if let exchange, !exchange.isEmpty {
-//            if let number, !number.isEmpty {
-//                return "(\(areaCode)) \(exchange)-\(number)"
-//            } else {
-//                return "(\(areaCode)) \(exchange)"
-//            }
-//        } else {
-//            return "(\(areaCode))"
-//        }
-//    }
-//}
+// Extension to support `.areaCode()` and `.full()` format styles
+extension FormatStyle where Self == PhoneNumberFormatStyle {
+    public static var areaCode: PhoneNumberFormatStyle {
+        PhoneNumberFormatStyle(.areaCode)
+    }
+    
+    public static var excludingAreaCode: PhoneNumberFormatStyle {
+        PhoneNumberFormatStyle(.excludingAreaCode)
+    }
+    
+    public static var full: PhoneNumberFormatStyle {
+        PhoneNumberFormatStyle(.full)
+    }
+}
