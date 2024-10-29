@@ -1,11 +1,9 @@
 //
-//  PhoneNumberFormatStyle 2.swift
+//  PhoneNumberFormatStyle.swift
 //  Testing
 //
 //  Created by Ricky on 10/28/24.
 //
-
-
 
 
 import Foundation
@@ -107,15 +105,7 @@ public struct PhoneNumberFormatStyle: FormatStyle, Codable {
 
 // Extension to support `.areaCode()` and `.full()` format styles
 extension FormatStyle where Self == PhoneNumberFormatStyle {
-    public static var areaCode: PhoneNumberFormatStyle {
-        PhoneNumberFormatStyle(.areaCode)
-    }
-    
-    public static var excludingAreaCode: PhoneNumberFormatStyle {
-        PhoneNumberFormatStyle(.excludingAreaCode)
-    }
-    
-    public static var full: PhoneNumberFormatStyle {
-        PhoneNumberFormatStyle(.full)
+    public static func phoneNumber(_ style: PhoneNumberFormatStyle.Style) -> PhoneNumberFormatStyle {
+        PhoneNumberFormatStyle(style)
     }
 }

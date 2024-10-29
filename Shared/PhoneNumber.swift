@@ -20,15 +20,9 @@ public struct PhoneNumber: Codable {
     public let number: Int
     
     // Static method to format a phone number using the full format (xxx) xxx-xxxx
-    public func formatted(_ formatStyle: PhoneNumberFormatStyle = .full) -> String? {
-        switch formatStyle.style {
-        case .areaCode:
-            return String(areaCode)
-        case .excludingAreaCode:
-            return "\(exchange)-\(number)"
-        case .full:
-            return "(\(areaCode)) \(exchange)-\(number)"
-        }
+    public func formatted(_ style: PhoneNumberFormatStyle.Style = .full) -> String? {
+        let joined = [areaCode, exchange, number].map { String($0) }.joined()
+        return joined.formatted(.phoneNumber(style))
     }
     
     // MARK: - Initializer
