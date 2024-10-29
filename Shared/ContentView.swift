@@ -16,15 +16,43 @@ struct ContentView: View {
 //        Card(id: 3, number: 3),
 //    ]
 
+    @AppStorage("score") private var score: Double = 0
     @AppStorage("totalSwipes") private var totalSwipes = 0
     @AppStorage("correctSwipes") private var correctSwipes = 0
     @AppStorage("currentIndex") private var currentIndex = 1
     @AppStorage("nextNumber") private var nextNumber = 4
     
+    @State private var indicatorState: IndicatorState = .idle
+    
+    @State private var idleTask: Task<Void, Never>?
+    
+    enum IndicatorState {
+        case idle
+        case swiping
+        case correct
+        case incorrect
+    }
+    
     private var correctPercentage: Double {
          guard totalSwipes > 0 else { return 0.0 }
          return (Double(correctSwipes) / Double(totalSwipes))
      }
+    
+    private var indicatorSymbol: String {
+        switch indicatorState {
+        case .idle, .swiping: return ""
+        case .correct: return "checkmark"
+        case .incorrect: return "xmark"
+        }
+    }
+    
+    private var indicatorColor: Color {
+        switch indicatorState {
+        case .idle, .swiping: return .clear
+        case .correct: return .green
+        case .incorrect: return .red
+        }
+    }
     
     @State private var cards: [Card]
 
@@ -35,8 +63,6 @@ struct ContentView: View {
             _cards = State(initialValue: (0..<3).map { i in
                 Card(id: currentIndex + i + 1)
             })
-            
-            print(cards.map(\.number))
         }
 
     var body: some View {
@@ -45,7 +71,27 @@ struct ContentView: View {
                 MovingNumbersBackground()
                 
                 VStack {
-                    Text(correctPercentage.formatted(.percent))
+                    
+                    HStack {
+                        Text(correctPercentage.formatted(.percent.precision(.fractionLength(0...2))))
+                            .contentTransition(.numericText(value: correctPercentage))
+                        
+                        Text(score.formatted(.percent.precision(.fractionLength(0...2))))
+                            .contentTransition(.numericText(value: score))
+                        
+                        if indicatorState == .correct || indicatorState == .incorrect {
+                            Image(systemName: indicatorSymbol)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                                .foregroundStyle(indicatorColor)
+                                .contentTransition(.symbolEffect(.replace))
+                                .transition(.opacity)
+                        } else {
+                            Color.clear
+                                .frame(width: 30, height: 30)
+                        }
+                    }
                     
                     ZStack {
                         ForEach(cards.reversed()) { card in
@@ -107,12 +153,24 @@ struct ContentView: View {
 //        }
 //    }
     
+    /// Low  k  (e.g., 50–100): Makes swipe count influence weaker, so accuracy dominates. Good if you want players with fewer swipes but high accuracy to rank well.
+    /// Medium  k  (e.g., 200–500): Offers a balance, letting both accuracy and swipe count impact the score.
+    /// High  k  (e.g., 1000+): Strongly favors experience, making it easier for players with high swipe counts to rank well, even with moderate accuracy.
+    private func updateScore() {
+        let k = 200.0
+        score = correctPercentage * (1 - exp(-Double(totalSwipes) / k))
+    }
+    
     private func updateCard(card: Card, with translation: CGSize) {
         if let index = cards.firstIndex(where: { $0.number == card.number }) {
             // Allow x offset to be the full horizontal translation
             // Clamp y offset to be within -150 and 150
             let clampedY = min(max(translation.height, -150), 150)
             cards[index].offset = CGSize(width: translation.width, height: clampedY)
+        }
+        
+        withAnimation {
+            indicatorState = .swiping
         }
     }
     
@@ -124,8 +182,20 @@ struct ContentView: View {
             // Check if the swipe direction matches the primality of the number
             let isCorrect = (swipedRight && card.isPrime) || (!swipedRight && !card.isPrime)
             totalSwipes += 1
-            if isCorrect { correctSwipes += 1 }
             
+            if isCorrect {
+                correctSwipes += 1
+//                withAnimation(.linear(duration: 1)) {
+                    indicatorState = .correct
+//                }
+            } else {
+//                withAnimation(.linear(duration: 1)) {
+                    indicatorState = .incorrect
+//                }
+            }
+            
+            
+            updateScore()
             
             // Move the card off-screen first
             withAnimation(.linear(duration: 0.4)) {
@@ -138,6 +208,14 @@ struct ContentView: View {
             // Delay the removal and addition of a new card to allow the animation to complete
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 removeAndAddNewCard(card)
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                if indicatorState != .swiping {
+                    withAnimation {
+                        indicatorState = .idle
+                    }
+                }
             }
         } else {
             resetCard(card)
