@@ -21,9 +21,9 @@ final class PhoneNumberFormatStyleTests: XCTestCase {
         XCTAssertEqual("(123) 456-78", "12345678".formatted(.phoneNumber(.full)) ?? "")
         XCTAssertEqual("(123) 456-789", "123456789".formatted(.phoneNumber(.full)) ?? "")
         XCTAssertEqual("(123) 456-7890", "1234567890".formatted(.phoneNumber(.full)) ?? "")
-        XCTAssertEqual("(123) 456-7890", "12345678901".formatted(.phoneNumber(.full)) ?? "")
-        XCTAssertEqual("(123) 456-7890", "123456789012".formatted(.phoneNumber(.full)) ?? "")
-        XCTAssertEqual("(123) 456-7890", "1234567890123".formatted(.phoneNumber(.full)) ?? "")
+        XCTAssertEqual("(923) 456-7890", "92345678901".formatted(.phoneNumber(.full)) ?? "")
+        XCTAssertEqual("(923) 456-7890", "923456789012".formatted(.phoneNumber(.full)) ?? "")
+        XCTAssertEqual("(923) 456-7890", "9234567890123".formatted(.phoneNumber(.full)) ?? "")
     }
     
     func testAreaCodeFormatting(){
@@ -37,9 +37,9 @@ final class PhoneNumberFormatStyleTests: XCTestCase {
         XCTAssertEqual("123", "12345678".formatted(.phoneNumber(.areaCode)) ?? "")
         XCTAssertEqual("123", "123456789".formatted(.phoneNumber(.areaCode)) ?? "")
         XCTAssertEqual("123", "1234567890".formatted(.phoneNumber(.areaCode)) ?? "")
-        XCTAssertEqual("123", "12345678901".formatted(.phoneNumber(.areaCode)) ?? "")
-        XCTAssertEqual("123", "123456789012".formatted(.phoneNumber(.areaCode)) ?? "")
-        XCTAssertEqual("123", "1234567890123".formatted(.phoneNumber(.areaCode)) ?? "")
+        XCTAssertEqual("923", "92345678901".formatted(.phoneNumber(.areaCode)) ?? "")
+        XCTAssertEqual("923", "923456789012".formatted(.phoneNumber(.areaCode)) ?? "")
+        XCTAssertEqual("923", "9234567890123".formatted(.phoneNumber(.areaCode)) ?? "")
     }
     
     func testExcludingAreaCodeFormatting(){
@@ -53,8 +53,14 @@ final class PhoneNumberFormatStyleTests: XCTestCase {
         XCTAssertEqual("456-78", "12345678".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
         XCTAssertEqual("456-789", "123456789".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
         XCTAssertEqual("456-7890", "1234567890".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
-        XCTAssertEqual("456-7890", "12345678901".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
-        XCTAssertEqual("456-7890", "123456789012".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
-        XCTAssertEqual("456-7890", "1234567890123".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
+        XCTAssertEqual("456-7890", "92345678901".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
+        XCTAssertEqual("456-7890", "923456789012".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
+        XCTAssertEqual("456-7890", "9234567890123".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
+    }
+    
+    func testDropsCountryCode() {
+        XCTAssertEqual("(234) 567-8901", "1234567890123".formatted(.phoneNumber(.full)) ?? "")
+        XCTAssertEqual("234", "1234567890123".formatted(.phoneNumber(.areaCode)) ?? "")
+        XCTAssertEqual("567-8901", "1234567890123".formatted(.phoneNumber(.excludingAreaCode)) ?? "")
     }
 }

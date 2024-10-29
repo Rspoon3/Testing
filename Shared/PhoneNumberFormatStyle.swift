@@ -26,7 +26,11 @@ public struct PhoneNumberFormatStyle: FormatStyle, Codable {
     
     // Implement the format method based on the chosen style
     public func format(_ value: String) -> String? {
-        let cleanedInput = value.replacingOccurrences(of: "\\D", with: "", options: .regularExpression)
+        var cleanedInput = value.replacingOccurrences(of: "\\D", with: "", options: .regularExpression)
+        
+        if cleanedInput.count > 10, cleanedInput.first == "1" {
+            cleanedInput = String(cleanedInput.dropFirst())
+        }
         
         // Using RegexBuilder to create more readable and safe patterns
         let fullPhonePattern = Regex {

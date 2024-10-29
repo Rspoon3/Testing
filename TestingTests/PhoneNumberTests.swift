@@ -9,8 +9,6 @@ import XCTest
 @testable import Testing
 
 final class PhoneNumberTests: XCTestCase {
-    private let utility = PhoneNumberUtility()
-
     func testPassingInitializer() throws {
         _ = try PhoneNumber(areaCode: "123", exchange: "456", number: "7890")
         _ = try PhoneNumber(areaCode: 123, exchange: 456, number: 7890)
