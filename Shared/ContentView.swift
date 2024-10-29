@@ -10,36 +10,64 @@ import SwiftUI
 import SwiftUI
 
 struct ContentView: View {
-    @State private var cards: [Card] = [
-        Card(id: 1, number: 1),
-        Card(id: 2, number: 2),
-        Card(id: 3, number: 3),
-    ]
+//    @State private var cards: [Card] = [
+//        Card(id: 1, number: 1),
+//        Card(id: 2, number: 2),
+//        Card(id: 3, number: 3),
+//    ]
+
+    @AppStorage("totalSwipes") private var totalSwipes = 0
+    @AppStorage("correctSwipes") private var correctSwipes = 0
+    @AppStorage("currentIndex") private var currentIndex = 1
+    @AppStorage("nextNumber") private var nextNumber = 4
     
-    @State private var currentIndex = 1
-    @State private var nextNumber = 4  // Keeps track of the next number to display
+    private var correctPercentage: Double {
+         guard totalSwipes > 0 else { return 0.0 }
+         return (Double(correctSwipes) / Double(totalSwipes))
+     }
     
+    @State private var cards: [Card]
+
+        init() {
+            // Initialize the cards array based on saved currentIndex and nextNumber
+            let currentIndex = UserDefaults.standard.integer(forKey: "currentIndex")
+            let nextNumber = UserDefaults.standard.integer(forKey: "nextNumber") > 0 ? UserDefaults.standard.integer(forKey: "nextNumber") : 4
+            _cards = State(initialValue: (0..<3).map { i in
+                Card(id: currentIndex + i + 1)
+            })
+            
+            print(cards.map(\.number))
+        }
+
     var body: some View {
         ZStack {
             GeometryReader { geo in
                 MovingNumbersBackground()
                 
-                ForEach(cards.reversed()) { card in
-                    CardView(card: card, width: geo.size.width - 40)
-                        .offset(x: card.offset.width, y: card.offset.height)
-                        .rotationEffect(.degrees(Double(card.offset.width / 20)))
-                        .gesture(
-                            DragGesture()
-                                .onChanged { gesture in
-                                    updateCard(card: card, with: gesture.translation)
-                                }
-                                .onEnded { _ in
-                                    endSwipe(card: card)
-                                }
-                        )
-                        .animation(.spring())
-                        .opacity(opacity(value: card.id))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                VStack {
+                    Text(correctPercentage.formatted(.percent))
+                    
+                    ZStack {
+                        ForEach(cards.reversed()) { card in
+                            let isTopCard = card.number == cards.first?.number
+                            CardView(card: card, width: geo.size.width - 40)
+                                .offset(x: card.offset.width, y: card.offset.height)
+                                .rotationEffect(.degrees(Double(card.offset.width / 30)))
+                                .gesture(
+                                    DragGesture()
+                                        .onChanged { gesture in
+                                            updateCard(card: card, with: gesture.translation)
+                                        }
+                                        .onEnded { _ in
+                                            endSwipe(card: card)
+                                        }
+                                )
+                                .opacity(isTopCard ? 1 : calculateOpacity(for: cards.first?.offset ?? .zero))
+                                .animation(.spring())
+                            //                        .opacity(opacity(value: card.number))
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        }
+                    }
                 }
             }
         }
@@ -54,16 +82,61 @@ struct ContentView: View {
             return 0
         }
     }
+    
+    private func calculateOpacity(for offset: CGSize) -> Double {
+        // Calculate distance from the center
+        let maxDistance: CGFloat = 300 // Adjust this based on desired opacity range
+        let distance = min(maxDistance, sqrt(offset.width * offset.width + offset.height * offset.height))
+        
+        // Interpolate opacity from 0.25 to 1 based on distance from the center
+        return 0.25 + Double(distance / maxDistance) * 0.75
+    }
+    
+//    private func calculateOpacity(for offset: CGSize) -> Double {
+//         // Calculate distance from the center
+//         let maxDistance: CGFloat = 300 // Adjust this based on desired opacity range
+//         let distance = sqrt(offset.width * offset.width + offset.height * offset.height)
+//         
+//         // Scale the opacity based on distance, with max opacity at the center and decreasing
+//         return 1 - max(0.1, Double(1 - distance / maxDistance))
+//     }
 
+//    private func updateCard(card: Card, with translation: CGSize) {
+//        if let index = cards.firstIndex(where: { $0.number == card.number }) {
+//            cards[index].offset = translation
+//        }
+//    }
+    
     private func updateCard(card: Card, with translation: CGSize) {
-        if let index = cards.firstIndex(where: { $0.id == card.id }) {
-            cards[index].offset = translation
+        if let index = cards.firstIndex(where: { $0.number == card.number }) {
+            // Allow x offset to be the full horizontal translation
+            // Clamp y offset to be within -150 and 150
+            let clampedY = min(max(translation.height, -150), 150)
+            cards[index].offset = CGSize(width: translation.width, height: clampedY)
         }
     }
-
+    
     private func endSwipe(card: Card) {
         if abs(card.offset.width) > 150 {
-            withAnimation {
+            // Determine swipe direction
+            let swipedRight = card.offset.width > 0
+            
+            // Check if the swipe direction matches the primality of the number
+            let isCorrect = (swipedRight && card.isPrime) || (!swipedRight && !card.isPrime)
+            totalSwipes += 1
+            if isCorrect { correctSwipes += 1 }
+            
+            
+            // Move the card off-screen first
+            withAnimation(.linear(duration: 0.4)) {
+                let direction: CGFloat = card.offset.width > 0 ? 1 : -1
+                if let index = cards.firstIndex(where: { $0.number == card.number }) {
+                    cards[index].offset.width += direction * 500 // Move it far off-screen
+                }
+            }
+            
+            // Delay the removal and addition of a new card to allow the animation to complete
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 removeAndAddNewCard(card)
             }
         } else {
@@ -73,17 +146,17 @@ struct ContentView: View {
 
     private func removeAndAddNewCard(_ card: Card) {
         // Remove the swiped card
-        cards.removeAll { $0.id == card.id }
+        cards.removeAll { $0.number == card.number }
         
         // Add a new card with the next number
-        cards.append(Card(id: nextNumber, number: nextNumber))
+        cards.append(Card(id: nextNumber))
         nextNumber += 1
         
         currentIndex += 1
     }
 
     private func resetCard(_ card: Card) {
-        if let index = cards.firstIndex(where: { $0.id == card.id }) {
+        if let index = cards.firstIndex(where: { $0.number == card.number }) {
             cards[index].offset = .zero
         }
     }
@@ -119,15 +192,14 @@ struct CardView: View {
 }
 
 struct Card: Identifiable {
-    let id: Int
+    let id = UUID()
     let number: Int
     var offset: CGSize = .zero
     let imageNumber: Int
     let isPrime: Bool
     
-    init(id: Int, number: Int) {
-        self.id = id
-        self.number = number
+    init(id: Int) {
+        self.number = id
         imageNumber = (id % 19) + 1
         
         
