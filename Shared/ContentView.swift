@@ -138,21 +138,6 @@ struct ContentView: View {
         return 0.25 + Double(distance / maxDistance) * 0.75
     }
     
-//    private func calculateOpacity(for offset: CGSize) -> Double {
-//         // Calculate distance from the center
-//         let maxDistance: CGFloat = 300 // Adjust this based on desired opacity range
-//         let distance = sqrt(offset.width * offset.width + offset.height * offset.height)
-//         
-//         // Scale the opacity based on distance, with max opacity at the center and decreasing
-//         return 1 - max(0.1, Double(1 - distance / maxDistance))
-//     }
-
-//    private func updateCard(card: Card, with translation: CGSize) {
-//        if let index = cards.firstIndex(where: { $0.number == card.number }) {
-//            cards[index].offset = translation
-//        }
-//    }
-    
     /// Low  k  (e.g., 50–100): Makes swipe count influence weaker, so accuracy dominates. Good if you want players with fewer swipes but high accuracy to rank well.
     /// Medium  k  (e.g., 200–500): Offers a balance, letting both accuracy and swipe count impact the score.
     /// High  k  (e.g., 1000+): Strongly favors experience, making it easier for players with high swipe counts to rank well, even with moderate accuracy.
@@ -249,16 +234,10 @@ struct CardView: View {
             .resizable()
             .scaledToFill()
             .frame(width: width, height: width * 1.5)
-//            .aspectRatio(3/4, contentMode: .fill)
-//            .aspectRatio(2 / 3, contentMode: .fit)
-//
-//            .containerRelativeFrame(.horizontal){ width, _ in width - 20 * 2 }
-
-//            .aspectRatio(0.5, contentMode: .fill)
             .blur(radius: 2)
             .overlay {
                 ZStack {
-                    Color.black.opacity(0.75)
+                    Color.black.opacity(0.6)
                     Text("\(card.number)")
                         .font(.system(size: 160, weight: .bold))
                         .foregroundColor(.white)
