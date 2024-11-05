@@ -17,7 +17,6 @@ struct HomeView: View {
             
             Spacer()
             
-            
             Button {
 
             } label:{
@@ -27,10 +26,12 @@ struct HomeView: View {
             }
             .buttonStyle(.plain)
             .padding(.vertical)
-            .background {
-                Capsule()
-                    .foregroundStyle(.white)
-            }
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule())
+//            .background {
+//                Capsule()
+//                    .foregroundStyle(.white)
+//            }
             
             Button {
 

@@ -1,5 +1,5 @@
 //
-//  FlashableColorView.swift
+//  FlashableImage.swift
 //  Testing
 //
 //  Created by Ricky on 11/2/24.
@@ -7,13 +7,13 @@
 
 import SwiftUI
 
-struct FlashableColorView: View {
-    let colorType: FlashableColor
+struct FlashableImage: View {
+    let index: Int
     let opacity: Double
-    @Binding var showBorder: Bool
+    let showBorder: Bool
     
     var body: some View {
-        Image("picture\(colorType.rawValue)")
+        Image("picture\(index)")
             .resizable()
             .scaledToFit()
             .cornerRadius(10)
@@ -22,6 +22,7 @@ struct FlashableColorView: View {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(showBorder ? Color.yellow : Color.clear, lineWidth: 10)
             )
-            .animation(.linear(duration: 0.3), value: showBorder)
+            .animation(.spring(duration: 0.2), value: showBorder)
+
     }
 }

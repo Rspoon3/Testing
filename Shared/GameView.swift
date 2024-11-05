@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GameView: View {
     @State private var viewModel = GameViewModel()
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -25,15 +26,16 @@ struct GameView: View {
             VStack(spacing: 20) {
                 HStack(spacing: 20) {
                     ForEach(0..<2) { index in
-                        FlashableColorView(
-                            colorType: viewModel.colors[index],
+                        FlashableImage(
+                            index: index,
                             opacity: viewModel.currentPlayer == .user ? 1 : 0.7,
-                            showBorder: $viewModel.showBorders[index]
+                            showBorder: viewModel.selectedIndex == index
                         )
+                        .overlay(Text(index.formatted()).font(.largeTitle).foregroundStyle(.white))
                         .onTapGesture {
                             if viewModel.canTap {
                                 Task {
-                                    await viewModel.handleUserTap(color: viewModel.colors[index])
+                                    await viewModel.handleUserTap(index: index)
                                 }
                             }
                         }
@@ -42,15 +44,16 @@ struct GameView: View {
                 
                 HStack(spacing: 20) {
                     ForEach(2..<4) { index in
-                        FlashableColorView(
-                            colorType: viewModel.colors[index],
+                        FlashableImage(
+                            index: index,
                             opacity: viewModel.currentPlayer == .user ? 1 : 0.7,
-                            showBorder: $viewModel.showBorders[index]
+                            showBorder: viewModel.selectedIndex == index
                         )
+                        .overlay(Text(index.formatted()).font(.largeTitle).foregroundStyle(.white))
                         .onTapGesture {
                             if viewModel.canTap {
                                 Task {
-                                    await viewModel.handleUserTap(color: viewModel.colors[index])
+                                    await viewModel.handleUserTap(index: index)
                                 }
                             }
                         }
@@ -68,8 +71,18 @@ struct GameView: View {
         )
         .overlay {
             if viewModel.gameEnded {
-                Color.black.opacity(0.75)
-                    .transition(.opacity)
+                ZStack {
+                    Color.black.opacity(0.5)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    GameOverView {
+                        Task {
+                            await viewModel.resetGame()
+                        }
+                    } end: {
+                        dismiss()
+                    }
+                }
             }
         }
         .task {
