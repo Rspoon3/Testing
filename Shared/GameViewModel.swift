@@ -118,7 +118,15 @@ final class GameViewModel {
         userSequence = []
                     
         round += 1
-        setSequence(count: sequenceCount)
+        
+        switch difficulty {
+        case .easy:
+            let randomInt = possibleValues.filter { $0 != sequence.last }.randomElement()!
+            sequence.append(randomInt)
+        case .medium, .hard:
+            setSequence(count: sequenceCount)
+        }
+        
         try? await Task.sleep(for: .seconds(1))
 
         await flashSequence()
@@ -132,14 +140,14 @@ final class GameViewModel {
     
     private func setSequence(count: Int) {
         switch difficulty {
-        case .easy:
+        case .easy: // Don't repeat the same number
             sequence.removeAll()
             
             for _ in 0..<count {
                 let randomInt = possibleValues.filter { $0 != sequence.last }.randomElement()!
                 sequence.append(randomInt)
             }
-        case .medium, .hard:
+        case .medium, .hard: // Can repeat the same number
             sequence = Array(0..<count).map { _ in
                 possibleValues.randomElement()!
             }

@@ -20,6 +20,7 @@ struct GameView: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(.white)
                 .contentTransition(.numericText(value: Double(viewModel.round)))
+                .animation(.default, value: viewModel.round)
             
             PlayerSegmentedPicker(selectedPlayer: viewModel.currentPlayer)
             

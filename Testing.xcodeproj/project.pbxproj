@@ -22,6 +22,10 @@
 		9413DDD92CD7E1C800427F31 /* GameOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9413DDD82CD7E16000427F31 /* GameOverView.swift */; };
 		9413DDE72CD7EBBA00427F31 /* PersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9413DDE62CD7EBBA00427F31 /* PersistenceManager.swift */; };
 		9413DDE82CD7EBBA00427F31 /* PersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9413DDE62CD7EBBA00427F31 /* PersistenceManager.swift */; };
+		9413DFFC2CD9C18800427F31 /* MemoryColorsTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9413DFFB2CD9C18800427F31 /* MemoryColorsTitleView.swift */; };
+		9413DFFD2CD9C18800427F31 /* MemoryColorsTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9413DFFB2CD9C18800427F31 /* MemoryColorsTitleView.swift */; };
+		9413DFFF2CD9D3B600427F31 /* CapsuleButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9413DFFE2CD9D3B600427F31 /* CapsuleButtonStyle.swift */; };
+		9413E0002CD9D3B600427F31 /* CapsuleButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9413DFFE2CD9D3B600427F31 /* CapsuleButtonStyle.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -58,6 +62,8 @@
 		9413DD892CD719C700427F31 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		9413DDD82CD7E16000427F31 /* GameOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverView.swift; sourceTree = "<group>"; };
 		9413DDE62CD7EBBA00427F31 /* PersistenceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceManager.swift; sourceTree = "<group>"; };
+		9413DFFB2CD9C18800427F31 /* MemoryColorsTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryColorsTitleView.swift; sourceTree = "<group>"; };
+		9413DFFE2CD9D3B600427F31 /* CapsuleButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapsuleButtonStyle.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
@@ -133,6 +139,8 @@
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				9413DD892CD719C700427F31 /* HomeView.swift */,
+				9413DFFE2CD9D3B600427F31 /* CapsuleButtonStyle.swift */,
+				9413DFFB2CD9C18800427F31 /* MemoryColorsTitleView.swift */,
 				A6A262D524E0BCB20091EA92 /* GameView.swift */,
 				9413DDD82CD7E16000427F31 /* GameOverView.swift */,
 				9413DD742CD7113D00427F31 /* PlayerSegmentedPicker.swift */,
@@ -355,12 +363,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				9413DD8A2CD719C700427F31 /* HomeView.swift in Sources */,
+				9413E0002CD9D3B600427F31 /* CapsuleButtonStyle.swift in Sources */,
 				9413DDE72CD7EBBA00427F31 /* PersistenceManager.swift in Sources */,
 				9413DD762CD7113D00427F31 /* PlayerSegmentedPicker.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* GameView.swift in Sources */,
 				9413DD722CD70AB900427F31 /* GameViewModel.swift in Sources */,
 				9413DD792CD7144800427F31 /* Player.swift in Sources */,
 				9413DD6F2CD7093500427F31 /* Difficulty.swift in Sources */,
+				9413DFFD2CD9C18800427F31 /* MemoryColorsTitleView.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				9413DDD92CD7E1C800427F31 /* GameOverView.swift in Sources */,
 				9413DD202CD6F96C00427F31 /* FlashableImage.swift in Sources */,
@@ -371,11 +381,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9413DFFC2CD9C18800427F31 /* MemoryColorsTitleView.swift in Sources */,
 				9413DD8B2CD719C700427F31 /* HomeView.swift in Sources */,
 				9413DD752CD7113D00427F31 /* PlayerSegmentedPicker.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* GameView.swift in Sources */,
 				9413DD732CD70AB900427F31 /* GameViewModel.swift in Sources */,
 				9413DD782CD7144800427F31 /* Player.swift in Sources */,
+				9413DFFF2CD9D3B600427F31 /* CapsuleButtonStyle.swift in Sources */,
 				9413DD702CD7093500427F31 /* Difficulty.swift in Sources */,
 				9413DDE82CD7EBBA00427F31 /* PersistenceManager.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,

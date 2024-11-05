@@ -10,69 +10,22 @@ import SwiftUI
 struct HomeView: View {
     @State private var show = false
     @Namespace private var animation
-
+    
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             MemoryColorsTitleView()
             
             Spacer()
             
-            Button {
-
-            } label:{
-                Text("Leaderboard")
-                    .font(.largeTitle)
-                    .frame(maxWidth: 300)
-            }
-            .buttonStyle(.plain)
-            .padding(.vertical)
-            .background(.ultraThinMaterial)
-            .clipShape(Capsule())
-//            .background {
-//                Capsule()
-//                    .foregroundStyle(.white)
-//            }
-            
-            Button {
-
-            } label:{
-                Text("Settings")
-                    .font(.largeTitle)
-                    .frame(maxWidth: 300)
-            }
-            .buttonStyle(.plain)
-            .padding(.vertical)
-            .background {
-                Capsule()
-                    .foregroundStyle(.white)
-            }
-
-            Spacer()
-
-            Button {
-                show = true
-            } label: {
-                VStack {
-                    Text("Play!")
-                        .font(.largeTitle)
-                        .fontWeight(.black)
-                        
-                    Text("High Score: Round 8")
-                        .padding()
-                        .background(Color.blue)
-                        .font(.headline)
-                        .cornerRadius(8)
-                }
-                .foregroundStyle(.white)
-                .padding()
-                .background(Color.green)
-                .cornerRadius(12)
-            }
-            .padding(.bottom, 50)
-            .backDeployedMatchedTransitionSource(
-                id: "play",
-                in: animation
-            )
+            settingsButton
+            leaderboardButton
+                .padding(.top, 10)
+            playButton
+                .padding(.top, 75)
+                .backDeployedMatchedTransitionSource(
+                    id: "play",
+                    in: animation
+                )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .fullScreenCover(isPresented: $show) {
@@ -89,41 +42,52 @@ struct HomeView: View {
                 .overlay(Color.black.opacity(0.3))
         )
     }
+    @State private var scale = false
+    
+    private var playButton: some View {
+        Button {
+            show = true
+        } label: {
+            VStack {
+                Text("Play!")
+                    .scaleEffect(scale ? 1.04 : 1)
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                            scale.toggle()
+                        }
+                    }
+                
+                Text("High Score: Round 8")
+                    .font(
+                        .system(
+                            size: 16,
+                            weight: .semibold,
+                            design: .rounded
+                        )
+                    )
+            }
+        }
+        .buttonStyle(CapsuleButtonStyle(backgroundColor: .green))
+    }
+    
+    private var settingsButton: some View {
+        Button("Settings") {
+            
+        }
+        .buttonStyle(CapsuleButtonStyle(backgroundColor: .blue))
+    }
+    
+    private var leaderboardButton: some View {
+        Button("Leaderboard") {
+            
+        }
+        .buttonStyle(CapsuleButtonStyle(backgroundColor: .orange))
+    }
 }
 
 #Preview {
     HomeView()
 }
-
-
-struct MemoryColorsTitleView: View {
-    var body: some View {
-        VStack(spacing: 8) {  // Vertical spacing between the two words
-            HStack(spacing: 2) {
-                ForEach("MEORY".map { String($0) }, id: \.self) { letter in
-                    Text(letter)
-                        .font(.title)
-                        .frame(width: 40, height: 40)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(4)
-                }
-            }
-            
-            HStack(spacing: 2) {
-                ForEach("PICTURES".map { String($0) }, id: \.self) { letter in
-                    Text(letter)
-                        .font(.title)
-                        .frame(width: 40, height: 40)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(4)
-                }
-            }
-        }
-    }
-}
-
 
 
 public extension View {
