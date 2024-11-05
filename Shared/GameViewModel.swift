@@ -188,11 +188,14 @@ public extension Logger {
 extension Logger: @unchecked Sendable {}
 
 
+import StoreKit
+
 /// An object that is responsible for prompting the user for a review if the acceptance criteria
 /// is met.
 @MainActor
 public struct ReviewManager {
     private let logger = Logger(category: ReviewManager.self)
+    private let persistenceManager = PersistenceManager.shared
     
     // MARK: - Initializer
 
@@ -202,8 +205,8 @@ public struct ReviewManager {
     public func askForAReview() {
         let numberOfActivations = persistenceManager.numberOfActivations
         
-        guard deviceFrameCreations > 3 && numberOfActivations > 3 else {
-            logger.debug("Review prompt criteria not met. DeviceFrameCreations: \(deviceFrameCreations, privacy: .public), numberOfActivations: \(numberOfActivations, privacy: .public).")
+        guard numberOfActivations > 3 else {
+            logger.debug("Review prompt criteria not met. NumberOfActivations: \(numberOfActivations, privacy: .public).")
             return
         }
         
@@ -219,8 +222,14 @@ public struct ReviewManager {
             }
         }
         
-        skStoreReviewController.requestReview(in: scene)
+        SKStoreReviewController.requestReview(in: scene)
         persistenceManager.setLastReviewPromptDateToNow()
         logger.log("Prompting the user for a review")
+    }
+}
+
+public extension Date {
+    func adding(_ value: Int, _ component: Calendar.Component) -> Date {
+        Calendar.current.date(byAdding: component, value: value, to: self)!
     }
 }
