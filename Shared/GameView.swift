@@ -67,7 +67,8 @@ struct GameView: View {
         .background(
             Image("clouds")
                 .resizable()
-                .ignoresSafeArea()
+                .ignoresSafeArea(.all, edges: .vertical)
+                .scaledToFill()
                 .overlay(Color.black.opacity(0.75))
         )
         .overlay {

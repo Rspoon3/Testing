@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
+    @State private var scale = false
     @State private var show = false
     @Namespace private var animation
     
@@ -38,11 +39,11 @@ struct HomeView: View {
         .background(
             Image("wallpaper")
                 .resizable()
-                .ignoresSafeArea()
+                .ignoresSafeArea(.all, edges: .vertical)
+                .scaledToFill()
                 .overlay(Color.black.opacity(0.3))
         )
     }
-    @State private var scale = false
     
     private var playButton: some View {
         Button {
