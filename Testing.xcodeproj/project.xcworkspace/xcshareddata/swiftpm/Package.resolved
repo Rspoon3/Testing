@@ -1,0 +1,42 @@
+{
+  "originHash" : "0b0a23e0a37627d86b3014cb9d58579bfc22ac7cd3e1b4fd724fd5a3d5b20d7b",
+  "pins" : [
+    {
+      "identity" : "rswtools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Rspoon3/RSWTools.git",
+      "state" : {
+        "revision" : "900169b929f1ae2241b0f12ff1ef2dbe1584de02",
+        "version" : "3.1.0"
+      }
+    },
+    {
+      "identity" : "sfsymbols",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Rspoon3/SFSymbols.git",
+      "state" : {
+        "revision" : "00d411cfc77f462e435db73805d010f37c2120f4",
+        "version" : "2.6.0"
+      }
+    },
+    {
+      "identity" : "swifttools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Rspoon3/SwiftTools.git",
+      "state" : {
+        "revision" : "108a6f19dba066250a0925f4db90da238633af38",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "uiimagecolors",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jathu/UIImageColors.git",
+      "state" : {
+        "revision" : "e49e6c32ea556e9fa0109dc79686bea4a10d41a2",
+        "version" : "2.2.0"
+      }
+    }
+  ],
+  "version" : 3
+}
