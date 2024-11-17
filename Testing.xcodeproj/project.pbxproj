@@ -27,6 +27,11 @@
 		94DDA8582CEA986100B0AF5A /* RSWTools in Frameworks */ = {isa = PBXBuildFile; productRef = 94DDA8572CEA986100B0AF5A /* RSWTools */; };
 		94DDA85A2CEA9BE800B0AF5A /* SettingsItemButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8592CEA9BE800B0AF5A /* SettingsItemButton.swift */; };
 		94DDA85B2CEA9BE800B0AF5A /* SettingsItemButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8592CEA9BE800B0AF5A /* SettingsItemButton.swift */; };
+		94DDA85D2CEA9F8300B0AF5A /* SwipePercentageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA85C2CEA9F8300B0AF5A /* SwipePercentageView.swift */; };
+		94DDA85E2CEA9F8300B0AF5A /* SwipePercentageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA85C2CEA9F8300B0AF5A /* SwipePercentageView.swift */; };
+		94DDA8612CEAAC0E00B0AF5A /* PopupView in Frameworks */ = {isa = PBXBuildFile; productRef = 94DDA8602CEAAC0E00B0AF5A /* PopupView */; };
+		94DDA8632CEAAD3700B0AF5A /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8622CEAAD3700B0AF5A /* ToastView.swift */; };
+		94DDA8642CEAAD3700B0AF5A /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8622CEAAD3700B0AF5A /* ToastView.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -64,6 +69,8 @@
 		94DDA8502CEA793E00B0AF5A /* Int+IsPrime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+IsPrime.swift"; sourceTree = "<group>"; };
 		94DDA8532CEA79DB00B0AF5A /* SettingsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsButton.swift; sourceTree = "<group>"; };
 		94DDA8592CEA9BE800B0AF5A /* SettingsItemButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsItemButton.swift; sourceTree = "<group>"; };
+		94DDA85C2CEA9F8300B0AF5A /* SwipePercentageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipePercentageView.swift; sourceTree = "<group>"; };
+		94DDA8622CEAAD3700B0AF5A /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -86,6 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94DDA8612CEAAC0E00B0AF5A /* PopupView in Frameworks */,
 				94DDA8432CE909BD00B0AF5A /* UIImageColors in Frameworks */,
 				94DDA8582CEA986100B0AF5A /* RSWTools in Frameworks */,
 			);
@@ -146,6 +154,8 @@
 				94DDA84A2CEA790300B0AF5A /* CardView.swift */,
 				94DDA84D2CEA791D00B0AF5A /* Card.swift */,
 				94DDA8472CEA78D400B0AF5A /* SwipeView.swift */,
+				94DDA8622CEAAD3700B0AF5A /* ToastView.swift */,
+				94DDA85C2CEA9F8300B0AF5A /* SwipePercentageView.swift */,
 				94DDA8442CE90E0A00B0AF5A /* SettingsView.swift */,
 				94DDA8592CEA9BE800B0AF5A /* SettingsItemButton.swift */,
 				942EB1FF2CD09C65006D4F0F /* GlowingOrbsBackground.swift */,
@@ -314,6 +324,7 @@
 			packageReferences = (
 				94DDA8412CE9093300B0AF5A /* XCRemoteSwiftPackageReference "UIImageColors" */,
 				94DDA8562CEA985100B0AF5A /* XCRemoteSwiftPackageReference "RSWTools" */,
+				94DDA85F2CEAAC0E00B0AF5A /* XCRemoteSwiftPackageReference "PopupView" */,
 			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
@@ -372,10 +383,12 @@
 				94DDA8512CEA793E00B0AF5A /* Int+IsPrime.swift in Sources */,
 				942EB2032CD0A442006D4F0F /* MovingNumbersBackground.swift in Sources */,
 				94DDA8542CEA79DB00B0AF5A /* SettingsButton.swift in Sources */,
+				94DDA8632CEAAD3700B0AF5A /* ToastView.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				942EB2002CD09C65006D4F0F /* GlowingOrbsBackground.swift in Sources */,
 				94DDA84F2CEA791D00B0AF5A /* Card.swift in Sources */,
+				94DDA85E2CEA9F8300B0AF5A /* SwipePercentageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,10 +403,12 @@
 				94DDA8522CEA793E00B0AF5A /* Int+IsPrime.swift in Sources */,
 				942EB2042CD0A442006D4F0F /* MovingNumbersBackground.swift in Sources */,
 				94DDA8552CEA79DB00B0AF5A /* SettingsButton.swift in Sources */,
+				94DDA8642CEAAD3700B0AF5A /* ToastView.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				942EB2012CD09C65006D4F0F /* GlowingOrbsBackground.swift in Sources */,
 				94DDA84E2CEA791D00B0AF5A /* Card.swift in Sources */,
+				94DDA85D2CEA9F8300B0AF5A /* SwipePercentageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -807,6 +822,14 @@
 				minimumVersion = 3.1.0;
 			};
 		};
+		94DDA85F2CEAAC0E00B0AF5A /* XCRemoteSwiftPackageReference "PopupView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/exyte/PopupView";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -819,6 +842,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 94DDA8562CEA985100B0AF5A /* XCRemoteSwiftPackageReference "RSWTools" */;
 			productName = RSWTools;
+		};
+		94DDA8602CEAAC0E00B0AF5A /* PopupView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94DDA85F2CEAAC0E00B0AF5A /* XCRemoteSwiftPackageReference "PopupView" */;
+			productName = PopupView;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -20,6 +20,7 @@ struct SettingsButton: View {
                     .resizable()
                     .opacity(showSettings ? 1 : 0)
                     .accessibilityHidden(!showSettings)
+                    .wiggleEffect()
                 
                 Image(systemName: "gear")
                     .resizable()
@@ -59,4 +60,20 @@ struct SettingsButton: View {
 #Preview {
     @Previewable @State var showSettings: Bool = false
     SettingsButton(showSettings: $showSettings)
+}
+
+struct WiggleEffectModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.symbolEffect(.wiggle, options: .repeat(.continuous))
+        } else {
+            content // No wiggle effect for older versions
+        }
+    }
+}
+
+extension View {
+    func wiggleEffect() -> some View {
+        modifier(WiggleEffectModifier())
+    }
 }

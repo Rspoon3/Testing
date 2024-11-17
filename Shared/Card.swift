@@ -24,7 +24,7 @@ struct Card: Identifiable {
     init(id: Int) {
         self.number = id
         self.imageNumber = (id % 19) + 1
-        self.colors = UIImage(named: "numbers\(imageNumber)")?.getColors(quality: .low)
+        self.colors = nil //UIImage(named: "numbers\(imageNumber)")?.getColors(quality: .low)
         
         guard id > 1 else {
             isPrime = false

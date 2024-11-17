@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PopupView
 
 struct SwipeView: View {
     
@@ -14,12 +15,16 @@ struct SwipeView: View {
     @AppStorage("correctSwipes") private var correctSwipes = 0
     @AppStorage("currentIndex") private var currentIndex = 1
     @AppStorage("nextNumber") private var nextNumber = 4
-    
+    @AppStorage("currentStreak") private var currentStreak = 0
+    @AppStorage("maxStreak") private var maxStreak = 0
+
     @State private var indicatorState: IndicatorState = .idle
     
     @State private var idleTask: Task<Void, Never>?
-    
-    
+    @State private var toastTask: Task<Void, any Error>?
+
+    @State private var showToast = false
+
     
     
     init() {
@@ -112,16 +117,28 @@ struct SwipeView: View {
             totalSwipes += 1
             
             if isCorrect {
+                currentStreak += 1
+                maxStreak = max(maxStreak, currentStreak)
                 correctSwipes += 1
-                //                withAnimation(.linear(duration: 1)) {
                 indicatorState = .correct
-                //                }
+                
+                if maxStreak == currentStreak {
+                    showToast = true
+                    
+                    toastTask?.cancel()
+                    toastTask = Task {
+                        try await Task.sleep(for: .seconds(2.5))
+                        try Task.checkCancellation()
+                        showToast = false
+                    }
+                }
             } else {
-                //                withAnimation(.linear(duration: 1)) {
+                currentStreak = 0
                 indicatorState = .incorrect
-                //                }
+                
+                toastTask?.cancel()
+                showToast = false
             }
-            
             
             updateScore()
             
@@ -170,29 +187,19 @@ struct SwipeView: View {
     
     var body: some View {
         VStack {
-            Text(correctPercentage.formatted(.percent.precision(.fractionLength(1))))
-                .contentTransition(.numericText(value: correctPercentage))
-                .font(.system(size: 60, weight: .bold, design: .rounded))
-                .animation(.default, value: correctPercentage)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color.teal, Color.blue, Color.purple],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-            
-            Image(systemName: indicatorSymbol)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 30, height: 30)
-                .foregroundStyle(indicatorColor)
-                .contentTransition(.symbolEffect(.replace))
-                .transition(.opacity)
-                .fontWeight(.bold)
-            
-            //                        Text(score.formatted(.percent.precision(.fractionLength(0...2))))
-            //                            .contentTransition(.numericText(value: score))
+            if indicatorState == .correct || indicatorState == .incorrect {
+                Image(systemName: indicatorSymbol)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                    .foregroundStyle(indicatorColor)
+                    .contentTransition(.symbolEffect(.replace))
+                    .transition(.opacity)
+                    .fontWeight(.bold)
+            } else {
+                Color.clear
+                    .frame(width: 30, height: 30)
+            }
             
             ZStack {
                 ForEach(cards.reversed()) { card in
@@ -216,5 +223,19 @@ struct SwipeView: View {
                 }
             }
         }
+        .popup(isPresented: $showToast) {
+            ToastView(value: maxStreak)
+        } customize: {
+            $0
+                .type(.floater())
+                .position(.bottom)
+                .animation(.spring())
+                .closeOnTapOutside(false)
+        }
     }
+}
+
+
+#Preview {
+    SwipeView()
 }
