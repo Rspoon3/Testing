@@ -22,6 +22,7 @@ struct MovingNumbersBackground: View {
                     )
             }
         }
+        .drawingGroup()
         .background(Color(.systemGroupedBackground))
         .ignoresSafeArea()
     }
@@ -61,4 +62,8 @@ struct GlowingNumber: View {
                 }
             }
     }
+}
+
+#Preview {
+    GlowingNumber()
 }

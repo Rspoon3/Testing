@@ -32,6 +32,12 @@
 		94DDA8612CEAAC0E00B0AF5A /* PopupView in Frameworks */ = {isa = PBXBuildFile; productRef = 94DDA8602CEAAC0E00B0AF5A /* PopupView */; };
 		94DDA8632CEAAD3700B0AF5A /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8622CEAAD3700B0AF5A /* ToastView.swift */; };
 		94DDA8642CEAAD3700B0AF5A /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8622CEAAD3700B0AF5A /* ToastView.swift */; };
+		94DDA8662CEAB74600B0AF5A /* GlowingNumber2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8652CEAB74600B0AF5A /* GlowingNumber2.swift */; };
+		94DDA8672CEAB74600B0AF5A /* GlowingNumber2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8652CEAB74600B0AF5A /* GlowingNumber2.swift */; };
+		94DDA8692CEAB88D00B0AF5A /* MovingNumbersBackgroundV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8682CEAB88D00B0AF5A /* MovingNumbersBackgroundV2.swift */; };
+		94DDA86A2CEAB88D00B0AF5A /* MovingNumbersBackgroundV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA8682CEAB88D00B0AF5A /* MovingNumbersBackgroundV2.swift */; };
+		94DDA86C2CEABA0C00B0AF5A /* MovingCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA86B2CEABA0C00B0AF5A /* MovingCanvasView.swift */; };
+		94DDA86D2CEABA0C00B0AF5A /* MovingCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DDA86B2CEABA0C00B0AF5A /* MovingCanvasView.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -71,11 +77,14 @@
 		94DDA8592CEA9BE800B0AF5A /* SettingsItemButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsItemButton.swift; sourceTree = "<group>"; };
 		94DDA85C2CEA9F8300B0AF5A /* SwipePercentageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipePercentageView.swift; sourceTree = "<group>"; };
 		94DDA8622CEAAD3700B0AF5A /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
+		94DDA8652CEAB74600B0AF5A /* GlowingNumber2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowingNumber2.swift; sourceTree = "<group>"; };
+		94DDA8682CEAB88D00B0AF5A /* MovingNumbersBackgroundV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovingNumbersBackgroundV2.swift; sourceTree = "<group>"; };
+		94DDA86B2CEABA0C00B0AF5A /* MovingCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovingCanvasView.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A6A262D624E0BCB30091EA92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A6A262DB24E0BCB30091EA92 /* Testing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testing.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A6A262DB24E0BCB30091EA92 /* Primes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Primes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6A262DE24E0BCB30091EA92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A6A262E324E0BCB30091EA92 /* Testing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testing.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6A262E524E0BCB30091EA92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -130,6 +139,16 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		947A72232CF4DFFF00FD64B2 /* FurtherTesting */ = {
+			isa = PBXGroup;
+			children = (
+				94DDA8652CEAB74600B0AF5A /* GlowingNumber2.swift */,
+				94DDA8682CEAB88D00B0AF5A /* MovingNumbersBackgroundV2.swift */,
+				94DDA86B2CEABA0C00B0AF5A /* MovingCanvasView.swift */,
+			);
+			path = FurtherTesting;
+			sourceTree = "<group>";
+		};
 		A6A262CE24E0BCB20091EA92 = {
 			isa = PBXGroup;
 			children = (
@@ -161,6 +180,7 @@
 				942EB1FF2CD09C65006D4F0F /* GlowingOrbsBackground.swift */,
 				942EB2022CD0A442006D4F0F /* MovingNumbersBackground.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
+				947A72232CF4DFFF00FD64B2 /* FurtherTesting */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -168,7 +188,7 @@
 		A6A262DC24E0BCB30091EA92 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A6A262DB24E0BCB30091EA92 /* Testing.app */,
+				A6A262DB24E0BCB30091EA92 /* Primes.app */,
 				A6A262E324E0BCB30091EA92 /* Testing.app */,
 				A6A262EB24E0BCB30091EA92 /* Tests iOS.xctest */,
 				A6A262F624E0BCB30091EA92 /* Tests macOS.xctest */,
@@ -228,7 +248,7 @@
 			);
 			name = "Testing (iOS)";
 			productName = "Testing (iOS)";
-			productReference = A6A262DB24E0BCB30091EA92 /* Testing.app */;
+			productReference = A6A262DB24E0BCB30091EA92 /* Primes.app */;
 			productType = "com.apple.product-type.application";
 		};
 		A6A262E224E0BCB30091EA92 /* Testing (macOS) */ = {
@@ -376,6 +396,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94DDA86A2CEAB88D00B0AF5A /* MovingNumbersBackgroundV2.swift in Sources */,
 				94DDA84C2CEA790300B0AF5A /* CardView.swift in Sources */,
 				94DDA8452CE90E0A00B0AF5A /* SettingsView.swift in Sources */,
 				94DDA8492CEA78D400B0AF5A /* SwipeView.swift in Sources */,
@@ -383,10 +404,12 @@
 				94DDA8512CEA793E00B0AF5A /* Int+IsPrime.swift in Sources */,
 				942EB2032CD0A442006D4F0F /* MovingNumbersBackground.swift in Sources */,
 				94DDA8542CEA79DB00B0AF5A /* SettingsButton.swift in Sources */,
+				94DDA86D2CEABA0C00B0AF5A /* MovingCanvasView.swift in Sources */,
 				94DDA8632CEAAD3700B0AF5A /* ToastView.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				942EB2002CD09C65006D4F0F /* GlowingOrbsBackground.swift in Sources */,
+				94DDA8662CEAB74600B0AF5A /* GlowingNumber2.swift in Sources */,
 				94DDA84F2CEA791D00B0AF5A /* Card.swift in Sources */,
 				94DDA85E2CEA9F8300B0AF5A /* SwipePercentageView.swift in Sources */,
 			);
@@ -396,6 +419,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94DDA8692CEAB88D00B0AF5A /* MovingNumbersBackgroundV2.swift in Sources */,
 				94DDA84B2CEA790300B0AF5A /* CardView.swift in Sources */,
 				94DDA8462CE90E0A00B0AF5A /* SettingsView.swift in Sources */,
 				94DDA8482CEA78D400B0AF5A /* SwipeView.swift in Sources */,
@@ -403,10 +427,12 @@
 				94DDA8522CEA793E00B0AF5A /* Int+IsPrime.swift in Sources */,
 				942EB2042CD0A442006D4F0F /* MovingNumbersBackground.swift in Sources */,
 				94DDA8552CEA79DB00B0AF5A /* SettingsButton.swift in Sources */,
+				94DDA86C2CEABA0C00B0AF5A /* MovingCanvasView.swift in Sources */,
 				94DDA8642CEAAD3700B0AF5A /* ToastView.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				942EB2012CD09C65006D4F0F /* GlowingOrbsBackground.swift in Sources */,
+				94DDA8672CEAB74600B0AF5A /* GlowingNumber2.swift in Sources */,
 				94DDA84E2CEA791D00B0AF5A /* Card.swift in Sources */,
 				94DDA85D2CEA9F8300B0AF5A /* SwipePercentageView.swift in Sources */,
 			);
@@ -571,13 +597,14 @@
 				DEVELOPMENT_TEAM = 29BB6CT754;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Prime Not Prime";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.Testing;
-				PRODUCT_NAME = Testing;
+				PRODUCT_NAME = Primes;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -596,13 +623,14 @@
 				DEVELOPMENT_TEAM = 29BB6CT754;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Prime Not Prime";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.Testing;
-				PRODUCT_NAME = Testing;
+				PRODUCT_NAME = Primes;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -626,6 +654,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = macOS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Prime Not Prime";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -652,6 +681,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = macOS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Prime Not Prime";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

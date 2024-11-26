@@ -15,29 +15,29 @@ struct ContentView: View {
         ZStack {
             MovingNumbersBackground()
             
-//            VStack {
-//                SwipePercentageView()
-//                
-//                ZStack {
-//                    if showSettings {
-//                        SettingsView()
-//                            .transition(.asymmetric(
-//                                insertion: .opacity,
-//                                removal: .opacity
-//                            ))
-//                    } else {
-//                        SwipeView()
-//                    }
-//                }
-//                .animation(
-//                    .linear(duration: 0.3),
-//                    value: showSettings
-//                )
-//            }
+            VStack {
+                SwipePercentageView()
+                
+                ZStack {
+                    if showSettings {
+                        SettingsView()
+                            .transition(.asymmetric(
+                                insertion: .opacity,
+                                removal: .opacity
+                            ))
+                    } else {
+                        SwipeView()
+                    }
+                }
+                .animation(
+                    .linear(duration: 0.3),
+                    value: showSettings
+                )
+            }
         }
-//        .overlay(alignment: .topLeading) {
-//            SettingsButton(showSettings: $showSettings)
-//        }
+        .overlay(alignment: .topLeading) {
+            SettingsButton(showSettings: $showSettings)
+        }
     }
 }
 
