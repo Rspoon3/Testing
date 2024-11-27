@@ -1,69 +1,67 @@
-//
-//  MovingNumbers.swift
-//  Testing
-//
-//  Created by Ricky on 11/27/24.
-//
-
 import SwiftUI
 
+struct Item {
+    let number = Int.random(in: 1...99)
+    let color = Color(.random())
+    let startLocation = CGPoint(
+        x: CGFloat.random(in: -300...300),
+        y: CGFloat.random(in: -300...300)
+    )
+}
+
 struct MovingNumbers: View {
-    private let numberCount = 5
-    private let numbers: [Int] = (1...5).map { _ in Int.random(in: 1...99) }
-    private let colors: [Color] = [.red, .blue, .green, .orange, .purple]
-    private let animationDuration: Double = 2.0 // Duration for one full back-and-forth motion
+    private let items = (0..<15).map { _ in Item() }
+    private let animationDuration: Double = 10.0 // Duration for one full motion
     
     var body: some View {
         TimelineView(.animation) { timeline in
             Canvas { context, size in
                 let screenWidth = size.width
                 let screenHeight = size.height
-                let spacing = screenHeight / CGFloat(numberCount + 1)
+                let center = CGPoint(x: screenWidth / 2, y: screenHeight / 2)
                 let time = timeline.date.timeIntervalSinceReferenceDate
                 
-                for index in 0..<numberCount {
-                    // Calculate normalized progress (0 to 1 and back)
+                for item in items {
+                    // Calculate progress for back-and-forth motion
                     let progress = (time / animationDuration).truncatingRemainder(dividingBy: 1)
                     let backAndForthProgress = progress < 0.5
                         ? progress * 2 // 0 to 1 for the first half
                         : (1 - progress) * 2 // 1 to 0 for the second half
                     
-                    // Calculate x position (linear back-and-forth)
-                    let basePosition: CGFloat = screenWidth / 2
-                    let xPosition = basePosition + backAndForthProgress * 100
+                    // Interpolate position from center to random destination
+                    let currentPosition = CGPoint(
+                        x: center.x + backAndForthProgress * item.startLocation.x,
+                        y: center.y + backAndForthProgress * item.startLocation.y
+                    )
                     
-                    // Calculate blur amount based on x position
-                    let blurAmount = backAndForthProgress * 10
+                    // Calculate blur amount based on progress
+                    let blurAmount = backAndForthProgress * 4
                     
                     // Calculate scale factor
                     let scaleFactor = 1 + backAndForthProgress * 0.5
                     
-                    // Vertical position for each number
-                    let yPosition = spacing * CGFloat(index + 1)
-                    
                     // Render the number text
-                    let number = numbers[index]
-                    let color = colors[index % colors.count]
-                    let attributedString = AttributedString("\(number)")
+                    let attributedString = AttributedString("\(item.number)")
                     
-                    // Draw the text with a shadow to simulate blur
                     let resolvedText = context.resolve(Text(attributedString)
                         .font(.system(size: 50, weight: .bold))
-                        .foregroundColor(color.opacity(0.8)))
+                        .foregroundColor(item.color))
                     
+                    // Apply scaling and blur
                     context.drawLayer { layerContext in
+                        // Apply blur
                         layerContext.addFilter(.blur(radius: blurAmount))
                         
                         // Apply scaling by transforming the context
-                        layerContext.translateBy(x: xPosition, y: yPosition)
+                        layerContext.translateBy(x: currentPosition.x, y: currentPosition.y)
                         layerContext.scaleBy(x: scaleFactor, y: scaleFactor)
-                        layerContext.translateBy(x: -xPosition, y: -yPosition)
+                        layerContext.translateBy(x: -currentPosition.x, y: -currentPosition.y)
                         
-                        layerContext.draw(resolvedText, at: CGPoint(x: xPosition, y: yPosition))
+                        // Draw the text
+                        layerContext.draw(resolvedText, at: currentPosition)
                     }
                 }
             }
         }
-        .background(Color.white) // Background for better visibility
     }
 }
