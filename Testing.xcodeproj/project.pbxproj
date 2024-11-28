@@ -11,6 +11,8 @@
 		94C50B0F2CF7D29A00A7EFB5 /* MovingNumbersLeftToRight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C50B0D2CF7D29A00A7EFB5 /* MovingNumbersLeftToRight.swift */; };
 		94C50B112CF7D4A700A7EFB5 /* MovingNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C50B102CF7D4A700A7EFB5 /* MovingNumbers.swift */; };
 		94C50B122CF7D4A700A7EFB5 /* MovingNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C50B102CF7D4A700A7EFB5 /* MovingNumbers.swift */; };
+		94C50B532CF7E75D00A7EFB5 /* MovingNumbersBackgroundUIViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C50B522CF7E75C00A7EFB5 /* MovingNumbersBackgroundUIViewRepresentable.swift */; };
+		94C50B542CF7E75D00A7EFB5 /* MovingNumbersBackgroundUIViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C50B522CF7E75C00A7EFB5 /* MovingNumbersBackgroundUIViewRepresentable.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -41,6 +43,7 @@
 /* Begin PBXFileReference section */
 		94C50B0D2CF7D29A00A7EFB5 /* MovingNumbersLeftToRight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovingNumbersLeftToRight.swift; sourceTree = "<group>"; };
 		94C50B102CF7D4A700A7EFB5 /* MovingNumbers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovingNumbers.swift; sourceTree = "<group>"; };
+		94C50B522CF7E75C00A7EFB5 /* MovingNumbersBackgroundUIViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovingNumbersBackgroundUIViewRepresentable.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -118,6 +121,7 @@
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
 				94C50B0D2CF7D29A00A7EFB5 /* MovingNumbersLeftToRight.swift */,
 				94C50B102CF7D4A700A7EFB5 /* MovingNumbers.swift */,
+				94C50B522CF7E75C00A7EFB5 /* MovingNumbersBackgroundUIViewRepresentable.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -331,6 +335,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94C50B532CF7E75D00A7EFB5 /* MovingNumbersBackgroundUIViewRepresentable.swift in Sources */,
 				94C50B0E2CF7D29A00A7EFB5 /* MovingNumbersLeftToRight.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
 				94C50B112CF7D4A700A7EFB5 /* MovingNumbers.swift in Sources */,
@@ -342,6 +347,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94C50B542CF7E75D00A7EFB5 /* MovingNumbersBackgroundUIViewRepresentable.swift in Sources */,
 				94C50B0F2CF7D29A00A7EFB5 /* MovingNumbersLeftToRight.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
 				94C50B122CF7D4A700A7EFB5 /* MovingNumbers.swift in Sources */,

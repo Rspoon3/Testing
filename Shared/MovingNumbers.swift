@@ -10,7 +10,7 @@ struct Item {
 }
 
 struct MovingNumbers: View {
-    private let items = (0..<15).map { _ in Item() }
+    private let items = (0..<195).map { _ in Item() }
     private let animationDuration: Double = 10.0 // Duration for one full motion
     
     var body: some View {
@@ -62,6 +62,6 @@ struct MovingNumbers: View {
                     }
                 }
             }
-        }
+        }.drawingGroup()
     }
 }
