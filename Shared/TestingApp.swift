@@ -47,7 +47,8 @@ public struct AppTabNavigation: View {
         
         TabView(selection: $tabManager.selectedTab) {
             NavigationStack {
-                PlatesView()
+//                PlatesView()
+                TripsView()
             }
             .tabItem {
                 Label("Home", systemImage: "house")

@@ -20,6 +20,7 @@
 		946A777F2CFC2C1000742103 /* PlateCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A777E2CFC2C1000742103 /* PlateCell.swift */; };
 		946A778D2CFC2DE200742103 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A778C2CFC2DE200742103 /* MapView.swift */; };
 		946A778F2CFC2F7700742103 /* PrivacyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A778E2CFC2F7700742103 /* PrivacyScreen.swift */; };
+		946A77912CFC39B400742103 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A77902CFC39B400742103 /* Trip.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
 		A6A262FF24E0BCB30091EA92 /* PlatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* PlatesView.swift */; };
 		A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
@@ -37,6 +38,7 @@
 		946A777E2CFC2C1000742103 /* PlateCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlateCell.swift; sourceTree = "<group>"; };
 		946A778C2CFC2DE200742103 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		946A778E2CFC2F7700742103 /* PrivacyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyScreen.swift; sourceTree = "<group>"; };
+		946A77902CFC39B400742103 /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* PlatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatesView.swift; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 				946A777B2CFC2B0E00742103 /* ReviewManger */,
 				946A773E2CFC1E2000742103 /* ConfettiView.swift */,
 				A6A262D524E0BCB20091EA92 /* PlatesView.swift */,
+				946A77902CFC39B400742103 /* Trip.swift */,
 				946A777E2CFC2C1000742103 /* PlateCell.swift */,
 				946A77442CFC285B00742103 /* PlatesViewViewModel.swift */,
 				946A77422CFC284A00742103 /* HeaderView.swift */,
@@ -195,6 +198,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				946A77912CFC39B400742103 /* Trip.swift in Sources */,
 				946A778F2CFC2F7700742103 /* PrivacyScreen.swift in Sources */,
 				946A777F2CFC2C1000742103 /* PlateCell.swift in Sources */,
 				946A773F2CFC1E2000742103 /* ConfettiView.swift in Sources */,
