@@ -10,7 +10,6 @@ import RSWTools
 
 struct PlatesView: View {
     @AppStorage("header") private var currentHeader = 0
-    @Namespace private var animation
     let viewModel = PlatesViewViewModel()
     let columns: [GridItem] = [
         GridItem(.flexible(), spacing: 16),
@@ -22,7 +21,6 @@ struct PlatesView: View {
         
         NavigationStack {
             ScrollView {
-                
                 if viewModel.searchText.isEmpty {
                     if currentHeader == 0 {
                         HeaderView(collectedCount: 3)
@@ -37,35 +35,7 @@ struct PlatesView: View {
                 
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(viewModel.filteredStates) { state in
-                        NavigationLink {
-                            PlatesDetailsView(state: state)
-                                .backDeployedZoomNavigationTransition(
-                                    sourceID: state.id,
-                                    in: animation
-                                )
-                        } label: {
-                            VStack {
-                                Image("texasPlate")
-                                    .resizable()
-                                    .scaledToFit()
-                                
-                                Text(state.title)
-                                    .font(.headline)
-                                Text(state.tagline)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .multilineTextAlignment(.center)
-                            }
-                            .padding()
-                            .background(Color(.lightText))
-                            .cornerRadius(12)
-                            .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-                            .backDeployedMatchedTransitionSource(
-                                id: state.id,
-                                in: animation
-                            )
-                        }
-                        .buttonStyle(.plain)
+                        PlateCell(state: state)
                     }
                 }
                 .padding()
@@ -75,6 +45,12 @@ struct PlatesView: View {
             .searchable(text: $viewModel.searchText)
             .animation(.default, value: viewModel.searchText)
             .animation(.default, value: viewModel.sortType)
+            .fullScreenCover(isPresented: $viewModel.showLocationPrompt) {
+                PrivacyScreen()
+            }
+            .onAppear {
+                viewModel.showLocationPrompt.toggle()
+            }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {

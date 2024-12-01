@@ -10,6 +10,7 @@ import Foundation
 @Observable
 @MainActor
 final class PlatesViewViewModel {
+    var showLocationPrompt = false
     var sortType: SortType {
         didSet {
             UserDefaults.standard.set(sortType.rawValue, forKey: "platesViewViewModel.sortType")
