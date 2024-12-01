@@ -51,7 +51,7 @@ struct TripsView: View {
         NavigationStack {
             VStack {
                 if viewModel.trips.isEmpty {
-                    EmptyPlaceholderView {
+                    CoolEmptyPlaceholderView {
                         viewModel.showNewTripForm.toggle()
                     }
                 } else {
@@ -236,5 +236,166 @@ struct EmptyPlaceholderView: View {
                 endPoint: .bottom
             )
         )
+    }
+}
+
+
+import SwiftUI
+
+struct CoolEmptyPlaceholderView: View {
+    var onAddTrip: () -> Void
+
+    @State private var bounce = false
+    @State private var showParticles = false
+    private let travelIcons = ["🌍", "✈️", "🚗", "🚂", "🗺️", "🏝️", "⛵️"]
+
+    var body: some View {
+        ZStack {
+            // Dynamic Background
+            LinearGradient(
+                gradient: Gradient(colors: [.blue, .purple]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .edgesIgnoringSafeArea(.all)
+            .opacity(0.9)
+            .overlay(
+                AnimatedWaveView()
+            )
+
+            VStack {
+                // Random Travel Emoji
+                Text(travelIcons.randomElement() ?? "🌍")
+                    .font(.system(size: 100))
+                    .rotationEffect(.degrees(bounce ? 10 : -10))
+                    .animation(
+                        Animation.easeInOut(duration: 1)
+                            .repeatForever(autoreverses: true),
+                        value: bounce
+                    )
+                    .onAppear { bounce.toggle() }
+                    .padding(.bottom, 20)
+
+                // Fun Title
+                Text("Your Next Adventure Awaits!")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.bottom, 10)
+
+                // Playful Subtitle
+                Text("Track plates, explore states, and make memories. Get started with your first trip!")
+                    .font(.title3)
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 20)
+
+                // Cool Call-to-Action Button
+                Button(action: {
+                    withAnimation {
+                        showParticles.toggle()
+                    }
+                    onAddTrip()
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title)
+                        Text("Add Your First Trip")
+                            .font(.headline)
+                            .padding()
+                    }
+                    .foregroundColor(.white)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [.purple, .pink]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(10)
+                    .shadow(radius: 10)
+                }
+                .scaleEffect(bounce ? 1.1 : 1.0)
+                .animation(
+                    Animation.easeInOut(duration: 1)
+                        .repeatForever(autoreverses: true),
+                    value: bounce
+                )
+                .padding(.top, 20)
+
+                Spacer()
+
+                if showParticles {
+                    // Confetti or Sparkles Animation
+                    ParticleEffectView()
+                        .transition(.opacity)
+                        .zIndex(1)
+                }
+            }
+        }
+    }
+}
+struct AnimatedWaveView: View {
+    @State private var waveOffset = Angle(degrees: 0)
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                ForEach(0..<5) { i in
+                    WaveShape()
+                        .fill(Color.white.opacity(0.2))
+                        .offset(y: CGFloat(i * 20))
+                        .offset(x: CGFloat(sin(waveOffset.radians * Double(i)) * 30))
+                        .animation(
+                            Animation.easeInOut(duration: 2)
+                                .repeatForever(autoreverses: true),
+                            value: waveOffset
+                        )
+                }
+            }
+            .onAppear {
+                waveOffset = Angle(degrees: 360)
+            }
+        }
+        .edgesIgnoringSafeArea(.all)
+    }
+}
+
+struct WaveShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let midY = rect.height / 2
+        path.move(to: CGPoint(x: 0, y: midY))
+        for x in stride(from: 0, to: rect.width, by: 1) {
+            let y = sin(x / rect.width * .pi * 2) * 20 + midY
+            path.addLine(to: CGPoint(x: x, y: y))
+        }
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        path.addLine(to: CGPoint(x: 0, y: rect.height))
+        path.closeSubpath()
+        return path
+    }
+}
+
+struct ParticleEffectView: View {
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                ForEach(0..<30, id: \.self) { _ in
+                    Circle()
+                        .fill(Color.white.opacity(0.8))
+                        .frame(width: CGFloat.random(in: 5...10), height: CGFloat.random(in: 5...10))
+                        .position(
+                            x: CGFloat.random(in: 0...geometry.size.width),
+                            y: CGFloat.random(in: 0...geometry.size.height)
+                        )
+                        .animation(
+                            Animation.easeOut(duration: 2).repeatForever(),
+                            value: UUID()
+                        )
+                }
+            }
+        }
     }
 }
