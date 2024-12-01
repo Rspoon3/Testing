@@ -21,7 +21,7 @@ struct TestingApp: App {
 
 
 public enum Tab {
-    case home, settings
+    case home, settings, three, plates
 }
 
 
@@ -47,8 +47,34 @@ public struct AppTabNavigation: View {
         
         TabView(selection: $tabManager.selectedTab) {
             NavigationStack {
-//                PlatesView()
                 TripsView()
+            }
+            .tabItem {
+                Label("Home", systemImage: "house")
+                    .accessibility(label: Text("Home"))
+            }
+            .tag(Tab.three)
+            
+            NavigationStack {
+                PlatesView()
+            }
+            .tabItem {
+                Label("Plates", systemImage: "house")
+                    .accessibility(label: Text("Home"))
+            }
+            .tag(Tab.plates)
+            
+            NavigationStack {
+                GamifiedTripView(
+                    trip: .init(
+                        name: "ricky",
+                        startDate: .now,
+                        endDate: .now.addingTimeInterval(80000),
+                        description: "This design combines playfulness, interactive elements, and clean aesthetics to make the trip view exciting and enjoyable for users. Let me know how you’d like to adjust or enhance this!",
+                        icon: "star",
+                        trackedPlates: [.newHampshire]
+                    )
+                )
             }
             .tabItem {
                 Label("Home", systemImage: "house")

@@ -80,7 +80,7 @@ struct TripsView: View {
             }
             .sheet(isPresented: $viewModel.showNewTripForm) {
 //                NewTripForm(viewModel: viewModel)
-                CoolNewTripForm(viewModel: viewModel)
+                SleekNewTripForm(viewModel: viewModel)
             }
         }
     }
@@ -398,5 +398,175 @@ struct ParticleEffectView: View {
                 }
             }
         }
+    }
+}
+
+
+struct SleekNewTripForm: View {
+    @ObservedObject var viewModel: TripsViewModel
+    @FocusState private var focusedField: Field?
+    @State private var showLivePreview = true
+
+    enum Field {
+        case name, description
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack {
+                // Live Preview Toggle
+                if showLivePreview {
+                    TripCardPreviewV2(
+                        name: viewModel.newTripName,
+                        description: viewModel.newTripDescription,
+                        icon: viewModel.newTripIcon
+                    )
+                    .transition(.opacity.combined(with: .scale))
+                    .padding(.vertical)
+                }
+
+                // Input Fields
+                VStack(spacing: 20) {
+                    // Trip Name Field
+                    SleekTextField(
+                        title: "Trip Name",
+                        text: $viewModel.newTripName,
+                        placeholder: "What's this trip called?",
+                        icon: "tag",
+                        focusedField: $focusedField,
+                        field: .name
+                    )
+
+                    // Description Field
+                    SleekTextField(
+                        title: "Description",
+                        text: $viewModel.newTripDescription,
+                        placeholder: "Add a description for this trip.",
+                        icon: "text.bubble",
+                        focusedField: $focusedField,
+                        field: .description
+                    )
+
+                    // Emoji Picker
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Pick an Icon")
+                            .font(.headline)
+                            .foregroundColor(.blue)
+
+                        CoolEmojiPicker(selectedEmoji: $viewModel.newTripIcon)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+
+                Spacer()
+
+                // Save Button
+                Button(action: {
+                    viewModel.addTrip()
+                    viewModel.showNewTripForm = false
+                }) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title2)
+                        Text("Save Trip")
+                            .fontWeight(.bold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(viewModel.newTripName.isEmpty ? Color.gray : Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+                }
+                .disabled(viewModel.newTripName.isEmpty)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+                .scaleEffect(viewModel.newTripName.isEmpty ? 0.9 : 1.0)
+                .animation(.spring(), value: viewModel.newTripName.isEmpty)
+            }
+            .navigationTitle("New Trip")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        viewModel.showNewTripForm = false
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        withAnimation {
+                            showLivePreview.toggle()
+                        }
+                    } label: {
+                        Image(systemName: showLivePreview ? "eye.slash.fill" : "eye.fill")
+                    }
+                }
+            }
+        }
+    }
+}
+struct SleekTextField: View {
+    let title: String
+    @Binding var text: String
+    let placeholder: String
+    let icon: String
+    @FocusState.Binding var focusedField: SleekNewTripForm.Field?
+    let field: SleekNewTripForm.Field
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(focusedField == field ? .blue : .gray)
+
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.blue)
+                TextField(placeholder, text: $text)
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .focused($focusedField, equals: field)
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(focusedField == field ? Color.blue : Color.gray, lineWidth: 1)
+            )
+            .animation(.easeInOut, value: focusedField == field)
+        }
+    }
+}
+
+struct TripCardPreviewV2: View {
+    var name: String
+    var description: String
+    var icon: String
+
+    var body: some View {
+        HStack {
+            Text(icon)
+                .font(.largeTitle)
+                .padding()
+                .background(Color(.systemGray5))
+                .cornerRadius(10)
+                .shadow(radius: 2)
+
+            VStack(alignment: .leading) {
+                Text(name.isEmpty ? "Trip Name" : name)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Text(description.isEmpty ? "Trip description goes here." : description)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(10)
+        .shadow(radius: 3)
+        .padding(.horizontal, 20)
     }
 }
