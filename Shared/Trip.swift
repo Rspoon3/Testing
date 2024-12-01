@@ -79,7 +79,8 @@ struct TripsView: View {
                 }
             }
             .sheet(isPresented: $viewModel.showNewTripForm) {
-                NewTripForm(viewModel: viewModel)
+//                NewTripForm(viewModel: viewModel)
+                CoolNewTripForm(viewModel: viewModel)
             }
         }
     }
