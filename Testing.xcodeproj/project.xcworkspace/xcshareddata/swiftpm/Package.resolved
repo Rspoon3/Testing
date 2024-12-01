@@ -1,0 +1,33 @@
+{
+  "originHash" : "49e3bad3c293f6dda9bc4b4bad44d2b62d307043b364c5a0d3db1f396157b800",
+  "pins" : [
+    {
+      "identity" : "rswtools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Rspoon3/RSWTools.git",
+      "state" : {
+        "revision" : "900169b929f1ae2241b0f12ff1ef2dbe1584de02",
+        "version" : "3.1.0"
+      }
+    },
+    {
+      "identity" : "sfsymbols",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Rspoon3/SFSymbols.git",
+      "state" : {
+        "revision" : "00d411cfc77f462e435db73805d010f37c2120f4",
+        "version" : "2.6.0"
+      }
+    },
+    {
+      "identity" : "swifttools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Rspoon3/SwiftTools.git",
+      "state" : {
+        "revision" : "108a6f19dba066250a0925f4db90da238633af38",
+        "version" : "1.1.0"
+      }
+    }
+  ],
+  "version" : 3
+}
