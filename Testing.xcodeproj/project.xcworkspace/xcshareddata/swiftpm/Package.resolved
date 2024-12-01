@@ -1,5 +1,5 @@
 {
-  "originHash" : "49e3bad3c293f6dda9bc4b4bad44d2b62d307043b364c5a0d3db1f396157b800",
+  "originHash" : "7746b74fbf467fd1c6c9b1d2391e1e602b4e669c967db4c7588b731e083ab31f",
   "pins" : [
     {
       "identity" : "rswtools",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "108a6f19dba066250a0925f4db90da238633af38",
         "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "vortex",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/twostraws/Vortex",
+      "state" : {
+        "revision" : "bb48b128d3c13c68c68e83833c622eec9f6c701f",
+        "version" : "1.0.1"
       }
     }
   ],

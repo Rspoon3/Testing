@@ -7,14 +7,18 @@
 
 import SwiftUI
 import MapKit
+import Vortex
 
 struct PlatesDetailsView: View {
     let state: USState
+    private let reviewManager = ReviewManager()
+    @State private var isCollected = false
+    @State private var confettiID: UUID = .init()
     private let region = MKCoordinateRegion(
-         center: CLLocationCoordinate2D(latitude: 43.2081, longitude: -71.5376),
-         span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
-     )
-
+        center: CLLocationCoordinate2D(latitude: 43.2081, longitude: -71.5376),
+        span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
+    )
+    
     var body: some View {
         ScrollView {
             Image("texasPlate")
@@ -72,11 +76,23 @@ struct PlatesDetailsView: View {
                 .blur(radius: 20)
                 .overlay(Color.white.opacity(0.4))
         }
+        .overlay {
+            ConfettiView(id: confettiID)
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(symbol: .star) {
+                    isCollected.toggle()
                     
+                    if isCollected {
+                        confettiID = .init()
+                        
+                        reviewManager.askForReview(collectedCount: .random(in: 0...6))
+                    }
                 }
+                .symbolVariant(isCollected ? .fill : .none)
+                .contentTransition(.symbolEffect(.replace))
+                .foregroundStyle(.yellow)
             }
         }
     }

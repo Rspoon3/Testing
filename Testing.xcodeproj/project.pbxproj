@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,6 +12,11 @@
 		946A76012CFBF7BD00742103 /* USState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A76002CFBF7BD00742103 /* USState.swift */; };
 		946A76032CFBFFDE00742103 /* PlatesDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A76022CFBFFDE00742103 /* PlatesDetailsView.swift */; };
 		946A76512CFC001B00742103 /* BackDeployedMatchedTransitionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A76502CFC001B00742103 /* BackDeployedMatchedTransitionSource.swift */; };
+		946A773D2CFC148000742103 /* Vortex in Frameworks */ = {isa = PBXBuildFile; productRef = 946A773C2CFC148000742103 /* Vortex */; };
+		946A773F2CFC1E2000742103 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A773E2CFC1E2000742103 /* ConfettiView.swift */; };
+		946A77412CFC229F00742103 /* SortType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A77402CFC229F00742103 /* SortType.swift */; };
+		946A77432CFC284A00742103 /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A77422CFC284A00742103 /* HeaderView.swift */; };
+		946A77452CFC285B00742103 /* PlatesViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A77442CFC285B00742103 /* PlatesViewViewModel.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
 		A6A262FF24E0BCB30091EA92 /* PlatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* PlatesView.swift */; };
 		A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
@@ -22,6 +27,10 @@
 		946A76002CFBF7BD00742103 /* USState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USState.swift; sourceTree = "<group>"; };
 		946A76022CFBFFDE00742103 /* PlatesDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatesDetailsView.swift; sourceTree = "<group>"; };
 		946A76502CFC001B00742103 /* BackDeployedMatchedTransitionSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackDeployedMatchedTransitionSource.swift; sourceTree = "<group>"; };
+		946A773E2CFC1E2000742103 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
+		946A77402CFC229F00742103 /* SortType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortType.swift; sourceTree = "<group>"; };
+		946A77422CFC284A00742103 /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
+		946A77442CFC285B00742103 /* PlatesViewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatesViewViewModel.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* PlatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatesView.swift; sourceTree = "<group>"; };
@@ -30,11 +39,16 @@
 		A6A262DE24E0BCB30091EA92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		946A777B2CFC2B0E00742103 /* ReviewManger */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ReviewManger; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		A6A262D824E0BCB30091EA92 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				946A773D2CFC148000742103 /* Vortex in Frameworks */,
 				946A75FD2CFBF77400742103 /* RSWTools in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -66,7 +80,12 @@
 				946A75FE2CFBF79000742103 /* states.json */,
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				946A76022CFBFFDE00742103 /* PlatesDetailsView.swift */,
+				946A777B2CFC2B0E00742103 /* ReviewManger */,
+				946A773E2CFC1E2000742103 /* ConfettiView.swift */,
 				A6A262D524E0BCB20091EA92 /* PlatesView.swift */,
+				946A77442CFC285B00742103 /* PlatesViewViewModel.swift */,
+				946A77422CFC284A00742103 /* HeaderView.swift */,
+				946A77402CFC229F00742103 /* SortType.swift */,
 				946A76502CFC001B00742103 /* BackDeployedMatchedTransitionSource.swift */,
 				946A76002CFBF7BD00742103 /* USState.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
@@ -105,6 +124,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				946A777B2CFC2B0E00742103 /* ReviewManger */,
+			);
 			name = "Testing (iOS)";
 			productName = "Testing (iOS)";
 			productReference = A6A262DB24E0BCB30091EA92 /* Testing.app */;
@@ -136,6 +158,7 @@
 			mainGroup = A6A262CE24E0BCB20091EA92;
 			packageReferences = (
 				946A75FB2CFBF77400742103 /* XCRemoteSwiftPackageReference "RSWTools" */,
+				946A773B2CFC148000742103 /* XCRemoteSwiftPackageReference "Vortex" */,
 			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
@@ -163,11 +186,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				946A773F2CFC1E2000742103 /* ConfettiView.swift in Sources */,
 				946A76512CFC001B00742103 /* BackDeployedMatchedTransitionSource.swift in Sources */,
 				946A76032CFBFFDE00742103 /* PlatesDetailsView.swift in Sources */,
+				946A77452CFC285B00742103 /* PlatesViewViewModel.swift in Sources */,
+				946A77412CFC229F00742103 /* SortType.swift in Sources */,
 				946A76012CFBF7BD00742103 /* USState.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* PlatesView.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				946A77432CFC284A00742103 /* HeaderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -374,6 +401,14 @@
 				version = 3.1.0;
 			};
 		};
+		946A773B2CFC148000742103 /* XCRemoteSwiftPackageReference "Vortex" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twostraws/Vortex";
+			requirement = {
+				kind = exactVersion;
+				version = 1.0.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -381,6 +416,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 946A75FB2CFBF77400742103 /* XCRemoteSwiftPackageReference "RSWTools" */;
 			productName = RSWTools;
+		};
+		946A773C2CFC148000742103 /* Vortex */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 946A773B2CFC148000742103 /* XCRemoteSwiftPackageReference "Vortex" */;
+			productName = Vortex;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

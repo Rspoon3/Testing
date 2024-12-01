@@ -9,6 +9,7 @@ import SwiftUI
 import RSWTools
 
 struct PlatesView: View {
+    @AppStorage("header") private var currentHeader = 0
     @Namespace private var animation
     let viewModel = PlatesViewViewModel()
     let columns: [GridItem] = [
@@ -21,6 +22,19 @@ struct PlatesView: View {
         
         NavigationStack {
             ScrollView {
+                
+                if viewModel.searchText.isEmpty {
+                    if currentHeader == 0 {
+                        HeaderView(collectedCount: 3)
+                    } else if currentHeader == 1 {
+                        HeaderViewV2(collectedCount: 3)
+                    } else if currentHeader == 2 {
+                        HeaderViewV3(collectedCount: 4, totalCount: 7, streak: 4)
+                    } else {
+                        HeaderViewV4(collectedCount: 4, totalCount: 50)
+                    }
+                }
+                
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(viewModel.filteredStates) { state in
                         NavigationLink {
@@ -66,8 +80,16 @@ struct PlatesView: View {
                     Menu {
                         Picker("Sort", selection: $viewModel.sortType) {
                             ForEach(SortType.allCases) { type in
-                                Text(type.rawValue)
+                                Text(type.title)
                                     .tag(type)
+                            }
+                        }
+                        
+                        Picker("Header", selection: $currentHeader) {
+                            ForEach(0..<4, id: \.self) { i in
+                                Button(i.formatted()) {
+                                    currentHeader = i
+                                }
                             }
                         }
                     } label: {
@@ -82,78 +104,6 @@ struct PlatesView: View {
     }
 }
 
-
 #Preview {
     PlatesView()
-}
-
-enum SortType: String, CaseIterable, Identifiable {
-    case title = "Title"
-    case year = "Year Founded"
-    case number = "State Number"
-    case collected = "Collected"
-    
-    var id: Self { self }
-    
-    var sortComparator: [SortDescriptor<USState>] {
-        switch self {
-        case .title:
-            [SortDescriptor(\USState.title, order: .forward)]
-        case .year:
-            [
-                SortDescriptor(\USState.yearFounded, order: .forward),
-                SortDescriptor(\USState.title, order: .forward)
-            ]
-        case .number:
-            [
-                SortDescriptor(\USState.stateNumber, order: .forward),
-                SortDescriptor(\USState.title, order: .forward)
-            ]
-        case .collected:
-            [
-                SortDescriptor(\USState.funDescription, order: .forward),
-                SortDescriptor(\USState.title, order: .forward)
-            ]
-        }
-    }
-}
-
-
-
-
-
-@Observable
-@MainActor
-final class PlatesViewViewModel {
-    var sortType: SortType = .title {
-        didSet {
-            filterAndSortStates()
-        }
-    }
-    var searchText: String = "" {
-        didSet {
-            filterAndSortStates()
-        }
-    }
-    private var states: [USState] = []
-    private(set)var filteredStates: [USState] = []
-    
-    func filterAndSortStates() {
-        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            filteredStates = states.sorted(using: sortType.sortComparator)
-            return
-        }
-        
-        let filtered = states.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
-        filteredStates = filtered.sorted(using: sortType.sortComparator)
-    }
-    
-    func loadStates() {
-        states = Bundle.main.decode(
-            [USState].self,
-            from: "states.json"
-        )
-        
-        filterAndSortStates()
-    }
 }
