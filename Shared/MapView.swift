@@ -26,13 +26,24 @@ struct MapView: View {
         span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50) // Broad view for multiple states
     )
     
+    let states = Bundle.main.decode(
+        [USState].self,
+        from: "states.json"
+    )
+    
     var body: some View {
         Map {
             // Add annotations for each state capital
-            ForEach(stateCapitals, id: \.name) { capital in
-                Annotation(capital.name, coordinate: capital.coordinate) {
-                    Image(symbol: .licenseplate)
-                        .foregroundColor(.red)
+            ForEach(states) { state in
+                Annotation(
+                    state.capital,
+                    coordinate: .init(
+                        latitude: state.latitude,
+                        longitude: state.longitude
+                    )
+                ) {
+                    Image(symbol: .sparkles)
+                        .foregroundColor(.yellow)
                         .font(.caption)
                 }
             }

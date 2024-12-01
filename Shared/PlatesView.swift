@@ -49,7 +49,7 @@ struct PlatesView: View {
                 PrivacyScreen()
             }
             .onAppear {
-                viewModel.showLocationPrompt.toggle()
+//                viewModel.showLocationPrompt.toggle()
             }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

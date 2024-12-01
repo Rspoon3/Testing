@@ -20,6 +20,8 @@ struct USState: Codable, Identifiable {
     let heroImage: String
     let licensePlateImage: String
     let stateNumber: Int
+    let latitude: Double
+    let longitude: Double
 }
 
 extension USState {
@@ -35,6 +37,8 @@ extension USState {
         estimatedPopulation: 1377529,
         heroImage: "placeholder_for_hero_image_url",
         licensePlateImage: "placeholder_for_license_plate_image_url",
-        stateNumber: 9
+        stateNumber: 9,
+        latitude: 43.2081,
+        longitude: -71.5376
     )
 }
