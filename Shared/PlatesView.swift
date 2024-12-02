@@ -28,7 +28,9 @@ struct PlatesView: View {
                         HeaderViewV2(collectedCount: 3)
                     } else if currentHeader == 2 {
                         HeaderViewV3(collectedCount: 4, totalCount: 7, streak: 4)
-                    } else {
+                    } else if currentHeader == 3 {
+                        HeaderViewV22(collectedCount: 4)
+                    }else {
                         HeaderViewV4(collectedCount: 4, totalCount: 50)
                     }
                 }
@@ -45,11 +47,11 @@ struct PlatesView: View {
             .searchable(text: $viewModel.searchText)
             .animation(.default, value: viewModel.searchText)
             .animation(.default, value: viewModel.sortType)
-            .fullScreenCover(isPresented: $viewModel.showLocationPrompt) {
-                PrivacyScreen()
-            }
+//            .fullScreenCover(isPresented: $viewModel.showLocationPrompt) {
+//                PrivacyScreen()
+//            }
             .onAppear {
-//                viewModel.showLocationPrompt.toggle()
+                viewModel.showLocationPrompt.toggle()
             }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -62,7 +64,7 @@ struct PlatesView: View {
                         }
                         
                         Picker("Header", selection: $currentHeader) {
-                            ForEach(0..<4, id: \.self) { i in
+                            ForEach(0..<5, id: \.self) { i in
                                 Button(i.formatted()) {
                                     currentHeader = i
                                 }

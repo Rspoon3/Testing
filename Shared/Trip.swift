@@ -570,3 +570,178 @@ struct TripCardPreviewV2: View {
         .padding(.horizontal, 20)
     }
 }
+
+
+struct FunTripsView: View {
+    @StateObject private var viewModel = TripsViewModel()
+    @State private var showConfetti = false
+
+    var body: some View {
+        ZStack {
+            // Animated Background
+            AnimatedGradientBackground()
+
+            VStack {
+                // Hero Section
+                HeroSection(totalTrips: viewModel.trips.count)
+
+                if viewModel.trips.isEmpty {
+                    // Fun Empty State
+                    CoolEmptyPlaceholderView {
+                        withAnimation(.easeInOut) {
+                            viewModel.showNewTripForm.toggle()
+                        }
+                    }
+                } else {
+                    // Carousel of Trips
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 20) {
+                            ForEach(viewModel.trips) { trip in
+                                NavigationLink(destination: TripDetailView(trip: trip)) {
+                                    TripCardV2(trip: trip)
+                                }
+                                .buttonStyle(.plain)
+                                .scaleEffect(showConfetti ? 1.1 : 1.0)
+                                .animation(.spring(), value: showConfetti)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+            .navigationTitle("Trips")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        withAnimation(.spring()) {
+                            viewModel.showNewTripForm.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title)
+                            .foregroundColor(.white)
+                    }
+                }
+            }
+            .sheet(isPresented: $viewModel.showNewTripForm) {
+                SleekNewTripForm(viewModel: viewModel)
+            }
+
+            // Confetti Effect
+            if showConfetti {
+                ConfettiEffectView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation {
+                                showConfetti = false
+                            }
+                        }
+                    }
+            }
+        }
+    }
+}
+
+
+struct AnimatedGradientBackground: View {
+    @State private var gradientShift = Angle(degrees: 0)
+
+    var body: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [.purple, .blue, .pink]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .edgesIgnoringSafeArea(.all)
+        .overlay(
+            Circle()
+                .fill(Color.white.opacity(0.1))
+                .frame(width: 300, height: 300)
+                .offset(x: 150, y: -150)
+                .animation(
+                    Animation.easeInOut(duration: 6).repeatForever(autoreverses: true),
+                    value: gradientShift
+                )
+                .onAppear {
+                    gradientShift = Angle(degrees: 360)
+                }
+        )
+    }
+}
+
+struct HeroSection: View {
+    let totalTrips: Int
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Text("🌍 Your Adventures Await!")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .padding(.top, 20)
+
+            if totalTrips > 0 {
+                Text("\(totalTrips) trips planned!")
+                    .font(.headline)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+        }
+        .padding()
+    }
+}
+struct TripCardV2: View {
+    let trip: Trip
+
+    var body: some View {
+        VStack {
+            Text(trip.icon)
+                .font(.system(size: 60))
+                .padding()
+
+            Text(trip.name)
+                .font(.headline)
+                .foregroundColor(.white)
+                .padding(.horizontal)
+
+            Text("\(trip.trackedPlates.count) plates")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .padding()
+        .background(Color.blue.opacity(0.8))
+        .cornerRadius(15)
+        .shadow(radius: 5)
+    }
+}
+struct ConfettiEffectView: View {
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                ForEach(0..<30, id: \.self) { _ in
+                    Circle()
+                        .fill(Color.random)
+                        .frame(width: CGFloat.random(in: 5...15), height: CGFloat.random(in: 5...15))
+                        .position(
+                            x: CGFloat.random(in: 0...geometry.size.width),
+                            y: CGFloat.random(in: 0...geometry.size.height)
+                        )
+                        .opacity(0.8)
+                        .animation(
+                            Animation.easeOut(duration: 2).repeatForever(autoreverses: false),
+                            value: UUID()
+                        )
+                }
+            }
+        }
+    }
+}
+
+extension Color {
+    static var random: Color {
+        Color(
+            red: Double.random(in: 0...1),
+            green: Double.random(in: 0...1),
+            blue: Double.random(in: 0...1)
+        )
+    }
+}

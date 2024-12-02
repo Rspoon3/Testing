@@ -239,3 +239,127 @@ struct HeaderViewV4: View {
         .padding(.horizontal)
     }
 }
+
+
+import SwiftUI
+
+struct HeaderViewV22: View {
+    let collectedCount: Int
+
+    private var progress: Double {
+        Double(collectedCount) / Double(50)
+    }
+
+    private var motivationalMessage: String {
+        switch collectedCount {
+        case 0:
+            return "Let's get started!"
+        case 1..<10:
+            return "Great start! Keep going!"
+        case 10..<30:
+            return "You're halfway there!"
+        case 30..<50:
+            return "So close! Almost done!"
+        default:
+            return "Congratulations! You've completed your collection!"
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 20) {
+            // Title
+            Text("Your Collection")
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+
+            // Motivational Message
+            Text(motivationalMessage)
+                .font(.headline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+
+            // Animated Progress Bar and Stats
+            HStack(spacing: 20) {
+                ZStack {
+                    // Circular Progress Indicator
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [.red, .yellow, .green]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                        )
+                        .opacity(0.3)
+                        .frame(width: 100, height: 100)
+
+                    Circle()
+                        .trim(from: 0, to: progress)
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [.red, .yellow, .green]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                        .frame(width: 100, height: 100)
+                        .animation(.easeOut(duration: 1), value: progress)
+
+                    // Collected Count in the Middle
+                    VStack {
+                        Text("\(collectedCount)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.green)
+                        Text("/ 50")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                // Stats and Encouragement
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Plates Collected")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    Text("You're \(50 - collectedCount) plates away from completion!")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            // Fun Emoji Strip
+            HStack {
+                ForEach(0..<min(5, collectedCount), id: \.self) { _ in
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                        .font(.title2)
+                }
+                if collectedCount < 50 {
+                    ForEach(0..<(5 - min(5, collectedCount)), id: \.self) { _ in
+                        Image(systemName: "star")
+                            .foregroundColor(.gray)
+                            .font(.title2)
+                    }
+                }
+            }
+            .padding(.top, 10)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color(.systemGray6), Color(.systemGray5)]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .shadow(radius: 5)
+        )
+        .padding(.horizontal)
+    }
+}
