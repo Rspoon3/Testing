@@ -12,7 +12,6 @@ struct TestingApp: App {
     var body: some Scene {
         WindowGroup {
             VStack {
-                DeviceConnectionView()
                 EchelonBikeView()
             }
         }
