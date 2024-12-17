@@ -34,11 +34,11 @@ final class HeartRateManager {
         )
         
         print("HealthKit authorization granted.")
-        startHeartRateQuery()
+        await startHeartRateQuery()
     }
     
     // Start heart rate query for live updates
-    func startHeartRateQuery() {
+    func startHeartRateQuery() async {
         let predicate = HKQuery.predicateForSamples(
             withStart: .now,
             end: nil,
@@ -60,9 +60,19 @@ final class HeartRateManager {
             self?.processHeartRateSamples(samples, error: error)
         }
         
-        if let query = heartRateQuery {
-            healthStore.execute(query)
-            print("Heart rate query executed.")
+        guard let heartRateQuery else { return }
+        
+        healthStore.execute(heartRateQuery)
+        print("Heart rate query executed.")
+        
+        do {
+            try await healthStore.enableBackgroundDelivery(
+                for: heartRateType,
+                frequency: .immediate
+            )
+            print("Background delivery enabled.")
+        } catch {
+            print("Failed to enable background delivery: \(error.localizedDescription)")
         }
     }
     
