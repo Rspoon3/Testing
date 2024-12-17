@@ -14,6 +14,7 @@ struct MetricContentView: View {
     let distance: Double
     let elapsedTime: String
     let speed: Double
+    let heartRate: Int
     
     var formattedSpeed: String {
         let measurement = Measurement(value: speed, unit: UnitSpeed.kilometersPerHour)
@@ -55,6 +56,7 @@ struct MetricContentView: View {
                     MetricTile(label: "Distance", value: formattedDistance)
                     MetricTile(label: "Speed", value: formattedSpeed)
                     MetricTile(label: "Elapsed Time", value: elapsedTime)
+                    MetricTile(label: "Heart Rate", value: "\(heartRate) BPM")
                 }
             }
             .contentMargins(16, for: .scrollContent)
@@ -69,6 +71,7 @@ struct MetricContentView: View {
         power: 224,
         distance: 1.17,
         elapsedTime: "13:54",
-        speed: 24.23432
+        speed: 24.23432,
+        heartRate: 154
     )
 }

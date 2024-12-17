@@ -17,6 +17,8 @@
 		94BDD40C2D11CE54005A9219 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BDD40A2D11CE54005A9219 /* HomeViewModel.swift */; };
 		94BDD4B62D11D4D6005A9219 /* MetricContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BDD4B52D11D4D6005A9219 /* MetricContentView.swift */; };
 		94BDD4B72D11D4D6005A9219 /* MetricContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BDD4B52D11D4D6005A9219 /* MetricContentView.swift */; };
+		94BDD4B92D11DC87005A9219 /* HeartRateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BDD4B82D11DC87005A9219 /* HeartRateManager.swift */; };
+		94BDD4BA2D11DC87005A9219 /* HeartRateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BDD4B82D11DC87005A9219 /* HeartRateManager.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -48,6 +50,7 @@
 		94BDD4072D11CE49005A9219 /* MetricTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTile.swift; sourceTree = "<group>"; };
 		94BDD40A2D11CE54005A9219 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		94BDD4B52D11D4D6005A9219 /* MetricContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricContentView.swift; sourceTree = "<group>"; };
+		94BDD4B82D11DC87005A9219 /* HeartRateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateManager.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D624E0BCB30091EA92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -124,6 +127,7 @@
 				948FB25B2D11168800B70725 /* HomeView.swift */,
 				94BDD4B52D11D4D6005A9219 /* MetricContentView.swift */,
 				94BDD4072D11CE49005A9219 /* MetricTile.swift */,
+				94BDD4B82D11DC87005A9219 /* HeartRateManager.swift */,
 				94BDD40A2D11CE54005A9219 /* HomeViewModel.swift */,
 				948FB2552D11111300B70725 /* Peripheral.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
@@ -343,6 +347,7 @@
 				94BDD40C2D11CE54005A9219 /* HomeViewModel.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				94BDD4082D11CE49005A9219 /* MetricTile.swift in Sources */,
+				94BDD4B92D11DC87005A9219 /* HeartRateManager.swift in Sources */,
 				94BDD4B62D11D4D6005A9219 /* MetricContentView.swift in Sources */,
 				948FB2562D11111300B70725 /* Peripheral.swift in Sources */,
 			);
@@ -356,6 +361,7 @@
 				94BDD40B2D11CE54005A9219 /* HomeViewModel.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				94BDD4092D11CE49005A9219 /* MetricTile.swift in Sources */,
+				94BDD4BA2D11DC87005A9219 /* HeartRateManager.swift in Sources */,
 				94BDD4B72D11D4D6005A9219 /* MetricContentView.swift in Sources */,
 				948FB2572D11111300B70725 /* Peripheral.swift in Sources */,
 			);
