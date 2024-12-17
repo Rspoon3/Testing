@@ -7,18 +7,26 @@
 
 import HealthKit
 
+struct HeartRate {
+    let lastUpdate: Date = .now
+    let value: Int
+    let startDate: Date
+    let endDate: Date
+}
+
 @Observable
 final class HeartRateManager {
     private let healthStore = HKHealthStore()
     private let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate)!
     
-    private(set) var lastUpdate: Date?
-    private(set) var heartRate: Int = 0
+    private(set) var heartRate: HeartRate?
     
     private var heartRateQuery: HKAnchoredObjectQuery?
     
     // Request HealthKit authorization
     func requestAuthorization() async {
+        guard HKHealthStore.isHealthDataAvailable() else { return }
+        
         let typesToRead: Set<HKObjectType> = [heartRateType]
         try? await healthStore.requestAuthorization(
             toShare: [],
@@ -68,9 +76,13 @@ final class HeartRateManager {
         let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
         let heartRateValue = Int(heartRateSample.quantity.doubleValue(for: heartRateUnit))
         print("Current HR: \(heartRateValue)")
+        
         DispatchQueue.main.async {
-            self.heartRate = Int(heartRateValue)
-            self.lastUpdate = .now
+            self.heartRate = .init(
+                value: Int(heartRateValue),
+                startDate: heartRateSample.startDate,
+                endDate: heartRateSample.endDate
+            )
         }
     }
 }

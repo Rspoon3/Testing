@@ -10,19 +10,25 @@ import SwiftUI
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
     @State private var heartRateManager = HeartRateManager()
-
+    
     var body: some View {
         VStack {
-            Text(heartRateManager.heartRate.formatted())
-                .task {
-                    await heartRateManager.requestAuthorization()
-                }
-            if let lastUpdate = heartRateManager.lastUpdate {
-                Text("Last Update: \(lastUpdate.formatted())")
+            if let heartRate = heartRateManager.heartRate {
+                Text(heartRate.value.formatted())
+                    .contentTransition(.numericText(value: Double(heartRate.value)))
+                
+                Text("Last Update: \(heartRate.lastUpdate.formatted())")
+                    .foregroundStyle(.secondary)
+                Text("Start Date: \(heartRate.startDate.formatted())")
+                    .foregroundStyle(.secondary)
+                Text("End Date: \(heartRate.endDate.formatted())")
                     .foregroundStyle(.secondary)
             }
             
             contentView
+        }
+        .task {
+            await heartRateManager.requestAuthorization()
         }
     }
     
@@ -38,7 +44,7 @@ struct HomeView: View {
                 distance: viewModel.distance,
                 elapsedTime: viewModel.elapsedTime,
                 speed: viewModel.speed,
-                heartRate: heartRateManager.heartRate
+                heartRate: heartRateManager.heartRate?.value
             )
         } else {
             Text("Scanning for Echelon Bike...")
