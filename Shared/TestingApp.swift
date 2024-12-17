@@ -12,7 +12,7 @@ struct TestingApp: App {
     var body: some Scene {
         WindowGroup {
             VStack {
-                EchelonBikeView()
+                HomeView()
             }
         }
     }
