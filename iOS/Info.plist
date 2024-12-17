@@ -20,6 +20,10 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>This app needs Bluetooth access to connect to the Echelon bike and display metrics.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>This app uses Bluetooth to monitor bike performance.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

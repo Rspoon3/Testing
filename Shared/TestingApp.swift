@@ -11,7 +11,10 @@ import SwiftUI
 struct TestingApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            VStack {
+                DeviceConnectionView()
+                EchelonBikeView()
+            }
         }
     }
 }
