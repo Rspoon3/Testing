@@ -16,6 +16,7 @@ class HomeViewModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     private(set) var resistance: Int = 0
     private(set) var distance: Double = 0
     private(set) var power: Int = 0
+    private(set) var speed: Double = 0
     private(set) var elapsedTime: String = "00:00"
     private(set) var discoveredPeripherals: [Peripheral] = []
     
@@ -179,11 +180,13 @@ class HomeViewModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             let cadenceValue = Int((UInt16(bytes[9]) << 8) + UInt16(bytes[10]))
             let distanceValue = getDistanceFromPacket(bytes)
             let elapsedTime = getElapsedTimeFromPacket(bytes)
+            let speed = 0.37497622 * Double(cadenceValue)
             
             DispatchQueue.main.async {
                 self.cadence = cadenceValue
                 self.distance = distanceValue
                 self.elapsedTime = elapsedTime
+                self.speed = speed
                 self.power = self.calculatePower(cadence: cadenceValue, resistance: self.resistance)
             }
             print("Cadence: \(cadenceValue) RPM, Distance: \(distanceValue) km, Elapsed Time: \(elapsedTime)")

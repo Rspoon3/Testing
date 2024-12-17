@@ -15,11 +15,16 @@ struct MetricTile: View {
         VStack {
             Text(label)
                 .font(.headline)
+                .padding()
+            
             Text(value)
                 .font(.largeTitle)
                 .foregroundColor(.blue)
+                
+            Spacer()
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .aspectRatio(1, contentMode: .fit) // Ensures a square shape
         .background(Color.blue.opacity(0.1))
         .cornerRadius(10)
     }

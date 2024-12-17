@@ -9,36 +9,31 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
-    let columns: [GridItem] = [
-        GridItem(.adaptive(minimum: 160), spacing: 16)
-    ]
     
     var body: some View {
-        VStack(spacing: 20) {
-            if viewModel.isConnected {
-                VStack {
-                    Text("Echelon Bike Metrics")
-                        .font(.title2)
-                    
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 16) {
-                            MetricTile(label: "Cadence", value: "\(viewModel.cadence) RPM")
-                            MetricTile(label: "Resistance", value: "\(viewModel.resistance)")
-                            MetricTile(label: "Power", value: "\(viewModel.power) W")
-                            MetricTile(label: "Distance", value: "\(viewModel.distance) M")
-                            MetricTile(label: "Elapsed Time", value: "\(viewModel.elapsedTime) M")
-                        }
-                    }
-                    .contentMargins(16, for: .scrollContent)
+        contentView
+    }
+    
+    // MARK: - Private
+    
+    @ViewBuilder
+    private var contentView: some View {
+        if viewModel.isConnected {
+            MetricContentView(
+                cadence: viewModel.cadence,
+                resistance: viewModel.resistance,
+                power: viewModel.power,
+                distance: viewModel.distance,
+                elapsedTime: viewModel.elapsedTime,
+                speed: viewModel.speed
+            )
+        } else {
+            Text("Scanning for Echelon Bike...")
+                .foregroundColor(.gray)
+                .padding()
+                .onAppear {
+                    viewModel.startScanning()
                 }
-            } else {
-                Text("Scanning for Echelon Bike...")
-                    .foregroundColor(.gray)
-            }
-        }
-        .padding()
-        .onAppear {
-            viewModel.startScanning()
         }
     }
 }
