@@ -41,6 +41,7 @@ struct HomeView: View {
                 cadence: viewModel.cadence,
                 resistance: viewModel.resistance,
                 power: viewModel.power,
+                power2: viewModel.power2,
                 distance: viewModel.distance,
                 elapsedTime: viewModel.elapsedTime,
                 speed: viewModel.speed,

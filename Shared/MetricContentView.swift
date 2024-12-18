@@ -11,6 +11,7 @@ struct MetricContentView: View {
     let cadence: Int
     let resistance: Int
     let power: Int
+    let power2: Int
     let distance: Double
     let elapsedTime: String
     let speed: Double
@@ -22,19 +23,37 @@ struct MetricContentView: View {
     }
     
     var formattedDistance: String {
-        let measurement = Measurement(value: distance, unit: UnitLength.miles)
+        let measurement = Measurement(value: distance, unit: UnitLength.kilometers)
         return measurement.formatted(
             .measurement(
                 width: .abbreviated,
-                usage: .road,
+                usage: .asProvided,
                 numberFormatStyle: .number.precision(.fractionLength(2))
             )
         )
     }
     
+    
     var formattedPower: String {
         let measurement = Measurement(value: Double(power), unit: UnitPower.watts)
-        return measurement.formatted()
+        return measurement.formatted(
+            .measurement(
+                width: .abbreviated,
+                usage: .asProvided,
+                numberFormatStyle: .number.precision(.fractionLength(0))
+            )
+        )
+    }
+    
+    var formattedPower2: String {
+        let measurement = Measurement(value: Double(power2), unit: UnitPower.watts)
+        return measurement.formatted(
+            .measurement(
+                width: .abbreviated,
+                usage: .asProvided,
+                numberFormatStyle: .number.precision(.fractionLength(0))
+            )
+        )
     }
 
     private let columns: [GridItem] = [
@@ -53,10 +72,11 @@ struct MetricContentView: View {
                     MetricTile(label: "Cadence", value: "\(cadence) RPM")
                     MetricTile(label: "Resistance", value: "\(resistance)")
                     MetricTile(label: "Power", value: formattedPower)
+                    MetricTile(label: "Power2", value: formattedPower2)
                     MetricTile(label: "Distance", value: formattedDistance)
                     MetricTile(label: "Speed", value: formattedSpeed)
                     MetricTile(label: "Elapsed Time", value: elapsedTime)
-                    
+
                     if let heartRate {
                         MetricTile(label: "Heart Rate", value: "\(heartRate) BPM")
                     }
@@ -71,8 +91,9 @@ struct MetricContentView: View {
     MetricContentView(
         cadence: 37,
         resistance: 14,
-        power: 224,
-        distance: 1.17,
+        power: 88,
+        power2: 54,
+        distance: 0.18761707,
         elapsedTime: "13:54",
         speed: 24.23432,
         heartRate: 154

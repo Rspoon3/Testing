@@ -16,6 +16,7 @@ class HomeViewModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     private(set) var resistance: Int = 0
     private(set) var distance: Double = 0
     private(set) var power: Int = 0
+    private(set) var power2: Int = 0
     private(set) var speed: Double = 0
     private(set) var elapsedTime: String = "00:00"
     private(set) var discoveredPeripherals: [Peripheral] = []
@@ -134,7 +135,7 @@ class HomeViewModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         print("Sent activation message: \(activationData.map { String(format: "%02x", $0) }.joined())")
         
         // Wait briefly and then request resistance
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // 500ms delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { // 500ms delay
             self.requestResistanceUpdate()
         }
     }
@@ -151,6 +152,9 @@ class HomeViewModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         print("Sent resistance request command: \(resistanceRequest.map { String(format: "%02x", $0) }.joined())")
     }
     
+    /// May not actually be distance
+    ///
+    /// https://github.com/cagnulein/qdomyos-zwift/issues/62
     private func getDistanceFromPacket(_ bytes: [UInt8]) -> Double {
         let convertedData = (UInt16(bytes[7]) << 8) | UInt16(bytes[8])
         let distance = Double(convertedData) / 100.0
@@ -178,18 +182,26 @@ class HomeViewModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         switch bytes[1] {
         case 0xD1: // Cadence notification
             let cadenceValue = Int((UInt16(bytes[9]) << 8) + UInt16(bytes[10]))
-            let distanceValue = getDistanceFromPacket(bytes)
             let elapsedTime = getElapsedTimeFromPacket(bytes)
-            let speed = 0.37497622 * Double(cadenceValue)
+            
+            // https://github.com/cagnulein/qdomyos-zwift/issues/62
+            let speedKPH = 0.37497622 * Double(cadenceValue)
+            
+            // Calculate distance incrementally based on speed and elapsed time
+            let currentTime = Date()
+            let elapsedTimeMillis = currentTime.timeIntervalSince(self.lastRefreshTime) * 1000.0
+            let incrementalDistance = (self.speed / 3600000.0) * elapsedTimeMillis // Speed in km/ms
             
             DispatchQueue.main.async {
                 self.cadence = cadenceValue
-                self.distance = distanceValue
+                self.distance += incrementalDistance // Increment distance
                 self.elapsedTime = elapsedTime
-                self.speed = speed
+                self.speed = speedKPH
                 self.power = self.calculatePower(cadence: cadenceValue, resistance: self.resistance)
             }
-            print("Cadence: \(cadenceValue) RPM, Distance: \(distanceValue) km, Elapsed Time: \(elapsedTime)")
+            
+
+            print("Cadence: \(cadenceValue) RPM, Distance: \(distance) km, Elapsed Time: \(elapsedTime)")
         case 0xD2: // Resistance response
             let resistanceValue = Int(bytes[3]) // Resistance is in byte 3
             DispatchQueue.main.async {
@@ -200,12 +212,18 @@ class HomeViewModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         default:
             print("Unknown notification type: \(String(format: "0x%02X", bytes[1]))")
         }
+        
+        self.lastRefreshTime = .now
     }
     
+    var lastRefreshTime: Date = .now
+    
     private func calculatePower(cadence: Int, resistance: Int) -> Int {
+        // https://github.com/ptx2/gymnasticon/issues/27
+        let _power2 = pow(1.090112, Double(resistance)) * pow(1.015343, Double(cadence)) * 7.228958
+        power2 = Int(_power2)
         // Simple power estimation: cadence * resistance * constant factor
         return (cadence * resistance) / 10
         
-        //power = pow(1.090112, resistance) * pow(1.015343, cadence) * 7.228958;
     }
 }
