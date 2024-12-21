@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		943FF95B2D15DFF8001998BD /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF95A2D15DFF8001998BD /* BluetoothManager.swift */; };
+		943FF95C2D15DFF8001998BD /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF95A2D15DFF8001998BD /* BluetoothManager.swift */; };
+		943FF95E2D15E745001998BD /* CadenceResponseMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF95D2D15E745001998BD /* CadenceResponseMetrics.swift */; };
+		943FF95F2D15E745001998BD /* CadenceResponseMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF95D2D15E745001998BD /* CadenceResponseMetrics.swift */; };
+		943FF9612D15FC86001998BD /* BluetoothManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF9602D15FC86001998BD /* BluetoothManagerProtocol.swift */; };
+		943FF9622D15FC86001998BD /* BluetoothManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF9602D15FC86001998BD /* BluetoothManagerProtocol.swift */; };
+		943FF9642D15FCD1001998BD /* MockBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF9632D15FCD1001998BD /* MockBluetoothManager.swift */; };
+		943FF9652D15FCD1001998BD /* MockBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF9632D15FCD1001998BD /* MockBluetoothManager.swift */; };
+		943FF9672D15FEFC001998BD /* RealisticMockDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF9662D15FEFC001998BD /* RealisticMockDataGenerator.swift */; };
+		943FF9682D15FEFC001998BD /* RealisticMockDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF9662D15FEFC001998BD /* RealisticMockDataGenerator.swift */; };
+		943FF96A2D1611F8001998BD /* MetricsChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF9692D1611F8001998BD /* MetricsChartView.swift */; };
+		943FF96B2D1611F8001998BD /* MetricsChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943FF9692D1611F8001998BD /* MetricsChartView.swift */; };
 		948FB2562D11111300B70725 /* Peripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948FB2552D11111300B70725 /* Peripheral.swift */; };
 		948FB2572D11111300B70725 /* Peripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948FB2552D11111300B70725 /* Peripheral.swift */; };
 		948FB25C2D11168800B70725 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948FB25B2D11168800B70725 /* HomeView.swift */; };
@@ -45,6 +57,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		943FF95A2D15DFF8001998BD /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
+		943FF95D2D15E745001998BD /* CadenceResponseMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceResponseMetrics.swift; sourceTree = "<group>"; };
+		943FF9602D15FC86001998BD /* BluetoothManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManagerProtocol.swift; sourceTree = "<group>"; };
+		943FF9632D15FCD1001998BD /* MockBluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBluetoothManager.swift; sourceTree = "<group>"; };
+		943FF9662D15FEFC001998BD /* RealisticMockDataGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealisticMockDataGenerator.swift; sourceTree = "<group>"; };
+		943FF9692D1611F8001998BD /* MetricsChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartView.swift; sourceTree = "<group>"; };
 		948FB2552D11111300B70725 /* Peripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Peripheral.swift; sourceTree = "<group>"; };
 		948FB25B2D11168800B70725 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		94BDD4072D11CE49005A9219 /* MetricTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTile.swift; sourceTree = "<group>"; };
@@ -129,6 +147,12 @@
 				94BDD4072D11CE49005A9219 /* MetricTile.swift */,
 				94BDD4B82D11DC87005A9219 /* HeartRateManager.swift */,
 				94BDD40A2D11CE54005A9219 /* HomeViewModel.swift */,
+				943FF95D2D15E745001998BD /* CadenceResponseMetrics.swift */,
+				943FF9692D1611F8001998BD /* MetricsChartView.swift */,
+				943FF9632D15FCD1001998BD /* MockBluetoothManager.swift */,
+				943FF9662D15FEFC001998BD /* RealisticMockDataGenerator.swift */,
+				943FF95A2D15DFF8001998BD /* BluetoothManager.swift */,
+				943FF9602D15FC86001998BD /* BluetoothManagerProtocol.swift */,
 				948FB2552D11111300B70725 /* Peripheral.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
@@ -343,11 +367,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				943FF9622D15FC86001998BD /* BluetoothManagerProtocol.swift in Sources */,
+				943FF9642D15FCD1001998BD /* MockBluetoothManager.swift in Sources */,
+				943FF95F2D15E745001998BD /* CadenceResponseMetrics.swift in Sources */,
 				948FB25C2D11168800B70725 /* HomeView.swift in Sources */,
 				94BDD40C2D11CE54005A9219 /* HomeViewModel.swift in Sources */,
+				943FF95B2D15DFF8001998BD /* BluetoothManager.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				94BDD4082D11CE49005A9219 /* MetricTile.swift in Sources */,
+				943FF9682D15FEFC001998BD /* RealisticMockDataGenerator.swift in Sources */,
 				94BDD4B92D11DC87005A9219 /* HeartRateManager.swift in Sources */,
+				943FF96B2D1611F8001998BD /* MetricsChartView.swift in Sources */,
 				94BDD4B62D11D4D6005A9219 /* MetricContentView.swift in Sources */,
 				948FB2562D11111300B70725 /* Peripheral.swift in Sources */,
 			);
@@ -357,11 +387,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				943FF9612D15FC86001998BD /* BluetoothManagerProtocol.swift in Sources */,
+				943FF9652D15FCD1001998BD /* MockBluetoothManager.swift in Sources */,
+				943FF95E2D15E745001998BD /* CadenceResponseMetrics.swift in Sources */,
 				948FB25D2D11168800B70725 /* HomeView.swift in Sources */,
 				94BDD40B2D11CE54005A9219 /* HomeViewModel.swift in Sources */,
+				943FF95C2D15DFF8001998BD /* BluetoothManager.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 				94BDD4092D11CE49005A9219 /* MetricTile.swift in Sources */,
+				943FF9672D15FEFC001998BD /* RealisticMockDataGenerator.swift in Sources */,
 				94BDD4BA2D11DC87005A9219 /* HeartRateManager.swift in Sources */,
+				943FF96A2D1611F8001998BD /* MetricsChartView.swift in Sources */,
 				94BDD4B72D11D4D6005A9219 /* MetricContentView.swift in Sources */,
 				948FB2572D11111300B70725 /* Peripheral.swift in Sources */,
 			);

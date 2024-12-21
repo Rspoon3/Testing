@@ -13,6 +13,8 @@ struct HomeView: View {
     
     var body: some View {
         VStack {
+            @Bindable var viewModel = viewModel
+            
             if let heartRate = heartRateManager.heartRate {
                 Text(heartRate.value.formatted())
                     .contentTransition(.numericText(value: Double(heartRate.value)))
@@ -25,6 +27,13 @@ struct HomeView: View {
                     .foregroundStyle(.secondary)
             }
             
+            MetricsChartView(viewModel: viewModel)
+            
+//            PausableTimerView(
+//                isRunning: $viewModel.isRunning,
+//                startTime: $viewModel.startTime,
+//                elapsedTime: $viewModel.elapsedTime2
+//            )
             contentView
         }
         .task {
@@ -56,4 +65,8 @@ struct HomeView: View {
                 }
         }
     }
+}
+
+#Preview {
+    HomeView()
 }

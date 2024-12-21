@@ -10,17 +10,28 @@ import SwiftUI
 struct MetricTile: View {
     let label: String
     let value: String
-    
+    let animationValue: Double?
+
     var body: some View {
         VStack {
             Text(label)
                 .font(.headline)
                 .padding()
             
-            Text(value)
-                .font(.largeTitle)
-                .foregroundColor(.blue)
-                
+            if let animationValue {
+                Text(value)
+                    .font(.largeTitle)
+                    .monospaced()
+                    .foregroundColor(.blue)
+                    .contentTransition(.numericText(value: animationValue))
+                    .animation(.default, value: value)
+            } else {
+                Text(value)
+                    .font(.largeTitle)
+                    .monospaced()
+                    .foregroundColor(.blue)
+            }
+            
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -33,6 +44,7 @@ struct MetricTile: View {
 #Preview {
     MetricTile(
         label: "Distance",
-        value: "1.17"
+        value: "1.17",
+        animationValue: 1.17
     )
 }
