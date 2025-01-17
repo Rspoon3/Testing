@@ -48,6 +48,11 @@ jobs:
       - name: Add Tiny PR Label
         if: ${{ env.ADDITIONS < env.MAX_LINES && env.DELETIONS < env.MAX_LINES }}
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
+          echo "Trying to add label '$LABEL_NAME' to PR #${{ github.event.pull_request.number }}"
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME" || {
+            echo "Failed to add label. Retrying in 5 seconds..."
+            sleep 5
+            gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
+          }
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
