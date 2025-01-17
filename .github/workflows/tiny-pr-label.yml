@@ -1,0 +1,30 @@
+name: Label Tiny PR
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  label_tiny_pr:
+    runs-on: ubuntu-latest
+    env:
+      MAX_LINES: 100  # Change this value as needed
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get PR Stats
+        id: pr_size
+        run: |
+          ADDITIONS=$(jq '.pull_request.additions' "$GITHUB_EVENT_PATH")
+          DELETIONS=$(jq '.pull_request.deletions' "$GITHUB_EVENT_PATH")
+          echo "Additions: $ADDITIONS, Deletions: $DELETIONS"
+          echo "ADDITIONS=$ADDITIONS" >> $GITHUB_ENV
+          echo "DELETIONS=$DELETIONS" >> $GITHUB_ENV
+
+      - name: Add Tiny PR Label
+        if: ${{ env.ADDITIONS < env.MAX_LINES && env.DELETIONS < env.MAX_LINES }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "Tiny PR"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
