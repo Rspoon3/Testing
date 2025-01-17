@@ -60,7 +60,13 @@ jobs:
             gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
             echo "Label '$LABEL_NAME' added successfully!"
           else
-            echo "PR is too large. Skipping label addition."
+            echo "PR is too large. Removing label if applied..."
+            if gh pr view ${{ github.event.pull_request.number }} --json labels | jq -r '.labels[].name' | grep -q "$LABEL_NAME"; then
+              gh pr edit ${{ github.event.pull_request.number }} --remove-label "$LABEL_NAME"
+              echo "Label '$LABEL_NAME' removed."
+            else
+              echo "Label '$LABEL_NAME' was not present. No action needed."
+            fi
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
