@@ -1,4 +1,4 @@
-name: Label Tiny PR
+name: Tiny Label PR
 
 on:
   pull_request:
@@ -8,7 +8,9 @@ jobs:
   label_tiny_pr:
     runs-on: ubuntu-latest
     env:
-      MAX_LINES: 100  # Change this value as needed
+      MAX_LINES: 100  # Change as needed
+      LABEL_NAME: "Tiny PR"
+      LABEL_COLOR: "0e8a16"  # Green
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -22,9 +24,57 @@ jobs:
           echo "ADDITIONS=$ADDITIONS" >> $GITHUB_ENV
           echo "DELETIONS=$DELETIONS" >> $GITHUB_ENV
 
-      - name: Add Tiny PR Label
-        if: ${{ env.ADDITIONS < env.MAX_LINES && env.DELETIONS < env.MAX_LINES }}
+      - name: Ensure Label Exists
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "Tiny PR"
+          echo "Checking for label: $LABEL_NAME"
+          EXISTING_LABELS=$(gh label list --json name | jq -r '.[].name')
+          echo "Existing labels: $EXISTING_LABELS"
+
+          if echo "$EXISTING_LABELS" | grep -q "$LABEL_NAME"; then
+            echo "Label '$LABEL_NAME' already exists, moving on."
+          else
+            echo "Label '$LABEL_NAME' not found. Creating label..."
+            gh label create "$LABEL_NAME" --color "$LABEL_COLOR" --description "PR with small changes"
+            sleep 5  # Allow time for GitHub to register
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Manage Tiny PR Label
+        run: |
+          echo "🔎 Checking if PR meets the Tiny PR threshold..."
+          echo "📌 MAX_LINES = $MAX_LINES"
+          echo "📌 ADDITIONS = $ADDITIONS"
+          echo "📌 DELETIONS = $DELETIONS"
+
+          # Fetch current labels on the PR
+          CURRENT_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels | jq -r '.labels[].name')
+          echo "📌 Current PR Labels: $CURRENT_LABELS"
+
+          # Check if the label is already applied
+          if echo "$CURRENT_LABELS" | grep -q "$LABEL_NAME"; then
+            LABEL_EXISTS=true
+          else
+            LABEL_EXISTS=false
+          fi
+
+          # If PR qualifies as "Tiny PR"
+          if [ "$ADDITIONS" -lt "$MAX_LINES" ] && [ "$DELETIONS" -lt "$MAX_LINES" ]; then
+            if [ "$LABEL_EXISTS" = true ]; then
+              echo "ℹ️ Label '$LABEL_NAME' is already applied. No action needed."
+            else
+              echo "✅ PR is small enough, and label is missing. Adding label..."
+              gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
+              echo "✅ Label '$LABEL_NAME' added successfully!"
+            fi
+          else
+            if [ "$LABEL_EXISTS" = true ]; then
+              echo "🚫 PR is too large. Removing label..."
+              gh pr edit ${{ github.event.pull_request.number }} --remove-label "$LABEL_NAME"
+              echo "✅ Label '$LABEL_NAME' removed."
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ADDITIONS: ${{ env.ADDITIONS }}
+          DELETIONS: ${{ env.DELETIONS }}
