@@ -29,6 +29,8 @@ jobs:
           echo "Additions: $ADDITIONS, Deletions: $DELETIONS"
           echo "ADDITIONS=$ADDITIONS" >> $GITHUB_ENV
           echo "DELETIONS=$DELETIONS" >> $GITHUB_ENV
+          echo "::set-output name=ADDITIONS::$ADDITIONS"
+          echo "::set-output name=DELETIONS::$DELETIONS"
 
       - name: Ensure Label Exists (Debugging)
         run: |
@@ -41,13 +43,19 @@ jobs:
           else
             echo "Label '$LABEL_NAME' not found. Creating it..."
             gh label create "$LABEL_NAME" --color "$LABEL_COLOR" --description "PR with small changes"
+            sleep 5  # Allow time for GitHub to register
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add Tiny PR Label
-        if: ${{ env.ADDITIONS < env.MAX_LINES && env.DELETIONS < env.MAX_LINES }}
+        if: ${{ steps.pr_size.outputs.ADDITIONS < env.MAX_LINES && steps.pr_size.outputs.DELETIONS < env.MAX_LINES }}
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
+          echo "Trying to add label '$LABEL_NAME' to PR #${{ github.event.pull_request.number }}"
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME" || {
+            echo "Failed to add label. Retrying in 5 seconds..."
+            sleep 5
+            gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
+          }
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
