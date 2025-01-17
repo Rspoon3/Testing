@@ -51,11 +51,19 @@ jobs:
       - name: Add Tiny PR Label
         if: ${{ steps.pr_size.outputs.ADDITIONS < env.MAX_LINES && steps.pr_size.outputs.DELETIONS < env.MAX_LINES }}
         run: |
-          echo "Trying to add label '$LABEL_NAME' to PR #${{ github.event.pull_request.number }}"
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME" || {
-            echo "Failed to add label. Retrying in 5 seconds..."
-            sleep 5
+          echo "Checking if PR meets the Tiny PR threshold..."
+          echo "MAX_LINES = $MAX_LINES"
+          echo "ADDITIONS = $ADDITIONS"
+          echo "DELETIONS = $DELETIONS"
+
+          if [ "$ADDITIONS" -lt "$MAX_LINES" ] && [ "$DELETIONS" -lt "$MAX_LINES" ]; then
+            echo "PR is small enough. Adding label..."
             gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
-          }
+            echo "Label '$LABEL_NAME' added successfully!"
+          else
+            echo "PR is too large. Skipping label addition."
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ADDITIONS: ${{ env.ADDITIONS }}
+          DELETIONS: ${{ env.DELETIONS }}
