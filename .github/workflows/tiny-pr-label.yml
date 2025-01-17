@@ -15,6 +15,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Debug Token Permissions
+        run: |
+          gh auth status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Get PR Stats
         id: pr_size
         run: |
@@ -24,10 +30,16 @@ jobs:
           echo "ADDITIONS=$ADDITIONS" >> $GITHUB_ENV
           echo "DELETIONS=$DELETIONS" >> $GITHUB_ENV
 
-      - name: Ensure Label Exists
+      - name: Ensure Label Exists (Debugging)
         run: |
-          if ! gh label list --json name | jq -e '.[] | select(.name=="'$LABEL_NAME'")' > /dev/null; then
-            echo "Label not found. Creating it now..."
+          echo "Checking for label: $LABEL_NAME"
+          EXISTING_LABELS=$(gh label list --json name | jq -r '.[].name')
+          echo "Existing labels: $EXISTING_LABELS"
+
+          if echo "$EXISTING_LABELS" | grep -q "$LABEL_NAME"; then
+            echo "Label '$LABEL_NAME' already exists."
+          else
+            echo "Label '$LABEL_NAME' not found. Creating it..."
             gh label create "$LABEL_NAME" --color "$LABEL_COLOR" --description "PR with small changes"
           fi
         env:
