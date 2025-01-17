@@ -8,9 +8,9 @@ jobs:
   label_tiny_pr:
     runs-on: ubuntu-latest
     env:
-      MAX_LINES: 100  # Change this value as needed
+      MAX_LINES: 100  # Change as needed
       LABEL_NAME: "Tiny PR"
-      LABEL_COLOR: "0e8a16"  # Green color (can be changed)
+      LABEL_COLOR: "0e8a16"  # Green
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -24,9 +24,12 @@ jobs:
           echo "ADDITIONS=$ADDITIONS" >> $GITHUB_ENV
           echo "DELETIONS=$DELETIONS" >> $GITHUB_ENV
 
-      - name: Create Label if Missing
+      - name: Ensure Label Exists
         run: |
-          gh label list | grep -q "^$LABEL_NAME" || gh label create "$LABEL_NAME" --color "$LABEL_COLOR" --description "PR with tiny changes"
+          if ! gh label list --json name | jq -e '.[] | select(.name=="'$LABEL_NAME'")' > /dev/null; then
+            echo "Label not found. Creating it now..."
+            gh label create "$LABEL_NAME" --color "$LABEL_COLOR" --description "PR with small changes"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
