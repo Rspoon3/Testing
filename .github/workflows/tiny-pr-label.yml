@@ -1,4 +1,4 @@
-name: Label Tiny PR
+name: Tiny Label PR
 
 on:
   pull_request:
@@ -24,16 +24,16 @@ jobs:
           echo "ADDITIONS=$ADDITIONS" >> $GITHUB_ENV
           echo "DELETIONS=$DELETIONS" >> $GITHUB_ENV
 
-      - name: Ensure Label Exists (Debugging)
+      - name: Ensure Label Exists
         run: |
           echo "Checking for label: $LABEL_NAME"
           EXISTING_LABELS=$(gh label list --json name | jq -r '.[].name')
           echo "Existing labels: $EXISTING_LABELS"
 
           if echo "$EXISTING_LABELS" | grep -q "$LABEL_NAME"; then
-            echo "Label '$LABEL_NAME' already exists."
+            echo "Label '$LABEL_NAME' already exists, moving on."
           else
-            echo "Label '$LABEL_NAME' not found. Creating it..."
+            echo "Label '$LABEL_NAME' not found. Creating label..."
             gh label create "$LABEL_NAME" --color "$LABEL_COLOR" --description "PR with small changes"
             sleep 5  # Allow time for GitHub to register
           fi
@@ -60,12 +60,12 @@ jobs:
 
           # If PR qualifies as "Tiny PR"
           if [ "$ADDITIONS" -lt "$MAX_LINES" ] && [ "$DELETIONS" -lt "$MAX_LINES" ]; then
-            if [ "$LABEL_EXISTS" = false ]; then
+            if [ "$LABEL_EXISTS" = true ]; then
+              echo "ℹ️ Label '$LABEL_NAME' is already applied. No action needed."
+            else
               echo "✅ PR is small enough, and label is missing. Adding label..."
               gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
               echo "✅ Label '$LABEL_NAME' added successfully!"
-            else
-              echo "ℹ️ Label '$LABEL_NAME' is already applied. No action needed."
             fi
           else
             if [ "$LABEL_EXISTS" = true ]; then
