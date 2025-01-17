@@ -23,8 +23,6 @@ jobs:
           echo "Additions: $ADDITIONS, Deletions: $DELETIONS"
           echo "ADDITIONS=$ADDITIONS" >> $GITHUB_ENV
           echo "DELETIONS=$DELETIONS" >> $GITHUB_ENV
-          echo "::set-output name=ADDITIONS::$ADDITIONS"
-          echo "::set-output name=DELETIONS::$DELETIONS"
 
       - name: Ensure Label Exists (Debugging)
         run: |
