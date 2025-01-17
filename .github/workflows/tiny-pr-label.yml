@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MAX_LINES: 100  # Change this value as needed
+      LABEL_NAME: "Tiny PR"
+      LABEL_COLOR: "0e8a16"  # Green color (can be changed)
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -22,9 +24,15 @@ jobs:
           echo "ADDITIONS=$ADDITIONS" >> $GITHUB_ENV
           echo "DELETIONS=$DELETIONS" >> $GITHUB_ENV
 
+      - name: Create Label if Missing
+        run: |
+          gh label list | grep -q "^$LABEL_NAME" || gh label create "$LABEL_NAME" --color "$LABEL_COLOR" --description "PR with tiny changes"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Add Tiny PR Label
         if: ${{ env.ADDITIONS < env.MAX_LINES && env.DELETIONS < env.MAX_LINES }}
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "Tiny PR"
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "$LABEL_NAME"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
