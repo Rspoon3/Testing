@@ -38,18 +38,20 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedGenre) {
-                Text(path.count.formatted())
                 ForEach(Genre.allCases, id: \.rawValue) { genre in
-                    NavigationLink(genre.rawValue, value: genre)
+//                    NavigationLink(genre.rawValue, value: genre)
+                    Text(genre.rawValue)
+                        .tag(genre)
                 }
-            }.navigationTitle("Genres")
+            }
+            .navigationTitle("Genres")
         } detail: {
             let filteredMovies = movies.filter { $0.genre == selectedGenre }
             
             NavigationStack {
                 List(filteredMovies) { movie in
                     NavigationLink(movie.name) {
-                        Text(movie.name)
+                        Text("\(movie.name) Details View")
                     }
                 }
                 .navigationTitle(selectedGenre?.rawValue ?? "")
