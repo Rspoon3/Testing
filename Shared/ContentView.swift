@@ -14,14 +14,14 @@ enum Genre: String, Hashable, CaseIterable {
     case kids = "Kids"
 }
 
-struct Movie: Hashable {
+struct Movie: Hashable, Identifiable {
+    let id = UUID()
     let name: String
     let genre: Genre
 }
 
 struct ContentView: View {
     @State private var selectedGenre: Genre?
-    @State private var selectedMovie: Movie?
     @State private var path: [String] = []
     
     private let movies = [
@@ -43,30 +43,17 @@ struct ContentView: View {
                     NavigationLink(genre.rawValue, value: genre)
                 }
             }.navigationTitle("Genres")
-        } content: {
+        } detail: {
             let filteredMovies = movies.filter { $0.genre == selectedGenre }
             
-            List(filteredMovies, id: \.name, selection: $selectedMovie) { movie in
-                NavigationLink(movie.name, value: movie)
-            }
-            .navigationTitle(selectedGenre?.rawValue ?? "")
-        } detail: {
-            NavigationStack(path: $path) {
-                NavigationLink(selectedMovie?.name ?? "", value: "Details2")
-                    .navigationDestination(for: String.self) { string in
-                        Button("Pop Back") {
-                            path = []
-                        }
+            NavigationStack {
+                List(filteredMovies) { movie in
+                    NavigationLink(movie.name) {
+                        Text(movie.name)
                     }
+                }
+                .navigationTitle(selectedGenre?.rawValue ?? "")
             }
-        }
-        .onChange(of: selectedGenre) { _, newValue in
-            var transaction = Transaction()
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                selectedMovie = movies.filter {$0.genre == newValue}.first
-            }
-            path = []
         }
     }
 }
