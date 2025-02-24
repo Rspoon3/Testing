@@ -78,8 +78,11 @@ struct DetailsView: View {
     @Environment(NavigationManager.self) private var navigationManager
     
     var body: some View {
-        Button("Show Full Screen Cover") {
-            viewModel.fullScreenItem = .init(value: 4)
+        ZStack {
+            Color.green
+            Button("Show Full Screen Cover") {
+                viewModel.fullScreenItem = .init(value: 4)
+            }
         }
         .navigationTitle("Details View")
         .fullScreenCover(item: $viewModel.fullScreenItem) { item in
@@ -89,12 +92,12 @@ struct DetailsView: View {
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("Cancel") {
-                                viewModel.fullScreenItem = nil
-                                
-                                var transaction = Transaction()
-                                transaction.disablesAnimations = true
-                                withTransaction(transaction) {
-                                    navigationManager.path.removeLast()
+                                withAnimation(completionCriteria: .logicallyComplete) {
+                                    viewModel.fullScreenItem = nil
+                                } completion: {
+                                    withTransaction(.animationsDisabled) {
+                                        navigationManager.path.removeLast()
+                                    }
                                 }
                             }
                         }
@@ -109,12 +112,23 @@ struct FullScreenView: View {
     let item: Item
     
     var body: some View {
-        Text("Full Screen View \(item.value)")
-            .navigationTitle("Full Screen View")
+        ZStack {
+            Color.red
+            Text("Full Screen View \(item.value)")
+                .navigationTitle("Full Screen View")
+        }
     }
 }
 
 
 #Preview {
     ContentView()
+}
+
+extension Transaction {
+    static let animationsDisabled: Transaction = {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        return transaction
+    }()
 }
