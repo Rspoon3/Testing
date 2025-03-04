@@ -68,6 +68,7 @@ struct ContentView: View {
         return items
     }
     
+    private let playerCount = 4
     let possibleGuessesColumns: [GridItem] = Array(repeating: GridItem(.flexible(), spacing: 1), count: 2)
     let gridColumns: [GridItem] = Array(repeating: GridItem(.flexible(), spacing: 1), count: 17)
     @State private var selectedColorItem: ColorItem?
@@ -196,3 +197,123 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+
+struct Player: Hashable, Equatable, Identifiable, Sendable {
+    let id: Int
+}
+
+enum GameState {
+    case idle
+    case colorPicker(player: Player)
+    case guesserTurn(player: Player)
+    case gameOver(ranks: [Player])
+}
+
+final class GameViewModel {
+    var state = GameState.idle
+    var hint: String?
+    var selectedColorItemHex: String?
+    var colorGuesses: [Player: [ColorItem]] = [:]
+    var scores: [Player: Int] = [:]
+    private let players = [Player(id: 1), Player(id: 2), Player(id: 3), Player(id: 4)]
+    
+    func startGame() {
+        state = .colorPicker(player: players[0])
+        selectedColorItemHex = "3ef345"
+        hint = "bannana"
+    }
+    
+    func userDidPick(colorItem: ColorItem) {
+        guard let selectedColorItemHex, let hint else { return }
+        colorGuesses[players[0]]
+        state = .colorPicker(
+            player: players[0],
+            state: .picked(
+                hint: hint,
+                colorHex: selectedColorItemHex
+            )
+        )
+    }
+}
+
+/*
+ On Appear
+ 
+ Player 1 becomes the colorPicker
+ Player 1 picks a color
+ Player 1 gives a one word hint
+ 
+ Player 2 picks a color
+ Player 3 picks a color
+ Player 4 picks a color
+ 
+ Player 1 gives a two word hint
+
+ Player 2 picks another color
+ Player 3 picks another color
+ Player 4 picks another color
+ 
+ Scores are calculated
+ 
+ --------
+ 
+ Player 2 becomes the colorPicker
+ 
+ Player 2 picks a color
+ Player 2 gives a one word hint
+ 
+ Player 1 picks a color
+ Player 3 picks a color
+ Player 4 picks a color
+ 
+ Player 2 gives a two word hint
+
+ Player 1 picks another color
+ Player 3 picks another color
+ Player 4 picks another color
+ 
+ Scores are calculated
+ 
+ --------
+ 
+ Player 3 becomes the colorPicker
+ 
+ Player 3 picks a color
+ Player 3 gives a one word hint
+ 
+ Player 1 picks a color
+ Player 2 picks a color
+ Player 4 picks a color
+ 
+ Player 3 gives a two word hint
+
+ Player 1 picks another color
+ Player 2 picks another color
+ Player 4 picks another color
+ 
+ Scores are calculated
+ 
+ --------
+ 
+ Player 4 becomes the colorPicker
+ 
+ Player 4 picks a color
+ Player 4 gives a one word hint
+ 
+ Player 1 picks a color
+ Player 2 picks a color
+ Player 3 picks a color
+ 
+ Player 4 gives a two word hint
+
+ Player 1 picks another color
+ Player 2 picks another color
+ Player 3 picks another color
+ 
+ Scores are calculated
+
+ --------
+
+ Game over.
+ Rank players
+ */

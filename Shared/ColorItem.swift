@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ColorItem: Identifiable, Equatable {
+struct ColorItem: Identifiable, Hashable, Equatable, Sendable {
     let hex: String
     let id: String
     let row: Int
