@@ -7,6 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		945AD0282D76A22600E336E1 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD0272D76A22600E336E1 /* Color+Hex.swift */; };
+		945AD0292D76A22600E336E1 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD0272D76A22600E336E1 /* Color+Hex.swift */; };
+		945AD02B2D76A27600E336E1 /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD02A2D76A27600E336E1 /* UIColor+Hex.swift */; };
+		945AD02C2D76A27600E336E1 /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD02A2D76A27600E336E1 /* UIColor+Hex.swift */; };
+		945AD02E2D76B5F600E336E1 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD02D2D76B5F600E336E1 /* Item.swift */; };
+		945AD02F2D76B5F600E336E1 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD02D2D76B5F600E336E1 /* Item.swift */; };
+		945AD0312D76B5FD00E336E1 /* ColorItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD0302D76B5FD00E336E1 /* ColorItem.swift */; };
+		945AD0322D76B5FD00E336E1 /* ColorItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD0302D76B5FD00E336E1 /* ColorItem.swift */; };
+		945AD0342D76B60900E336E1 /* Kind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD0332D76B60900E336E1 /* Kind.swift */; };
+		945AD0352D76B60900E336E1 /* Kind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945AD0332D76B60900E336E1 /* Kind.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -35,6 +45,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		945AD0272D76A22600E336E1 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		945AD02A2D76A27600E336E1 /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
+		945AD02D2D76B5F600E336E1 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
+		945AD0302D76B5FD00E336E1 /* ColorItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorItem.swift; sourceTree = "<group>"; };
+		945AD0332D76B60900E336E1 /* Kind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kind.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -109,7 +124,12 @@
 			isa = PBXGroup;
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
+				945AD0332D76B60900E336E1 /* Kind.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				945AD02D2D76B5F600E336E1 /* Item.swift */,
+				945AD0302D76B5FD00E336E1 /* ColorItem.swift */,
+				945AD0272D76A22600E336E1 /* Color+Hex.swift */,
+				945AD02A2D76A27600E336E1 /* UIColor+Hex.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -323,7 +343,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				945AD0322D76B5FD00E336E1 /* ColorItem.swift in Sources */,
+				945AD0352D76B60900E336E1 /* Kind.swift in Sources */,
+				945AD02F2D76B5F600E336E1 /* Item.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				945AD02B2D76A27600E336E1 /* UIColor+Hex.swift in Sources */,
+				945AD0282D76A22600E336E1 /* Color+Hex.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -332,7 +357,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				945AD0312D76B5FD00E336E1 /* ColorItem.swift in Sources */,
+				945AD0342D76B60900E336E1 /* Kind.swift in Sources */,
+				945AD02E2D76B5F600E336E1 /* Item.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				945AD02C2D76A27600E336E1 /* UIColor+Hex.swift in Sources */,
+				945AD0292D76A22600E336E1 /* Color+Hex.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
