@@ -209,32 +209,32 @@ enum GameState {
     case gameOver(ranks: [Player])
 }
 
-final class GameViewModel {
-    var state = GameState.idle
-    var hint: String?
-    var selectedColorItemHex: String?
-    var colorGuesses: [Player: [ColorItem]] = [:]
-    var scores: [Player: Int] = [:]
-    private let players = [Player(id: 1), Player(id: 2), Player(id: 3), Player(id: 4)]
-    
-    func startGame() {
-        state = .colorPicker(player: players[0])
-        selectedColorItemHex = "3ef345"
-        hint = "bannana"
-    }
-    
-    func userDidPick(colorItem: ColorItem) {
-        guard let selectedColorItemHex, let hint else { return }
-        colorGuesses[players[0]]
-        state = .colorPicker(
-            player: players[0],
-            state: .picked(
-                hint: hint,
-                colorHex: selectedColorItemHex
-            )
-        )
-    }
-}
+//final class GameViewModel {
+//    var state = GameState.idle
+//    var hint: String?
+//    var selectedColorItemHex: String?
+//    var colorGuesses: [Player: [ColorItem]] = [:]
+//    var scores: [Player: Int] = [:]
+//    private let players = [Player(id: 1), Player(id: 2), Player(id: 3), Player(id: 4)]
+//    
+//    func startGame() {
+//        state = .colorPicker(player: players[0])
+//        selectedColorItemHex = "3ef345"
+//        hint = "bannana"
+//    }
+//    
+//    func userDidPick(colorItem: ColorItem) {
+//        guard let selectedColorItemHex, let hint else { return }
+//        colorGuesses[players[0]]
+//        state = .colorPicker(
+//            player: players[0],
+//            state: .picked(
+//                hint: hint,
+//                colorHex: selectedColorItemHex
+//            )
+//        )
+//    }
+//}
 
 /*
  On Appear
