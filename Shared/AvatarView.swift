@@ -10,7 +10,7 @@ import PhotosUI
 
 struct AvatarView: View {
     @Namespace private var animationNamespace
-    @State private var showOptions = false
+    @State private var showOptions = true
     @State private var selectedPhoto: UIImage?
     @State private var photosPickerItem: PhotosPickerItem?
     @State private var showPhotoPicker = false

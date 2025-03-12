@@ -13,6 +13,9 @@
 		947D071C2D81E185001F1620 /* View+FramePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D071A2D81E185001F1620 /* View+FramePreference.swift */; };
 		947D071E2D81EE65001F1620 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D071D2D81EE65001F1620 /* AvatarView.swift */; };
 		947D071F2D81EE65001F1620 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D071D2D81EE65001F1620 /* AvatarView.swift */; };
+		947D082F2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D082E2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift */; };
+		947D08302D81FE68001F1620 /* SnapchatQRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D082E2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift */; };
+		947D08332D821450001F1620 /* EFQRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 947D08322D821450001F1620 /* EFQRCode */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -44,6 +47,7 @@
 		947D07172D81E046001F1620 /* ScrollingAvatarBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollingAvatarBackground.swift; sourceTree = "<group>"; };
 		947D071A2D81E185001F1620 /* View+FramePreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+FramePreference.swift"; sourceTree = "<group>"; };
 		947D071D2D81EE65001F1620 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
+		947D082E2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapchatQRCodeGenerator.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -66,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				947D08332D821450001F1620 /* EFQRCode in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +126,7 @@
 				947D071A2D81E185001F1620 /* View+FramePreference.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
 				947D071D2D81EE65001F1620 /* AvatarView.swift */,
+				947D082E2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift */,
 				947D07172D81E046001F1620 /* ScrollingAvatarBackground.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
@@ -284,6 +290,7 @@
 			);
 			mainGroup = A6A262CE24E0BCB20091EA92;
 			packageReferences = (
+				947D08312D821450001F1620 /* XCRemoteSwiftPackageReference "EFQRCode" */,
 			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
@@ -336,6 +343,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				947D082F2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift in Sources */,
 				947D071C2D81E185001F1620 /* View+FramePreference.swift in Sources */,
 				947D07192D81E046001F1620 /* ScrollingAvatarBackground.swift in Sources */,
 				947D071E2D81EE65001F1620 /* AvatarView.swift in Sources */,
@@ -348,6 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				947D08302D81FE68001F1620 /* SnapchatQRCodeGenerator.swift in Sources */,
 				947D071B2D81E185001F1620 /* View+FramePreference.swift in Sources */,
 				947D07182D81E046001F1620 /* ScrollingAvatarBackground.swift in Sources */,
 				947D071F2D81EE65001F1620 /* AvatarView.swift in Sources */,
@@ -747,6 +756,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		947D08312D821450001F1620 /* XCRemoteSwiftPackageReference "EFQRCode" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/EFPrefix/EFQRCode.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.2.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		947D08322D821450001F1620 /* EFQRCode */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 947D08312D821450001F1620 /* XCRemoteSwiftPackageReference "EFQRCode" */;
+			productName = EFQRCode;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A6A262CF24E0BCB20091EA92 /* Project object */;
 }
