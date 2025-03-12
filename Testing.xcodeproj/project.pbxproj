@@ -15,7 +15,7 @@
 		947D071F2D81EE65001F1620 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D071D2D81EE65001F1620 /* AvatarView.swift */; };
 		947D082F2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D082E2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift */; };
 		947D08302D81FE68001F1620 /* SnapchatQRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D082E2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift */; };
-		947D08332D821450001F1620 /* EFQRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 947D08322D821450001F1620 /* EFQRCode */; };
+		947D08362D821B71001F1620 /* QRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 947D08352D821B71001F1620 /* QRCode */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -70,7 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				947D08332D821450001F1620 /* EFQRCode in Frameworks */,
+				947D08362D821B71001F1620 /* QRCode in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,7 +290,7 @@
 			);
 			mainGroup = A6A262CE24E0BCB20091EA92;
 			packageReferences = (
-				947D08312D821450001F1620 /* XCRemoteSwiftPackageReference "EFQRCode" */,
+				947D08342D821B71001F1620 /* XCRemoteSwiftPackageReference "QRCode" */,
 			);
 			productRefGroup = A6A262DC24E0BCB30091EA92 /* Products */;
 			projectDirPath = "";
@@ -758,21 +758,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		947D08312D821450001F1620 /* XCRemoteSwiftPackageReference "EFQRCode" */ = {
+		947D08342D821B71001F1620 /* XCRemoteSwiftPackageReference "QRCode" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/EFPrefix/EFQRCode.git";
+			repositoryURL = "https://github.com/dagronf/QRCode";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 6.2.2;
+				minimumVersion = 26.1.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		947D08322D821450001F1620 /* EFQRCode */ = {
+		947D08352D821B71001F1620 /* QRCode */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 947D08312D821450001F1620 /* XCRemoteSwiftPackageReference "EFQRCode" */;
-			productName = EFQRCode;
+			package = 947D08342D821B71001F1620 /* XCRemoteSwiftPackageReference "QRCode" */;
+			productName = QRCode;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

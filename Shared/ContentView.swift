@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import EFQRCode
+import QRCode
 
 struct ContentView: View {
     @State private var image: UIImage?
@@ -19,18 +19,20 @@ struct ContentView: View {
                 .onAppear {
                     guard let avatarImage = UIImage(named: "ricky") else { return }
                     
-                    let code = generateQRCode(from: "ricky Witherspoon", size: 200)!
-                    image = customizeQRCode(qrCode: code, profileImage: avatarImage, backgroundColor: .systemOrange, dotColor: .systemMint)
+//                    let code = generateQRCode(from: "ricky Witherspoon", size: 200)!
+//                    image = customizeQRCode(qrCode: code, profileImage: avatarImage, backgroundColor: .systemOrange, dotColor: .systemMint)
                     
-                    let test = EFQRCode.generate(
-                        for: "https://fetch.com",
-                        backgroundColor: UIColor.systemYellow.cgColor,
-                        watermark: avatarImage.cgImage,
-                        watermarkIsTransparent: true,
-                        pointShape: .circle
-                    )
+                    let data = try! QRCode.build
+                       .text("https://www.worldwildlife.org/about")
+                       .foregroundColor(CGColor(srgbRed: 1, green: 0, blue: 0.6, alpha: 1))
+                       .backgroundColor(UIColor.systemYellow.cgColor)
+                       .logo(avatarImage.cgImage!, position: .circleCenter(inset: 0))
+//                       .logo(image: avatarImage.cgImage!, unitRect: .init(origin: .init(x: 0.4, y: 0.4), size: .init(width: 0.2, height: 0.2)))
+                       .onPixels.shape(.circle())
+                       .eye.shape(.squircle())
+                       .generate.image(dimension: 1200, representation: .png())
                     
-                    image = UIImage(cgImage: test!)
+                    image = UIImage(data: data)
                 }
             
             VStack {
