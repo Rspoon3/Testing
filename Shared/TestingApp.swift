@@ -18,33 +18,42 @@ struct TestingApp: App {
     }
 }
 
+// Face tracking model to maintain state of each face
+struct FaceCircle: Identifiable {
+    let id = UUID()
+    var rect: CGRect
+    var isVisible: Bool = false
+}
+
 struct FaceDetectionView: View {
     @State private var selectedImage: UIImage? = UIImage(named: "ricky") // Replace with actual image
     @State private var faceImage: UIImage?
     @State private var photosPickerItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
-    @State private var faceRects: [CGRect] = []
+    @State private var faceCircles: [FaceCircle] = []
     @State private var circleAnimating = false
+    @AppStorage("scale") var scale: Double = 1
 
     private let faceDetector = FaceDetector()
     
     var body: some View {
         VStack {
+            Stepper("scale \(scale.formatted())", value: $scale, step: 0.1)
+            
             if let faceImage {
                 Image(uiImage: faceImage)
                     .resizable()
                     .scaledToFit()
                     .overlay(
                         GeometryReader { proxy in
-                            ForEach(faceRects.indices, id: \.self) { index in
-                                let rect = calculateScaledRect(originalRect: faceRects[index], in: proxy)
+                            ForEach(faceCircles) { faceCircle in
+                                let rect = calculateScaledRect(originalRect: faceCircle.rect, in: proxy)
                                 
                                 Circle()
                                     .stroke(Color.blue, lineWidth: 4)
-                                    .frame(width: circleAnimating ? rect.width : 0,
-                                           height: circleAnimating ? rect.height : 0)
+                                    .frame(width: rect.width, height: rect.height)
                                     .position(x: rect.midX, y: rect.midY)
-                                    .animation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0.5), value: circleAnimating)
+                                    .opacity(faceCircle.isVisible ? 1 : 0)
                             }
                         }
                     )
@@ -52,21 +61,23 @@ struct FaceDetectionView: View {
                 Image(uiImage: selectedImage)
                     .resizable()
                     .scaledToFit()
+                    .overlay(
+                        GeometryReader { proxy in
+                            ForEach(faceCircles) { faceCircle in
+                                let rect = calculateScaledRect(originalRect: faceCircle.rect, in: proxy)
+                                
+                                Circle()
+                                    .stroke(Color.blue, lineWidth: 4)
+                                    .frame(width: rect.width, height: rect.height)
+                                    .position(x: rect.midX, y: rect.midY)
+                                    .opacity(faceCircle.isVisible ? 1 : 0)
+                            }
+                        }
+                    )
             }
             
             Button("Detect Faces") {
-                guard let selectedImage else { return }
-                let (image, rect) = faceDetector.detectFaces(in: selectedImage)
-                faceImage = image
-                faceRects = rect
-                
-                circleAnimating = false
-                // Trigger animation after a brief delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation {
-                        circleAnimating = true
-                    }
-                }
+                detectFaces()
             }
             .padding()
             
@@ -81,7 +92,40 @@ struct FaceDetectionView: View {
         )
         .task(id: photosPickerItem) {
             await handlePhotoSelection()
+            try? await Task.sleep(for: .seconds(0.5))
+            detectFaces()
         }
+    }
+    
+    private func detectFaces() {
+        guard let selectedImage else { return }
+        let (image, rect) = faceDetector.detectFaces(
+            in: selectedImage,
+            scale: scale
+        )
+        faceImage = image
+        
+        updateFaceCircles(with: rect)
+        
+        if let faceImage, let first = rect.first {
+            self.faceImage = cropImageToFirstFace(image: faceImage, faceRect: first)
+        }
+    }
+    
+    func cropImageToFirstFace(image: UIImage, faceRect: CGRect) -> UIImage? {
+        // Convert CGRect to pixel-based coordinates
+        let scale = image.scale
+        let cropRect = CGRect(
+            x: faceRect.origin.x * scale,
+            y: faceRect.origin.y * scale,
+            width: faceRect.width * scale,
+            height: faceRect.height * scale
+        )
+        
+        // Perform cropping
+        guard let cgImage = image.cgImage?.cropping(to: cropRect) else { return nil }
+        
+        return UIImage(cgImage: cgImage, scale: scale, orientation: image.imageOrientation)
     }
     
     @MainActor
@@ -98,39 +142,100 @@ struct FaceDetectionView: View {
         withAnimation(.spring()) {
             faceImage = nil
             selectedImage = loadedImage
-            faceRects = []
-            circleAnimating = false
+        }
+    }
+    
+    // Update face circles with smooth transition
+    private func updateFaceCircles(with newRects: [CGRect]) {
+        // If this is the first detection or we have no circles, create new ones
+        if faceCircles.isEmpty {
+            faceCircles = newRects.map { FaceCircle(rect: $0, isVisible: false) }
+            
+            // Delay to let the UI update first
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0.5)) {
+                    // Make all circles visible
+                    for index in faceCircles.indices {
+                        faceCircles[index].isVisible = true
+                    }
+                }
+            }
+            return
+        }
+        
+        // If we already have face circles, animate them to their new positions
+        
+        // Create temporary copy of current circles
+        let oldCircles = faceCircles
+        
+        // First, handle case where we have more new faces than existing circles
+        if newRects.count > oldCircles.count {
+            // Add new circles for the additional faces (initially invisible)
+            let additionalCircles = (oldCircles.count..<newRects.count).map {
+                FaceCircle(rect: newRects[$0], isVisible: false)
+            }
+            faceCircles.append(contentsOf: additionalCircles)
+        }
+        
+        // If we have fewer new faces, keep the existing circles but prepare to hide extras
+        if newRects.count < oldCircles.count {
+            // We'll update the visibility later
+        }
+        
+        // Delay to let the UI update first if needed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7, blendDuration: 0.5)) {
+                // Update positions for existing circles and make visible
+                for index in 0..<min(faceCircles.count, newRects.count) {
+                    faceCircles[index].rect = newRects[index]
+                    faceCircles[index].isVisible = true
+                }
+                
+                // Hide any extra circles if we have fewer faces now
+                if newRects.count < faceCircles.count {
+                    for index in newRects.count..<faceCircles.count {
+                        faceCircles[index].isVisible = false
+                    }
+                }
+                
+                // Make any new circles visible
+                if newRects.count > oldCircles.count {
+                    for index in oldCircles.count..<faceCircles.count {
+                        faceCircles[index].isVisible = true
+                    }
+                }
+            }
         }
     }
     
     // Calculate scaled rect position based on the container size
-       private func calculateScaledRect(originalRect: CGRect, in proxy: GeometryProxy) -> CGRect {
-           guard let selectedImage = selectedImage else { return .zero }
-           
-           let imageSize = selectedImage.size
-           let containerSize = proxy.size
-           
-           // Calculate scaling factor
-           let widthRatio = containerSize.width / imageSize.width
-           let heightRatio = containerSize.height / imageSize.height
-           let scale = min(widthRatio, heightRatio)
-           
-           // Calculate scaled dimensions
-           let scaledWidth = originalRect.width * scale
-           let scaledHeight = originalRect.height * scale
-           
-           // Calculate position in container
-           // Account for letterboxing (if any)
-           let imageWidth = imageSize.width * scale
-           let imageHeight = imageSize.height * scale
-           let xOffset = (containerSize.width - imageWidth) / 2
-           let yOffset = (containerSize.height - imageHeight) / 2
-           
-           let x = originalRect.origin.x * scale + xOffset
-           let y = originalRect.origin.y * scale + yOffset
-           
-           return CGRect(x: x, y: y, width: scaledWidth, height: scaledHeight)
-       }
+    private func calculateScaledRect(originalRect: CGRect, in proxy: GeometryProxy) -> CGRect {
+        guard let selectedImage = selectedImage else { return .zero }
+        
+        let imageSize = selectedImage.size
+        let containerSize = proxy.size
+        
+        // Calculate scaling factor
+        let widthRatio = containerSize.width / imageSize.width
+        let heightRatio = containerSize.height / imageSize.height
+        let scale = min(widthRatio, heightRatio)
+        
+        // Calculate scaled dimensions
+        let scaledWidth = originalRect.width * scale
+        let scaledHeight = originalRect.height * scale
+        
+        // Calculate position in container
+        // Account for letterboxing (if any)
+        let imageWidth = imageSize.width * scale
+        let imageHeight = imageSize.height * scale
+        let xOffset = (containerSize.width - imageWidth) / 2
+        let yOffset = (containerSize.height - imageHeight) / 2
+        
+        let x = originalRect.origin.x * scale + xOffset
+        let y = originalRect.origin.y * scale + yOffset
+        
+        return CGRect(x: x, y: y, width: scaledWidth, height: scaledHeight)
+    }
 }
 
 #Preview {
@@ -140,112 +245,7 @@ struct FaceDetectionView: View {
 import UIKit
 import Vision
 
-struct FaceDetector {
-    func detectFaces(in image: UIImage) -> (UIImage?, [CGRect]) {
-        // Convert UIImage to CIImage
-        guard let ciImage = CIImage(image: image) else {
-            print("Failed to create CIImage from UIImage")
-            return (nil, [])
-        }
-        
-        // Create a face detection request
-        let request = VNDetectFaceRectanglesRequest()
-        
-        // Create a request handler with the image's orientation
-        let imageOrientation = CGImagePropertyOrientation(image.imageOrientation)
-        let requestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: imageOrientation)
-        
-        // Perform the face detection request
-        do {
-            try requestHandler.perform([request])
-            
-            // Check if faces were detected
-            guard let results = request.results as? [VNFaceObservation], !results.isEmpty else {
-                print("No faces detected")
-                return (image, [])
-            }
-            
-            // Get face rectangles in UIKit coordinates
-            let imageSize = image.size
-            var faceRects: [CGRect] = []
-            
-            for face in results {
-                let faceRect = VNImageRectForNormalizedRect(
-                    face.boundingBox,
-                    Int(imageSize.width),
-                    Int(imageSize.height)
-                )
-                
-                // Convert from Vision coordinates (origin at bottom-left) to UIKit coordinates (origin at top-left)
-                let convertedRect = CGRect(
-                    x: faceRect.origin.x,
-                    y: imageSize.height - faceRect.origin.y - faceRect.height,
-                    width: faceRect.width,
-                    height: faceRect.height
-                )
-                
-                faceRects.append(convertedRect)
-            }
-            
-            // Draw bounding boxes around the detected faces
-            let processedImage = drawBoundingBoxes(on: image, faces: results)
-            return (processedImage, faceRects)
-        } catch {
-            print("Failed to perform face detection: \(error)")
-            return (nil, [])
-        }
-    }
-    
-    private func drawBoundingBoxes(on image: UIImage, faces: [VNFaceObservation]) -> UIImage? {
-        // Create a graphics context with the same size as the image
-        UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)
-        
-        // Draw the original image
-        image.draw(at: CGPoint.zero)
-        
-        // Get the current graphics context
-        guard let context = UIGraphicsGetCurrentContext() else {
-            print("Failed to create graphics context")
-            UIGraphicsEndImageContext()
-            return nil
-        }
-        
-        // Set up the appearance of the bounding box
-        context.setStrokeColor(UIColor.random().cgColor)
-        context.setLineWidth(5.0)
-        
-        // Get the image dimensions
-        let imageWidth = image.size.width
-        let imageHeight = image.size.height
-        
-        // Vision uses a coordinate system with origin at bottom-left
-        // UIKit uses a coordinate system with origin at top-left
-        // We need to flip the y-coordinate
-        context.translateBy(x: 0, y: imageHeight)
-        context.scaleBy(x: 1.0, y: -1.0)
-        
-        // Draw a bounding box for each detected face
-        for face in faces {
-            // Convert normalized coordinates to image coordinates
-            let faceRect = VNImageRectForNormalizedRect(
-                face.boundingBox,
-                Int(imageWidth),
-                Int(imageHeight)
-            )
-            
-            // Draw the bounding box
-            context.stroke(faceRect)
-        }
-        
-        // Get the image from the context
-        let resultImage = UIGraphicsGetImageFromCurrentImageContext()
-        
-        // End the graphics context
-        UIGraphicsEndImageContext()
-        
-        return resultImage
-    }
-}
+
 
 // Extension to convert UIImage.Orientation to CGImagePropertyOrientation
 extension CGImagePropertyOrientation {
@@ -263,5 +263,3 @@ extension CGImagePropertyOrientation {
         }
     }
 }
-
-

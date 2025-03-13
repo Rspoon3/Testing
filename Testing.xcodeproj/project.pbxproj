@@ -18,6 +18,8 @@
 		947D08362D821B71001F1620 /* QRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 947D08352D821B71001F1620 /* QRCode */; };
 		947D08382D825425001F1620 /* UIColor+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D08372D825425001F1620 /* UIColor+Random.swift */; };
 		947D08392D825425001F1620 /* UIColor+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947D08372D825425001F1620 /* UIColor+Random.swift */; };
+		94F0D4572D832C4600EA34A1 /* FaceDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F0D4562D832C4600EA34A1 /* FaceDetector.swift */; };
+		94F0D4582D832C4600EA34A1 /* FaceDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F0D4562D832C4600EA34A1 /* FaceDetector.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -51,6 +53,7 @@
 		947D071D2D81EE65001F1620 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		947D082E2D81FE68001F1620 /* SnapchatQRCodeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapchatQRCodeGenerator.swift; sourceTree = "<group>"; };
 		947D08372D825425001F1620 /* UIColor+Random.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Random.swift"; sourceTree = "<group>"; };
+		94F0D4562D832C4600EA34A1 /* FaceDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceDetector.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -126,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
+				94F0D4562D832C4600EA34A1 /* FaceDetector.swift */,
 				947D071A2D81E185001F1620 /* View+FramePreference.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
 				947D071D2D81EE65001F1620 /* AvatarView.swift */,
@@ -352,6 +356,7 @@
 				947D071C2D81E185001F1620 /* View+FramePreference.swift in Sources */,
 				947D07192D81E046001F1620 /* ScrollingAvatarBackground.swift in Sources */,
 				947D071E2D81EE65001F1620 /* AvatarView.swift in Sources */,
+				94F0D4572D832C4600EA34A1 /* FaceDetector.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -366,6 +371,7 @@
 				947D071B2D81E185001F1620 /* View+FramePreference.swift in Sources */,
 				947D07182D81E046001F1620 /* ScrollingAvatarBackground.swift in Sources */,
 				947D071F2D81EE65001F1620 /* AvatarView.swift in Sources */,
+				94F0D4582D832C4600EA34A1 /* FaceDetector.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
