@@ -57,7 +57,11 @@ struct AntennaDirectionCalculator {
     private static func bearingToCompass(_ bearing: Double) -> String {
         let directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
                           "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-        let index = Int((bearing / 22.5) + 0.5) % 16
+        
+        // Normalize bearing to 0–360° range
+        let normalizedBearing = (bearing.truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360)
+        
+        let index = Int((normalizedBearing / 22.5) + 0.5) % 16
         return directions[index]
     }
 }

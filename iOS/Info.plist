@@ -20,6 +20,8 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+    <key>NSContactsUsageDescription</key>
+    <string>We need access to your contacts to select an address.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>We need access to your location to determine altitude and direction.</string>
 

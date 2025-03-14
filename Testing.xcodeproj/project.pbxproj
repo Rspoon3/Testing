@@ -11,6 +11,14 @@
 		9476A4102D83C89900F8E07A /* AntennaDirectionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A40E2D83C89900F8E07A /* AntennaDirectionCalculator.swift */; };
 		9476A4182D83CBE000F8E07A /* AltimeterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A4172D83CBE000F8E07A /* AltimeterManager.swift */; };
 		9476A4192D83CBE000F8E07A /* AltimeterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A4172D83CBE000F8E07A /* AltimeterManager.swift */; };
+		9476A41B2D83CD2200F8E07A /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A41A2D83CD2200F8E07A /* MapView.swift */; };
+		9476A41C2D83CD2200F8E07A /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A41A2D83CD2200F8E07A /* MapView.swift */; };
+		9476A41E2D83CD2600F8E07A /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A41D2D83CD2600F8E07A /* SearchView.swift */; };
+		9476A41F2D83CD2600F8E07A /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A41D2D83CD2600F8E07A /* SearchView.swift */; };
+		9476A4212D83CD2C00F8E07A /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A4202D83CD2C00F8E07A /* LocationManager.swift */; };
+		9476A4222D83CD2C00F8E07A /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A4202D83CD2C00F8E07A /* LocationManager.swift */; };
+		9476A4242D83D18E00F8E07A /* ContactPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A4232D83D18E00F8E07A /* ContactPickerView.swift */; };
+		9476A4252D83D18E00F8E07A /* ContactPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9476A4232D83D18E00F8E07A /* ContactPickerView.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -41,6 +49,10 @@
 /* Begin PBXFileReference section */
 		9476A40E2D83C89900F8E07A /* AntennaDirectionCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntennaDirectionCalculator.swift; sourceTree = "<group>"; };
 		9476A4172D83CBE000F8E07A /* AltimeterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AltimeterManager.swift; sourceTree = "<group>"; };
+		9476A41A2D83CD2200F8E07A /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		9476A41D2D83CD2600F8E07A /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		9476A4202D83CD2C00F8E07A /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		9476A4232D83D18E00F8E07A /* ContactPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPickerView.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -116,6 +128,10 @@
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				9476A4232D83D18E00F8E07A /* ContactPickerView.swift */,
+				9476A41A2D83CD2200F8E07A /* MapView.swift */,
+				9476A41D2D83CD2600F8E07A /* SearchView.swift */,
+				9476A4202D83CD2C00F8E07A /* LocationManager.swift */,
 				9476A4172D83CBE000F8E07A /* AltimeterManager.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 				9476A40E2D83C89900F8E07A /* AntennaDirectionCalculator.swift */,
@@ -333,8 +349,12 @@
 			files = (
 				9476A4192D83CBE000F8E07A /* AltimeterManager.swift in Sources */,
 				9476A40F2D83C89900F8E07A /* AntennaDirectionCalculator.swift in Sources */,
+				9476A41C2D83CD2200F8E07A /* MapView.swift in Sources */,
+				9476A4222D83CD2C00F8E07A /* LocationManager.swift in Sources */,
 				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				9476A41E2D83CD2600F8E07A /* SearchView.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				9476A4252D83D18E00F8E07A /* ContactPickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,8 +364,12 @@
 			files = (
 				9476A4182D83CBE000F8E07A /* AltimeterManager.swift in Sources */,
 				9476A4102D83C89900F8E07A /* AntennaDirectionCalculator.swift in Sources */,
+				9476A41B2D83CD2200F8E07A /* MapView.swift in Sources */,
+				9476A4212D83CD2C00F8E07A /* LocationManager.swift in Sources */,
 				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				9476A41F2D83CD2600F8E07A /* SearchView.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
+				9476A4242D83D18E00F8E07A /* ContactPickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -508,7 +532,7 @@
 				DEVELOPMENT_TEAM = 29BB6CT754;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -533,7 +557,7 @@
 				DEVELOPMENT_TEAM = 29BB6CT754;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
