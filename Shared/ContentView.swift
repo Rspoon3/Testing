@@ -9,6 +9,76 @@ import SwiftUI
 import CoreLocation
 import MapKit
 
+import SwiftUI
+import UIKit
+
+struct SearchBarView: UIViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
+
+    class Coordinator: NSObject, UISearchBarDelegate {
+        @Binding var text: String
+
+        init(text: Binding<String>) {
+            _text = text
+        }
+
+        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+            text = searchText
+            searchBar.showsCancelButton = !searchText.isEmpty // Show cancel button when typing
+        }
+
+        func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+            searchBar.resignFirstResponder() // Dismiss keyboard on search
+        }
+
+        func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+            text = ""
+            searchBar.text = ""
+            searchBar.showsCancelButton = false
+            searchBar.resignFirstResponder()
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(text: $text)
+    }
+
+    func makeUIView(context: Context) -> UISearchBar {
+        let searchBar = UISearchBar()
+        searchBar.delegate = context.coordinator
+        searchBar.placeholder = placeholder
+        searchBar.autocapitalizationType = .none
+        searchBar.showsCancelButton = false
+        searchBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+
+        return searchBar
+    }
+
+    func updateUIView(_ uiView: UISearchBar, context: Context) {
+        uiView.text = text
+    }
+}
+
+struct MapSheetOverlay: View {
+    @State var searchText: String = ""
+    
+    var body: some View {
+        VStack {
+            SearchBarView(text: $searchText, placeholder: "Search")
+                .offset(x:0, y: -10)
+            Text("Here")
+        }
+//        NavigationStack {
+//            Text("MapSheetOverlay")
+//                .searchable(text: $searchText)
+//                .navigationBarTitleDisplayMode(.inline)
+//                .navigationBarTitle("")
+//                .searchPresentationToolbarBehavior(.avoidHidingContent)
+//        }
+    }
+}
+
 struct ContentView: View {
     @StateObject private var locationManager = LocationManager()
     @State private var startCoordinate: CLLocationCoordinate2D?
@@ -24,10 +94,32 @@ struct ContentView: View {
     @State private var compassDirection: String = ""
     @State private var showContactPicker = false
     @State private var selectedAddress: String = ""
+    @State private var showSheet = true
 
     let altimeterManager = AltimeterManager()
     
     var body: some View {
+        MapView(
+            startCoordinate: $startCoordinate,
+            destinationCoordinate: $destinationCoordinate,
+            region: $region
+        )
+        .ignoresSafeArea()
+        .sheet(isPresented: $showSheet) {
+            MapSheetOverlay()
+                .interactiveDismissDisabled()
+                .presentationDetents(
+                    [
+                        .fraction(0.15),
+                        .fraction(0.45),
+                        .fraction(0.96)
+                    ]
+                )
+                .presentationBackgroundInteraction(.enabled)
+        }
+    }
+    
+    var bodyd: some View {
         ScrollView {
             // Map View
             MapView(startCoordinate: $startCoordinate, destinationCoordinate: $destinationCoordinate, region: $region)

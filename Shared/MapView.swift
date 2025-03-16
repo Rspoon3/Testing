@@ -18,6 +18,14 @@ struct MapView: UIViewRepresentable {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = true
+        mapView.isPitchEnabled = true
+        mapView.isRotateEnabled = true
+        mapView.isScrollEnabled = true
+        mapView.isZoomEnabled = true
+        mapView.pitchButtonVisibility = .visible
+        mapView.showsUserTrackingButton = true
+        mapView.showsCompass = true
+        mapView.setUserTrackingMode(.followWithHeading, animated: true)
         
         let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
         mapView.addGestureRecognizer(tapGesture)
