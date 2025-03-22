@@ -54,20 +54,19 @@ struct KudoPostView: View {
     private func sendMessage() {
         isSending = true
         statusMessage = nil
-
+        
         let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        service.postKudo(message: trimmed) { result in
-            DispatchQueue.main.async {
-                isSending = false
-                switch result {
-                case .success:
-                    message = ""
-                    statusMessage = "✅ Kudo sent!"
-                case .failure(let error):
-                    statusMessage = "❌ Error: \(error.localizedDescription)"
-                }
+        
+        Task {
+            do {
+                let result = try await service.postKudo(message: trimmed)
+                message = ""
+                statusMessage = "✅ Kudo sent!"
+            } catch {
+                statusMessage = "❌ Error: \(error.localizedDescription)"
             }
+            
+            isSending = false
         }
     }
 }
