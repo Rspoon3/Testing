@@ -7,12 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94FD4AEE2D8F117B00B41DDB /* KudoBoardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AED2D8F117B00B41DDB /* KudoBoardConfig.swift */; };
+		94FD4AEF2D8F117B00B41DDB /* KudoBoardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AED2D8F117B00B41DDB /* KudoBoardConfig.swift */; };
+		94FD4AF12D8F119700B41DDB /* KudoPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF02D8F119700B41DDB /* KudoPostView.swift */; };
+		94FD4AF22D8F119700B41DDB /* KudoPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF02D8F119700B41DDB /* KudoPostView.swift */; };
+		94FD4AF42D8F11C900B41DDB /* CookieHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF32D8F11C900B41DDB /* CookieHeader.swift */; };
+		94FD4AF52D8F11C900B41DDB /* CookieHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF32D8F11C900B41DDB /* CookieHeader.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
 		A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
-		A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* ContentView.swift */; };
-		A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D524E0BCB20091EA92 /* ContentView.swift */; };
 		A6A2630124E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
 		A6A2630224E0BCB30091EA92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6A262D624E0BCB30091EA92 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -35,9 +39,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		94FD4AED2D8F117B00B41DDB /* KudoBoardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KudoBoardConfig.swift; sourceTree = "<group>"; };
+		94FD4AF02D8F119700B41DDB /* KudoPostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KudoPostView.swift; sourceTree = "<group>"; };
+		94FD4AF32D8F11C900B41DDB /* CookieHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieHeader.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
-		A6A262D524E0BCB20091EA92 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A6A262D624E0BCB30091EA92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A6A262DB24E0BCB30091EA92 /* Testing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testing.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6A262DE24E0BCB30091EA92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -109,7 +115,9 @@
 			isa = PBXGroup;
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
-				A6A262D524E0BCB20091EA92 /* ContentView.swift */,
+				94FD4AF02D8F119700B41DDB /* KudoPostView.swift */,
+				94FD4AF32D8F11C900B41DDB /* CookieHeader.swift */,
+				94FD4AED2D8F117B00B41DDB /* KudoBoardConfig.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -244,7 +252,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1200;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					A6A262DA24E0BCB30091EA92 = {
 						CreatedOnToolsVersion = 12.0;
@@ -323,7 +331,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A6A262FF24E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94FD4AF42D8F11C900B41DDB /* CookieHeader.swift in Sources */,
+				94FD4AF22D8F119700B41DDB /* KudoPostView.swift in Sources */,
+				94FD4AEF2D8F117B00B41DDB /* KudoBoardConfig.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -332,7 +342,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A6A2630024E0BCB30091EA92 /* ContentView.swift in Sources */,
+				94FD4AF52D8F11C900B41DDB /* CookieHeader.swift in Sources */,
+				94FD4AF12D8F119700B41DDB /* KudoPostView.swift in Sources */,
+				94FD4AEE2D8F117B00B41DDB /* KudoBoardConfig.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -555,7 +567,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.Testing;
 				PRODUCT_NAME = Testing;
 				SDKROOT = macosx;
@@ -581,7 +593,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.Testing;
 				PRODUCT_NAME = Testing;
 				SDKROOT = macosx;
@@ -592,7 +604,6 @@
 		A6A2630C24E0BCB30091EA92 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 29BB6CT754;
 				INFOPLIST_FILE = "Tests iOS/Info.plist";
@@ -614,7 +625,6 @@
 		A6A2630D24E0BCB30091EA92 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 29BB6CT754;
 				INFOPLIST_FILE = "Tests iOS/Info.plist";
@@ -637,7 +647,6 @@
 		A6A2630F24E0BCB30091EA92 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -648,7 +657,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Testing.rspoon3.Tests-macOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -660,7 +669,6 @@
 		A6A2631024E0BCB30091EA92 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -671,7 +679,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Testing.rspoon3.Tests-macOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
