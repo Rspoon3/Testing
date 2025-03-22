@@ -54,45 +54,47 @@ class KudoBoardService {
     }
 
     private func createRawMultipartBody(with message: String) -> Data {
+        let boundaryPrefix = "--\(config.boundary)"
+        
         let body = """
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="message"\r
         \r
         <p>\(message)</p>\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="recipients"\r
         \r
         []\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="hashtags"\r
         \r
         undefined\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="custom_fields"\r
         \r
         {}\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="is_private"\r
         \r
         0\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="has_user_created_gif"\r
         \r
         0\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="video_self_recorded"\r
         \r
         0\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="terms_of_service"\r
         \r
         1\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4\r
+        \(boundaryPrefix)\r
         Content-Disposition: form-data; name="is_orphan"\r
         \r
         0\r
-        ------WebKitFormBoundarygUwfH56ejMSaULA4--\r
+        \(boundaryPrefix)--\r
         """
+
         return body.data(using: .utf8)!
-    }
-}
+    }}
