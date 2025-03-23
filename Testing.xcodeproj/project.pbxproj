@@ -7,16 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		94FD4AEE2D8F117B00B41DDB /* KudoBoardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AED2D8F117B00B41DDB /* KudoBoardConfig.swift */; };
-		94FD4AEF2D8F117B00B41DDB /* KudoBoardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AED2D8F117B00B41DDB /* KudoBoardConfig.swift */; };
-		94FD4AF12D8F119700B41DDB /* KudoPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF02D8F119700B41DDB /* KudoPostView.swift */; };
-		94FD4AF22D8F119700B41DDB /* KudoPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF02D8F119700B41DDB /* KudoPostView.swift */; };
-		94FD4AF42D8F11C900B41DDB /* CookieHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF32D8F11C900B41DDB /* CookieHeader.swift */; };
-		94FD4AF52D8F11C900B41DDB /* CookieHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF32D8F11C900B41DDB /* CookieHeader.swift */; };
-		94FD4AF72D8F202A00B41DDB /* KudoBoardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF62D8F202A00B41DDB /* KudoBoardService.swift */; };
-		94FD4AF82D8F202A00B41DDB /* KudoBoardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF62D8F202A00B41DDB /* KudoBoardService.swift */; };
-		94FD4AFA2D8F20D100B41DDB /* WebViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF92D8F20D100B41DDB /* WebViewWrapper.swift */; };
-		94FD4AFB2D8F20D100B41DDB /* WebViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FD4AF92D8F20D100B41DDB /* WebViewWrapper.swift */; };
+		94474FC82D8FA7F60068DB2C /* KudoboardError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94474FC72D8FA7F60068DB2C /* KudoboardError.swift */; };
+		94474FC92D8FA7F60068DB2C /* KudoboardError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94474FC72D8FA7F60068DB2C /* KudoboardError.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -43,11 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		94FD4AED2D8F117B00B41DDB /* KudoBoardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KudoBoardConfig.swift; sourceTree = "<group>"; };
-		94FD4AF02D8F119700B41DDB /* KudoPostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KudoPostView.swift; sourceTree = "<group>"; };
-		94FD4AF32D8F11C900B41DDB /* CookieHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieHeader.swift; sourceTree = "<group>"; };
-		94FD4AF62D8F202A00B41DDB /* KudoBoardService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KudoBoardService.swift; sourceTree = "<group>"; };
-		94FD4AF92D8F20D100B41DDB /* WebViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewWrapper.swift; sourceTree = "<group>"; };
+		94474FC72D8FA7F60068DB2C /* KudoboardError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KudoboardError.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D624E0BCB30091EA92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -121,11 +109,7 @@
 			isa = PBXGroup;
 			children = (
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
-				94FD4AF92D8F20D100B41DDB /* WebViewWrapper.swift */,
-				94FD4AF02D8F119700B41DDB /* KudoPostView.swift */,
-				94FD4AF32D8F11C900B41DDB /* CookieHeader.swift */,
-				94FD4AED2D8F117B00B41DDB /* KudoBoardConfig.swift */,
-				94FD4AF62D8F202A00B41DDB /* KudoBoardService.swift */,
+				94474FC72D8FA7F60068DB2C /* KudoboardError.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -339,12 +323,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94FD4AF82D8F202A00B41DDB /* KudoBoardService.swift in Sources */,
-				94FD4AF42D8F11C900B41DDB /* CookieHeader.swift in Sources */,
-				94FD4AF22D8F119700B41DDB /* KudoPostView.swift in Sources */,
-				94FD4AEF2D8F117B00B41DDB /* KudoBoardConfig.swift in Sources */,
+				94474FC92D8FA7F60068DB2C /* KudoboardError.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
-				94FD4AFA2D8F20D100B41DDB /* WebViewWrapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,12 +332,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94FD4AF72D8F202A00B41DDB /* KudoBoardService.swift in Sources */,
-				94FD4AF52D8F11C900B41DDB /* CookieHeader.swift in Sources */,
-				94FD4AF12D8F119700B41DDB /* KudoPostView.swift in Sources */,
-				94FD4AEE2D8F117B00B41DDB /* KudoBoardConfig.swift in Sources */,
+				94474FC82D8FA7F60068DB2C /* KudoboardError.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,
-				94FD4AFB2D8F20D100B41DDB /* WebViewWrapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
