@@ -108,11 +108,8 @@ actor KudoboardLoginService {
         
         // Set headers
         request.setValue(csrfToken, forHTTPHeaderField: "X-CSRF-TOKEN")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
-        request.setValue("https://www.kudoboard.com", forHTTPHeaderField: "Origin")
-        request.setValue("https://www.kudoboard.com/auth/login", forHTTPHeaderField: "Referer")
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.setValue("text/html,application/xhtml+xml,application/xml", forHTTPHeaderField: "Accept")
         request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15", forHTTPHeaderField: "User-Agent")
         
         // Add cookies to the request
@@ -121,20 +118,19 @@ actor KudoboardLoginService {
             request.setValue(value, forHTTPHeaderField: headerField)
         }
         
-        // Prepare login data
-        let loginData: [String: Any] = [
+        // Prepare login data as form URL encoded (not JSON)
+        let loginParams = [
             "email": email,
             "password": password,
-            "remember": true,
-            "alt_logins": true
+            "remember": "1",
+            "_token": csrfToken
         ]
         
-        // Convert login data to JSON
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: loginData)
-        } catch {
-            throw KudoboardError.jsonParsingError(error.localizedDescription)
-        }
+        let bodyString = loginParams.map { key, value in
+            return "\(key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? key)=\(value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? value)"
+        }.joined(separator: "&")
+        
+        request.httpBody = bodyString.data(using: .utf8)
         
         do {
             let (data, response) = try await session.data(for: request)
@@ -145,46 +141,50 @@ actor KudoboardLoginService {
             
             print("POST request completed with status code: \(httpResponse.statusCode)")
             
-            if httpResponse.statusCode == 200 {
-                
+            // Handle the HTML response and extract cookies
+            if httpResponse.statusCode == 200 || httpResponse.statusCode == 302 {
                 let stringData = String(data: data, encoding: .utf8)
-                print("POST request response: \(stringData ?? "No data returned")")
+                print("POST request response: \(stringData?.prefix(200) ?? "No data returned")")
                 
-                // Parse the JSON response
-                do {
-                    if let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                        if let success = jsonResponse["success"] as? Bool, success {
-                            
-                            // Print user info if available
-                            if let user = jsonResponse["user"] as? [String: Any] {
-                                print("Login successful for user: \(user["email"] ?? "Unknown")")
+                // Extract new cookies from the response headers
+                if let headerFields = httpResponse.allHeaderFields as? [String: String] {
+                    let newCookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
+                    if !newCookies.isEmpty {
+                        self.cookies.append(contentsOf: newCookies)
+                        
+                        // Update CSRF token from new cookies
+                        for cookie in newCookies {
+                            if cookie.name == "XSRF-TOKEN" {
+                                self.csrfToken = cookie.value.removingPercentEncoding ?? cookie.value
+                                print("✅ Updated CSRF token from login response: \(self.csrfToken)")
                             }
-                            
-                            // Replace old cookies entirely
-                            let newCookies = httpResponse.allCookies()
-                            if !newCookies.isEmpty {
-                                self.cookies = newCookies
-                                HTTPCookieStorage.shared.setCookies(newCookies, for: url, mainDocumentURL: nil)
-
-                                // Update CSRF token from new cookies
-                                if let xsrfCookie = newCookies.first(where: { $0.name == "XSRF-TOKEN" }) {
-                                    self.csrfToken = xsrfCookie.value.removingPercentEncoding ?? xsrfCookie.value
-                                }
-
-                                print("✅ Cookies updated: \(newCookies.map { $0.name })")
-                                print("✅ New CSRF token: \(self.csrfToken)")
-                            }
-                        } else {
-                            print("------")
-                            print(jsonResponse)
-                            print("------")
-                            throw KudoboardError.loginFailed("Login failed")
                         }
+                        
+                        // Store cookies in the cookie storage
+                        HTTPCookieStorage.shared.setCookies(newCookies, for: url, mainDocumentURL: nil)
+                        print("✅ Updated cookies: \(newCookies.map { $0.name })")
                     }
-                } catch let error as KudoboardError {
-                    throw error
-                } catch {
-                    throw KudoboardError.jsonParsingError(error.localizedDescription)
+                }
+                
+                // Validate login success by checking for success indicators in the HTML
+                if let responseHTML = stringData {
+                    // If we find indications of a successful login in the HTML
+                    if responseHTML.contains("logout") || responseHTML.contains("dashboard") ||
+                        !responseHTML.contains("Invalid credentials") {
+                        print("✅ Login appears successful based on response content")
+                    } else if responseHTML.contains("Invalid credentials") ||
+                                responseHTML.contains("These credentials do not match our records") {
+                        throw KudoboardError.loginFailed("Invalid credentials")
+                    }
+                }
+                
+                // Also try to extract a new CSRF token from the HTML
+                if let responseHTML = stringData {
+                    let oldToken = self.csrfToken
+                    self.extractCSRFToken(from: responseHTML)
+                    if self.csrfToken != oldToken {
+                        print("✅ Updated CSRF token from HTML: \(self.csrfToken)")
+                    }
                 }
             } else {
                 throw KudoboardError.httpError(httpResponse.statusCode, "HTTP error")
@@ -227,7 +227,7 @@ actor KudoboardLoginService {
                 if !newCookies.isEmpty {
                     self.cookies = newCookies
                     HTTPCookieStorage.shared.setCookies(newCookies, for: url, mainDocumentURL: nil)
-                
+                    
                     // Update CSRF token from cookies
                     if let xsrfCookie = newCookies.first(where: { $0.name == "XSRF-TOKEN" }) {
                         self.csrfToken = xsrfCookie.value.removingPercentEncoding ?? xsrfCookie.value
