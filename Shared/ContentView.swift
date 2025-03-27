@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var numberInput: String = "1234567.89"
     @State private var searchText = ""
     @State private var isPresented = false
+    @FocusState private var isFocused: Bool
     private var exampleDate: Date = Date()
     
     private var exampleNumber: Double {
@@ -60,6 +61,7 @@ struct ContentView: View {
                             TextField("Enter number", text: $numberInput)
                                  .keyboardType(.decimalPad)
                                  .textFieldStyle(.roundedBorder)
+                                 .focused($isFocused)
                             
                             LabeledContent("Number", value: exampleNumber.formatted(.number.locale(locale)))
                             LabeledContent("Compact Name", value: exampleNumber.formatted(.number.notation(.compactName).locale(locale)))
@@ -84,6 +86,13 @@ struct ContentView: View {
                 isPresented: $isPresented,
                 prompt: "Search for a locale"
             )
+            .toolbar {
+                ToolbarItem(placement: .keyboard) {
+                    Button("Done") {
+                        isFocused = false
+                    }
+                }
+            }
         }
     }
 }
