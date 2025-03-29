@@ -163,10 +163,6 @@ struct BouncingBallsSpriteView: View {
     var body: some View {
         SpriteView(scene: scene)
             .ignoresSafeArea()
-            .onAppear {
-                // Enable visualization of physics bodies for debugging (optional)
-                // SKView.viewFor(scene: scene)?.showsPhysics = true
-            }
     }
 }
 
