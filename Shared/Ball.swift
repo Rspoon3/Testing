@@ -13,4 +13,5 @@ struct Ball: Identifiable {
     var position: CGPoint
     var velocity: CGVector
     var isBlue: Bool
+    var lastDirection: CGVector = CGVector(dx: 1, dy: 1)
 }
