@@ -11,12 +11,14 @@
 		949C888D2D9795AA008B75BE /* Ball.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C888B2D9795AA008B75BE /* Ball.swift */; };
 		949C888F2D9795B5008B75BE /* BouncingBallsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C888E2D9795B5008B75BE /* BouncingBallsView.swift */; };
 		949C88902D9795B5008B75BE /* BouncingBallsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C888E2D9795B5008B75BE /* BouncingBallsView.swift */; };
-		949C88952D979FFA008B75BE /* BouncingBallScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C88942D979FFA008B75BE /* BouncingBallScene.swift */; };
-		949C88962D979FFA008B75BE /* BouncingBallScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C88942D979FFA008B75BE /* BouncingBallScene.swift */; };
+		949C88952D979FFA008B75BE /* MetalBallsRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C88942D979FFA008B75BE /* MetalBallsRenderer.swift */; };
+		949C88962D979FFA008B75BE /* MetalBallsRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C88942D979FFA008B75BE /* MetalBallsRenderer.swift */; };
 		949C88982D97A1CF008B75BE /* InfectionSimTabs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C88972D97A1CF008B75BE /* InfectionSimTabs.swift */; };
 		949C88992D97A1CF008B75BE /* InfectionSimTabs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C88972D97A1CF008B75BE /* InfectionSimTabs.swift */; };
 		949C889B2D97A363008B75BE /* BallsShader.metal in Resources */ = {isa = PBXBuildFile; fileRef = 949C889A2D97A363008B75BE /* BallsShader.metal */; };
 		949C889C2D97A363008B75BE /* BallsShader.metal in Resources */ = {isa = PBXBuildFile; fileRef = 949C889A2D97A363008B75BE /* BallsShader.metal */; };
+		949C889E2D97A75D008B75BE /* BouncingBallScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C889D2D97A75D008B75BE /* BouncingBallScene.swift */; };
+		949C889F2D97A75D008B75BE /* BouncingBallScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949C889D2D97A75D008B75BE /* BouncingBallScene.swift */; };
 		A6A262F024E0BCB30091EA92 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262EF24E0BCB30091EA92 /* Tests_iOS.swift */; };
 		A6A262FB24E0BCB30091EA92 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262FA24E0BCB30091EA92 /* Tests_macOS.swift */; };
 		A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A262D424E0BCB20091EA92 /* TestingApp.swift */; };
@@ -45,9 +47,10 @@
 /* Begin PBXFileReference section */
 		949C888B2D9795AA008B75BE /* Ball.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ball.swift; sourceTree = "<group>"; };
 		949C888E2D9795B5008B75BE /* BouncingBallsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BouncingBallsView.swift; sourceTree = "<group>"; };
-		949C88942D979FFA008B75BE /* BouncingBallScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BouncingBallScene.swift; sourceTree = "<group>"; };
+		949C88942D979FFA008B75BE /* MetalBallsRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalBallsRenderer.swift; sourceTree = "<group>"; };
 		949C88972D97A1CF008B75BE /* InfectionSimTabs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfectionSimTabs.swift; sourceTree = "<group>"; };
 		949C889A2D97A363008B75BE /* BallsShader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = BallsShader.metal; sourceTree = "<group>"; };
+		949C889D2D97A75D008B75BE /* BouncingBallScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BouncingBallScene.swift; sourceTree = "<group>"; };
 		A6A0310D266EBC6D001CBE2A /* Testing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Testing.entitlements; sourceTree = "<group>"; };
 		A6A262D424E0BCB20091EA92 /* TestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingApp.swift; sourceTree = "<group>"; };
 		A6A262D624E0BCB30091EA92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -123,7 +126,8 @@
 				A6A262D424E0BCB20091EA92 /* TestingApp.swift */,
 				949C88972D97A1CF008B75BE /* InfectionSimTabs.swift */,
 				949C888B2D9795AA008B75BE /* Ball.swift */,
-				949C88942D979FFA008B75BE /* BouncingBallScene.swift */,
+				949C889D2D97A75D008B75BE /* BouncingBallScene.swift */,
+				949C88942D979FFA008B75BE /* MetalBallsRenderer.swift */,
 				949C889A2D97A363008B75BE /* BallsShader.metal */,
 				949C888E2D9795B5008B75BE /* BouncingBallsView.swift */,
 				A6A262D624E0BCB30091EA92 /* Assets.xcassets */,
@@ -341,8 +345,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				949C889E2D97A75D008B75BE /* BouncingBallScene.swift in Sources */,
 				949C88982D97A1CF008B75BE /* InfectionSimTabs.swift in Sources */,
-				949C88962D979FFA008B75BE /* BouncingBallScene.swift in Sources */,
+				949C88962D979FFA008B75BE /* MetalBallsRenderer.swift in Sources */,
 				949C888F2D9795B5008B75BE /* BouncingBallsView.swift in Sources */,
 				949C888C2D9795AA008B75BE /* Ball.swift in Sources */,
 				A6A262FD24E0BCB30091EA92 /* TestingApp.swift in Sources */,
@@ -353,8 +358,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				949C889F2D97A75D008B75BE /* BouncingBallScene.swift in Sources */,
 				949C88992D97A1CF008B75BE /* InfectionSimTabs.swift in Sources */,
-				949C88952D979FFA008B75BE /* BouncingBallScene.swift in Sources */,
+				949C88952D979FFA008B75BE /* MetalBallsRenderer.swift in Sources */,
 				949C88902D9795B5008B75BE /* BouncingBallsView.swift in Sources */,
 				949C888D2D9795AA008B75BE /* Ball.swift in Sources */,
 				A6A262FE24E0BCB30091EA92 /* TestingApp.swift in Sources */,

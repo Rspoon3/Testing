@@ -13,10 +13,10 @@ struct BouncingBallsView: View {
     @State private var canvasSize: CGSize = .zero
     @State private var hasInitialized = false
     @State private var infectionMode: InfectionMode = .blueInfectsRed
+    @State private var speed: CGFloat = 1.5
     
     let ballCount = 50
     let ballRadius: CGFloat = 10
-    let speed: CGFloat = 1.5
     
     enum InfectionMode {
         case blueInfectsRed
@@ -24,47 +24,52 @@ struct BouncingBallsView: View {
     }
     
     var body: some View {
-        GeometryReader { geo in
-            TimelineView(.animation) { timeline in
-                let now = timeline.date
-                let deltaTime = now.timeIntervalSince(lastUpdate)
-                
-                Canvas { context, _ in
-                    for ball in balls {
-                        let color = ball.isBlue ? Color.blue : Color.red
-                        let rect = CGRect(
-                            x: ball.position.x - ballRadius,
-                            y: ball.position.y - ballRadius,
-                            width: ballRadius * 2,
-                            height: ballRadius * 2
-                        )
-                        context.fill(
-                            Path(ellipseIn: rect),
-                            with: .color(color)
-                        )
-                    }
-                }
-                .drawingGroup()
-                .onAppear {
-                    canvasSize = geo.size
-                }
-                .onChange(of: timeline.date) { _, newDate in
-                    if !hasInitialized && canvasSize != .zero {
-                        initializeBalls(in: canvasSize)
-                        hasInitialized = true
-                    }
+        VStack {
+            Slider(value: $speed, in: 0.1...50, step: 0.1)
+            Text("Speed \(speed.formatted())")
+        
+            GeometryReader { geo in
+                TimelineView(.animation) { timeline in
+                    let now = timeline.date
+                    let deltaTime = now.timeIntervalSince(lastUpdate)
                     
-                    if hasInitialized {
-                        updateBalls(
-                            in: canvasSize,
-                            deltaTime: deltaTime
-                        )
-                        lastUpdate = newDate
+                    Canvas { context, _ in
+                        for ball in balls {
+                            let color = ball.isBlue ? Color.blue : Color.red
+                            let rect = CGRect(
+                                x: ball.position.x - ballRadius,
+                                y: ball.position.y - ballRadius,
+                                width: ballRadius * 2,
+                                height: ballRadius * 2
+                            )
+                            context.fill(
+                                Path(ellipseIn: rect),
+                                with: .color(color)
+                            )
+                        }
+                    }
+                    .drawingGroup()
+                    .onAppear {
+                        canvasSize = geo.size
+                    }
+                    .onChange(of: timeline.date) { _, newDate in
+                        if !hasInitialized && canvasSize != .zero {
+                            initializeBalls(in: canvasSize)
+                            hasInitialized = true
+                        }
+                        
+                        if hasInitialized {
+                            updateBalls(
+                                in: canvasSize,
+                                deltaTime: deltaTime
+                            )
+                            lastUpdate = newDate
+                        }
                     }
                 }
             }
+            .ignoresSafeArea()
         }
-        .ignoresSafeArea()
     }
     
     func initializeBalls(in size: CGSize) {
@@ -96,8 +101,17 @@ struct BouncingBallsView: View {
             var pos = ball.position
             var vel = ball.velocity
             
-            pos.x += vel.dx * deltaTime
-            pos.y += vel.dy * deltaTime
+            let direction = CGVector(
+                dx: vel.dx / max(1e-5, sqrt(vel.dx * vel.dx + vel.dy * vel.dy)),
+                dy: vel.dy / max(1e-5, sqrt(vel.dx * vel.dx + vel.dy * vel.dy))
+            )
+            let currentVelocity = CGVector(
+                dx: direction.dx * speed * 60,
+                dy: direction.dy * speed * 60
+            )
+            pos.x += currentVelocity.dx * deltaTime
+            pos.y += currentVelocity.dy * deltaTime
+            vel = currentVelocity
             
             if pos.x - ballRadius < 0 || pos.x + ballRadius > size.width {
                 vel.dx *= -1

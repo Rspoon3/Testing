@@ -8,284 +8,168 @@
 import SwiftUI
 import SpriteKit
 
-import SwiftUI
-import MetalKit
-import simd
-
-// MARK: - Shared Structures
-
-struct Ball3 {
-    var position: SIMD2<Float>
-    var velocity: SIMD2<Float>
-    var color: SIMD4<Float> // r, g, b, a
-    var isInfectious: Bool
-}
-
-struct SceneConstants {
-    var width: Float
-    var height: Float
-    var ballRadius: Float
-    var deltaTime: Float
-    var ballCount: UInt32
-    var infectiousColor: SIMD4<Float>
-    var regularColor: SIMD4<Float>
-}
-
-// MARK: - Metal Renderer
-
-class MetalBallsRenderer: NSObject, MTKViewDelegate {
-    private let device: MTLDevice
-    private let commandQueue: MTLCommandQueue
-    private let pipelineState: MTLComputePipelineState
-    private let renderPipelineState: MTLRenderPipelineState
-    
-    private var ballsBuffer: MTLBuffer
-    private var constantsBuffer: MTLBuffer
-    private var infectiousModeBuffer: MTLBuffer
-    
-    private var balls: [Ball3] = []
-    private var lastUpdateTime: Date = Date()
-    private let ballCount = 50
-    private let ballRadius: Float = 10.0
-    private let speed: Float = 2.447 * 60.0
-    
-    enum InfectionMode: Int32 {
-        case blueInfectsRed = 0
-        case redInfectsBlue = 1
+final class BouncingBallScene: SKScene, SKPhysicsContactDelegate {
+    enum InfectionMode {
+        case blueInfectsRed
+        case redInfectsBlue
     }
-    
-    private var infectionMode: InfectionMode = .blueInfectsRed
-    
-    init?(metalView: MTKView) {
-        guard let device = MTLCreateSystemDefaultDevice(),
-              let commandQueue = device.makeCommandQueue() else {
-            return nil
-        }
-        
-        self.device = device
-        self.commandQueue = commandQueue
-        
-        // Set up Metal view
-        metalView.device = device
-        metalView.clearColor = MTLClearColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
-        metalView.framebufferOnly = false
-        
-        // Create compute pipeline state
-        guard let computeShaderURL = Bundle.main.url(forResource: "BallsShader", withExtension: "metal"),
-              let computeShaderSource = try? String(contentsOf: computeShaderURL),
-              let computeLibrary = try? device.makeLibrary(source: computeShaderSource, options: nil),
-              let updateKernel = computeLibrary.makeFunction(name: "updateBalls"),
-              let pipelineState = try? device.makeComputePipelineState(function: updateKernel) else {
-            return nil
-        }
-        
-        // Create render pipeline state
-        let renderPipelineDescriptor = MTLRenderPipelineDescriptor()
-        renderPipelineDescriptor.colorAttachments[0].pixelFormat = metalView.colorPixelFormat
-        
-        guard let vertexFunction = computeLibrary.makeFunction(name: "vertexShader"),
-              let fragmentFunction = computeLibrary.makeFunction(name: "fragmentShader") else {
-            return nil
-        }
-        
-        renderPipelineDescriptor.vertexFunction = vertexFunction
-        renderPipelineDescriptor.fragmentFunction = fragmentFunction
-        
-        guard let renderPipelineState = try? device.makeRenderPipelineState(descriptor: renderPipelineDescriptor) else {
-            return nil
-        }
-        
-        self.renderPipelineState = renderPipelineState
-        self.pipelineState = pipelineState
-        
-        // Initialize balls
-        let viewWidth = Float(metalView.bounds.width)
-        let viewHeight = Float(metalView.bounds.height)
-        
-        // Initialize balls with random positions and velocities
-        var initialBalls: [Ball3] = []
-        for i in 0..<ballCount {
-            let x = Float.random(in: ballRadius...(viewWidth - ballRadius))
-            let y = Float.random(in: ballRadius...(viewHeight - ballRadius))
-            let angle = Float.random(in: 0..<(2 * Float.pi))
-            
-            let isBlue = i == 0
-            let color: SIMD4<Float> = isBlue ? SIMD4<Float>(0, 0, 1, 1) : SIMD4<Float>(1, 0, 0, 1)
-            
-            initialBalls.append(Ball3(
-                position: SIMD2<Float>(x, y),
-                velocity: SIMD2<Float>(cos(angle) * speed, sin(angle) * speed),
-                color: color,
-                isInfectious: isBlue
-            ))
-        }
-        
-        self.balls = initialBalls
-        
-        // Create Metal buffers
-        guard let ballsBuffer = device.makeBuffer(length: MemoryLayout<Ball3>.stride * ballCount, options: .storageModeShared),
-              let constantsBuffer = device.makeBuffer(length: MemoryLayout<SceneConstants>.size, options: .storageModeShared),
-              let infectiousModeBuffer = device.makeBuffer(length: MemoryLayout<Int32>.size, options: .storageModeShared) else {
-            return nil
-        }
-        
-        self.ballsBuffer = ballsBuffer
-        self.constantsBuffer = constantsBuffer
-        self.infectiousModeBuffer = infectiousModeBuffer
 
-        super.init()
-        
-        // Update buffers with initial data
-        updateBuffers(viewWidth: viewWidth, viewHeight: viewHeight, deltaTime: 1/60)
+    let ballCount = 50
+    let ballRadius: CGFloat = 10
+    let mySpeed: CGFloat = 1.447
+    var infectionMode: InfectionMode = .blueInfectsRed
+
+    struct Category {
+        static let ball: UInt32 = 0x1 << 0
+        static let edge: UInt32 = 0x1 << 1
     }
-    
-    func updateBuffers(viewWidth: Float, viewHeight: Float, deltaTime: Float) {
-        // Update balls buffer
-        let ballsPtr = ballsBuffer.contents().bindMemory(to: Ball3.self, capacity: ballCount)
-        for i in 0..<ballCount {
-            ballsPtr[i] = balls[i]
-        }
+
+    override func didMove(to view: SKView) {
+        backgroundColor = .white
+        physicsWorld.gravity = .zero
+        physicsWorld.contactDelegate = self
+
+        // Create a proper boundary with collision detection
+        let boundaryFrame = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        let boundary = SKPhysicsBody(edgeLoopFrom: boundaryFrame)
+        boundary.friction = 0
+        boundary.restitution = 1.0
+        boundary.categoryBitMask = Category.edge
+        boundary.collisionBitMask = Category.ball
         
-        // Update constants buffer
-        let constantsPtr = constantsBuffer.contents().bindMemory(to: SceneConstants.self, capacity: 1)
-        constantsPtr.pointee = SceneConstants(
-            width: viewWidth,
-            height: viewHeight,
-            ballRadius: ballRadius,
-            deltaTime: deltaTime,
-            ballCount: UInt32(ballCount),
-            infectiousColor: infectionMode == .blueInfectsRed ? SIMD4<Float>(0, 0, 1, 1) : SIMD4<Float>(1, 0, 0, 1),
-            regularColor: infectionMode == .blueInfectsRed ? SIMD4<Float>(1, 0, 0, 1) : SIMD4<Float>(0, 0, 1, 1)
-        )
-        
-        // Update infection mode buffer
-        let modePtr = infectiousModeBuffer.contents().bindMemory(to: Int32.self, capacity: 1)
-        modePtr.pointee = Int32(infectionMode.rawValue)
+        self.physicsBody = boundary
+
+        createBalls()
     }
-    
-    func draw(in view: MTKView) {
-        guard let commandBuffer = commandQueue.makeCommandBuffer(),
-              let drawable = view.currentDrawable else {
-            return
-        }
-        
-        let currentTime = Date()
-        let deltaTime = Float(currentTime.timeIntervalSince(lastUpdateTime))
-        lastUpdateTime = currentTime
-        
-        // Update buffers with current data
-        updateBuffers(
-            viewWidth: Float(view.bounds.width),
-            viewHeight: Float(view.bounds.height),
-            deltaTime: deltaTime
-        )
-        
-        // Dispatch compute command encoder
-        guard let computeEncoder = commandBuffer.makeComputeCommandEncoder() else {
-            return
-        }
-        
-        computeEncoder.setComputePipelineState(pipelineState)
-        computeEncoder.setBuffer(ballsBuffer, offset: 0, index: 0)
-        computeEncoder.setBuffer(constantsBuffer, offset: 0, index: 1)
-        computeEncoder.setBuffer(infectiousModeBuffer, offset: 0, index: 2)
-        
-        let threadsPerGrid = MTLSize(width: ballCount, height: 1, depth: 1)
-        let threadsPerThreadgroup = MTLSize(width: min(pipelineState.maxTotalThreadsPerThreadgroup, ballCount), height: 1, depth: 1)
-        
-        computeEncoder.dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
-        computeEncoder.endEncoding()
-        
-        // Read back results from GPU
-        let ballsPtr = ballsBuffer.contents().bindMemory(to: Ball3.self, capacity: ballCount)
+
+    func createBalls() {
+        removeAllChildren()
+
         for i in 0..<ballCount {
-            balls[i] = ballsPtr[i]
+            let ball = SKShapeNode(circleOfRadius: ballRadius)
+            ball.position = CGPoint(
+                x: CGFloat.random(in: ballRadius*2...(size.width - ballRadius*2)),
+                y: CGFloat.random(in: ballRadius*2...(size.height - ballRadius*2))
+            )
+            ball.fillColor = i == 0 ? .blue : .red
+            ball.name = i == 0 ? "blue" : "red"
+            ball.strokeColor = .black
+            ball.lineWidth = 1.0
+
+            let physics = SKPhysicsBody(circleOfRadius: ballRadius)
+            physics.restitution = 1.0
+            physics.linearDamping = 0.0
+            physics.friction = 0.0
+            physics.allowsRotation = false
+            physics.affectedByGravity = false
+            physics.categoryBitMask = Category.ball
+            physics.contactTestBitMask = Category.ball
+            physics.collisionBitMask = Category.ball | Category.edge
+
+            let angle = Double.random(in: 0..<2 * .pi)
+            physics.velocity = CGVector(
+                dx: cos(angle) * mySpeed * 100.0,
+                dy: sin(angle) * mySpeed * 100.0
+            )
+
+            ball.physicsBody = physics
+            addChild(ball)
         }
+    }
+
+    func didBegin(_ contact: SKPhysicsContact) {
+        guard let nodeA = contact.bodyA.node, let nodeB = contact.bodyB.node else { return }
         
-        // Check for mode switching
+        // Only process ball-to-ball collisions
+        guard let a = nodeA as? SKShapeNode, let b = nodeB as? SKShapeNode,
+              a.name != nil && b.name != nil else { return }
+
+        switch infectionMode {
+        case .blueInfectsRed:
+            if a.name == "blue" && b.name == "red" {
+                b.name = "blue"
+                b.fillColor = .blue
+            } else if b.name == "blue" && a.name == "red" {
+                a.name = "blue"
+                a.fillColor = .blue
+            }
+
+        case .redInfectsBlue:
+            if a.name == "red" && b.name == "blue" {
+                b.name = "red"
+                b.fillColor = .red
+            } else if b.name == "red" && a.name == "blue" {
+                a.name = "red"
+                a.fillColor = .red
+            }
+        }
+
         checkInfectionModeSwitch()
-        
-        // Render balls
-        if let renderPassDescriptor = view.currentRenderPassDescriptor,
-           let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) {
-            renderEncoder.setRenderPipelineState(renderPipelineState)
-            renderEncoder.setVertexBuffer(ballsBuffer, offset: 0, index: 0)
-            renderEncoder.setVertexBuffer(constantsBuffer, offset: 0, index: 1)
-            renderEncoder.drawPrimitives(type: .point, vertexStart: 0, vertexCount: ballCount)
-            renderEncoder.endEncoding()
-        }
-        
-        commandBuffer.present(drawable)
-        commandBuffer.commit()
     }
-    
-    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        // Handle view resize
-    }
-    
-    private func checkInfectionModeSwitch() {
-        let redBalls = balls.filter { $0.color.x > 0.5 && $0.color.y < 0.5 && $0.color.z < 0.5 }
-        let blueBalls = balls.filter { $0.color.x < 0.5 && $0.color.y < 0.5 && $0.color.z > 0.5 }
-        
+
+    func checkInfectionModeSwitch() {
+        let redBalls = children.compactMap { $0 as? SKShapeNode }.filter { $0.name == "red" }
+        let blueBalls = children.compactMap { $0 as? SKShapeNode }.filter { $0.name == "blue" }
+
         if infectionMode == .blueInfectsRed && redBalls.count == 1 {
             infectionMode = .redInfectsBlue
-            updateInfectiousFlag(isRed: true)
         } else if infectionMode == .redInfectsBlue && blueBalls.count == 1 {
             infectionMode = .blueInfectsRed
-            updateInfectiousFlag(isRed: false)
         }
     }
     
-    private func updateInfectiousFlag(isRed: Bool) {
-        for i in 0..<balls.count {
-            let isTargetColor = isRed ?
-                (balls[i].color.x > 0.5 && balls[i].color.y < 0.5 && balls[i].color.z < 0.5) :
-                (balls[i].color.x < 0.5 && balls[i].color.y < 0.5 && balls[i].color.z > 0.5)
+    override func update(_ currentTime: TimeInterval) {
+        // Ensure balls stay within bounds (additional safety check)
+        for node in children {
+            guard let ball = node as? SKShapeNode, let physics = ball.physicsBody else { continue }
             
-            if isTargetColor {
-                balls[i].isInfectious = true
-            } else {
-                balls[i].isInfectious = false
+            // Apply velocity correction if balls somehow get stuck
+            if physics.velocity.dx == 0 && physics.velocity.dy == 0 {
+                let angle = Double.random(in: 0..<2 * .pi)
+                physics.velocity = CGVector(
+                    dx: cos(angle) * mySpeed * 100.0,
+                    dy: sin(angle) * mySpeed * 100.0
+                )
+            }
+            
+            // Ensure ball stays in bounds if it somehow escapes
+            if ball.position.x < ballRadius {
+                ball.position.x = ballRadius
+                physics.velocity.dx = abs(physics.velocity.dx)
+            } else if ball.position.x > size.width - ballRadius {
+                ball.position.x = size.width - ballRadius
+                physics.velocity.dx = -abs(physics.velocity.dx)
+            }
+            
+            if ball.position.y < ballRadius {
+                ball.position.y = ballRadius
+                physics.velocity.dy = abs(physics.velocity.dy)
+            } else if ball.position.y > size.height - ballRadius {
+                ball.position.y = size.height - ballRadius
+                physics.velocity.dy = -abs(physics.velocity.dy)
             }
         }
     }
 }
 
-// MARK: - SwiftUI View
+struct BouncingBallsSpriteView: View {
+    var scene: SKScene {
+        let scene = BouncingBallScene()
+        scene.size = UIScreen.main.bounds.size
+        scene.scaleMode = .resizeFill
+        return scene
+    }
 
-struct MetalBouncingBallsView: View {
-    @State private var renderer: MetalBallsRenderer?
-    
     var body: some View {
-        MetalViewRepresentable(renderer: $renderer)
+        SpriteView(scene: scene)
             .ignoresSafeArea()
-            .onDisappear {
-                // Clean up
-                renderer = nil
+            .onAppear {
+                // Enable visualization of physics bodies for debugging (optional)
+                // SKView.viewFor(scene: scene)?.showsPhysics = true
             }
-    }
-}
-
-struct MetalViewRepresentable: UIViewRepresentable {
-    @Binding var renderer: MetalBallsRenderer?
-    
-    func makeUIView(context: Context) -> MTKView {
-        let mtkView = MTKView()
-        mtkView.enableSetNeedsDisplay = false
-        mtkView.preferredFramesPerSecond = 60
-        mtkView.framebufferOnly = false
-        
-        renderer = MetalBallsRenderer(metalView: mtkView)
-        mtkView.delegate = renderer
-        
-        return mtkView
-    }
-    
-    func updateUIView(_ uiView: MTKView, context: Context) {
-        // Nothing to update
     }
 }
 
 #Preview {
-    MetalBouncingBallsView()
+    BouncingBallsSpriteView()
 }

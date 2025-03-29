@@ -15,7 +15,7 @@ struct InfectionSimTabs: View {
                     Label("SwiftUI", systemImage: "rectangle.on.rectangle")
                 }
 
-            BouncingBallsView()
+            BouncingBallsSpriteView()
                 .tabItem {
                     Label("SpriteKit", systemImage: "circle.grid.cross")
                 }
