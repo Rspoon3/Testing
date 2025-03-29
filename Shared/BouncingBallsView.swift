@@ -29,21 +29,20 @@ struct BouncingBallsView: View {
                 let now = timeline.date
                 let deltaTime = now.timeIntervalSince(lastUpdate)
                 
-                ZStack {
-                    // 1. Draw the balls with Canvas (NO state mutation)
-                    Canvas { context, _ in
-                        for ball in balls {
-                            let color = ball.isBlue ? Color.blue : Color.red
-                            let rect = CGRect(
-                                x: ball.position.x - ballRadius,
-                                y: ball.position.y - ballRadius,
-                                width: ballRadius * 2,
-                                height: ballRadius * 2
-                            )
-                            context.fill(Path(ellipseIn: rect), with: .color(color))
-                        }
+                // 1. Draw the balls with Canvas (NO state mutation)
+                Canvas { context, _ in
+                    for ball in balls {
+                        let color = ball.isBlue ? Color.blue : Color.red
+                        let rect = CGRect(
+                            x: ball.position.x - ballRadius,
+                            y: ball.position.y - ballRadius,
+                            width: ballRadius * 2,
+                            height: ballRadius * 2
+                        )
+                        context.fill(Path(ellipseIn: rect), with: .color(color))
                     }
                 }
+                .drawingGroup()
                 .onAppear {
                     canvasSize = geo.size
                 }
