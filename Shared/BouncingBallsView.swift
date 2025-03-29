@@ -24,11 +24,40 @@ struct BouncingBallsView: View {
         case redInfectsBlue
     }
     
+    var formattedSpeed: String {
+        Decimal(speed).formatted(.number.precision(.fractionLength(1)))
+    }
+    
     var body: some View {
         VStack {
-            Slider(value: $speed, in: 0.1...5, step: 0.1)
-            Text("Speed \(speed.formatted())")
-        
+            Slider(value: $speed, in: 0...9.9, step: 0.1)
+                .padding(.horizontal)
+
+            HStack {
+                Text("Speed \(formattedSpeed)")
+                
+                Button("Add") {
+                    balls.append(
+                        Ball(
+                            position: .zero,
+                            velocity: .init(dx: 1, dy: 1),
+                            isBlue: true
+                        )
+                    )
+                }
+                
+                Text("Count: \(balls.count)")
+                    .contentTransition(.numericText(value: Double(balls.count)))
+                    .animation(.default, value: balls.count)
+                
+                Button("Remove") {
+                    balls.removeLast()
+                }
+            }
+            .buttonRepeatBehavior(.enabled)
+            .padding(.horizontal)
+            .font(.body.monospacedDigit())
+            
             GeometryReader { geo in
                 TimelineView(.animation) { timeline in
                     let now = timeline.date
@@ -80,9 +109,13 @@ struct BouncingBallsView: View {
             let y = CGFloat.random(in: ballRadius...(size.height - ballRadius))
             let angle = Double.random(in: 0..<2 * .pi)
             let speedMultiplier = speed * 60.0
+            let direction = CGVector(
+                dx: cos(angle),
+                dy: sin(angle)
+            )
             let velocity = CGVector(
-                dx: cos(angle) * speedMultiplier,
-                dy: sin(angle) * speedMultiplier
+                dx: direction.dx * speedMultiplier,
+                dy: direction.dy * speedMultiplier
             )
             return Ball(
                 position: CGPoint(x: x, y: y),
@@ -103,10 +136,17 @@ struct BouncingBallsView: View {
             var pos = ball.position
             var vel = ball.velocity
             
-            let direction = CGVector(
-                dx: vel.dx / max(1e-5, sqrt(vel.dx * vel.dx + vel.dy * vel.dy)),
-                dy: vel.dy / max(1e-5, sqrt(vel.dx * vel.dx + vel.dy * vel.dy))
-            )
+            let magnitude = sqrt(vel.dx * vel.dx + vel.dy * vel.dy)
+            var direction: CGVector
+
+            if magnitude < 0.01 {
+                // If nearly stopped, use stored direction
+                direction = ball.lastDirection
+            } else {
+                // Normalize current velocity and store it
+                direction = CGVector(dx: vel.dx / magnitude, dy: vel.dy / magnitude)
+                ball.lastDirection = direction
+            }
             let currentVelocity = CGVector(
                 dx: direction.dx * speed * 60,
                 dy: direction.dy * speed * 60
@@ -114,6 +154,11 @@ struct BouncingBallsView: View {
             pos.x += currentVelocity.dx * deltaTime
             pos.y += currentVelocity.dy * deltaTime
             vel = currentVelocity
+            
+            if vel == .zero && speed != 0 {
+                vel.dx += 1
+                vel.dy += 1
+            }
             
             if pos.x - ballRadius < 0 || pos.x + ballRadius > size.width {
                 vel.dx *= -1
