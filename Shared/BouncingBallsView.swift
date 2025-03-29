@@ -9,40 +9,48 @@ import SwiftUI
 
 struct BouncingBallsView: View {
     @State private var balls: [Ball] = []
-    @State private var lastUpdate: Date = Date()
+    @State private var lastUpdate = Date()
+    @State private var canvasSize: CGSize = .zero
+    @State private var hasInitialized = false
+
     let ballCount = 50
     let ballRadius: CGFloat = 10
-    let speed: CGFloat = 1.447 // meters/sec (1 mph)
+    let speed: CGFloat = 2.447 // 1 mph
 
     var body: some View {
         GeometryReader { geo in
-            TimelineView(.animation(minimumInterval: 1/60, paused: false)) { timeline in
+            TimelineView(.animation(minimumInterval: 1 / 60)) { timeline in
                 let now = timeline.date
                 let deltaTime = now.timeIntervalSince(lastUpdate)
-                Canvas { context, size in
-                    updateBalls(in: size, deltaTime: deltaTime)
 
-                    for ball in balls {
-                        let color = ball.isBlue ? Color.blue : Color.red
-                        let rect = CGRect(
-                            origin: CGPoint(
+                ZStack {
+                    // 1. Draw the balls with Canvas (NO state mutation)
+                    Canvas { context, _ in
+                        for ball in balls {
+                            let color = ball.isBlue ? Color.blue : Color.red
+                            let rect = CGRect(
                                 x: ball.position.x - ballRadius,
-                                y: ball.position.y - ballRadius
-                            ),
-                            size: CGSize(width: ballRadius * 2, height: ballRadius * 2)
-                        )
-                        context.fill(Path(ellipseIn: rect), with: .color(color))
+                                y: ball.position.y - ballRadius,
+                                width: ballRadius * 2,
+                                height: ballRadius * 2
+                            )
+                            context.fill(Path(ellipseIn: rect), with: .color(color))
+                        }
                     }
                 }
                 .onAppear {
-                    initializeBalls(in: geo.size)
-                    lastUpdate = now
-                }
-                .onChange(of: geo.size) { _, newSize in
-                    initializeBalls(in: newSize)
+                    canvasSize = geo.size
                 }
                 .onChange(of: timeline.date) { _, newDate in
-                    lastUpdate = newDate
+                    if !hasInitialized && canvasSize != .zero {
+                        initializeBalls(in: canvasSize)
+                        hasInitialized = true
+                    }
+
+                    if hasInitialized {
+                        updateBalls(in: canvasSize, deltaTime: deltaTime)
+                        lastUpdate = newDate
+                    }
                 }
             }
         }
@@ -54,8 +62,7 @@ struct BouncingBallsView: View {
             let x = CGFloat.random(in: ballRadius...(size.width - ballRadius))
             let y = CGFloat.random(in: ballRadius...(size.height - ballRadius))
             let angle = Double.random(in: 0..<2 * .pi)
-            let velocity = CGVector(dx: cos(angle) * speed * 60.0, dy: sin(angle) * speed * 60.0)
-
+            let velocity = CGVector(dx: cos(angle) * speed * 60.0, dy: sin(angle) * speed * 60)
             return Ball(position: CGPoint(x: x, y: y), velocity: velocity, isBlue: index == 0)
         }
     }
@@ -63,54 +70,94 @@ struct BouncingBallsView: View {
     func updateBalls(in size: CGSize, deltaTime: TimeInterval) {
         var updatedBalls = balls
 
+        // Move each ball and check wall collisions
         for i in 0..<updatedBalls.count {
             var ball = updatedBalls[i]
+            var pos = ball.position
+            var vel = ball.velocity
 
-            var newPosition = CGPoint(
-                x: ball.position.x + ball.velocity.dx * deltaTime,
-                y: ball.position.y + ball.velocity.dy * deltaTime
-            )
+            pos.x += vel.dx * deltaTime
+            pos.y += vel.dy * deltaTime
 
-            // Wall collisions
-            if newPosition.x - ballRadius < 0 || newPosition.x + ballRadius > size.width {
-                ball.velocity.dx *= -1
-                newPosition.x = max(ballRadius, min(size.width - ballRadius, newPosition.x))
-            }
-            if newPosition.y - ballRadius < 0 || newPosition.y + ballRadius > size.height {
-                ball.velocity.dy *= -1
-                newPosition.y = max(ballRadius, min(size.height - ballRadius, newPosition.y))
+            if pos.x - ballRadius < 0 || pos.x + ballRadius > size.width {
+                vel.dx *= -1
+                pos.x = max(ballRadius, min(size.width - ballRadius, pos.x))
             }
 
-            ball.position = newPosition
+            if pos.y - ballRadius < 0 || pos.y + ballRadius > size.height {
+                vel.dy *= -1
+                pos.y = max(ballRadius, min(size.height - ballRadius, pos.y))
+            }
+
+            ball.position = pos
+            ball.velocity = vel
             updatedBalls[i] = ball
         }
 
-        // Blue spreading
+        // Handle collisions and spreading
         for i in 0..<updatedBalls.count {
             for j in (i + 1)..<updatedBalls.count {
-                let dist = distance(updatedBalls[i].position, updatedBalls[j].position)
-                if dist < ballRadius * 2 {
-                    if updatedBalls[i].isBlue || updatedBalls[j].isBlue {
-                        updatedBalls[i].isBlue = true
-                        updatedBalls[j].isBlue = true
+                var a = updatedBalls[i]
+                var b = updatedBalls[j]
+
+                let dx = b.position.x - a.position.x
+                let dy = b.position.y - a.position.y
+                let distance = sqrt(dx * dx + dy * dy)
+
+                if distance < ballRadius * 2 {
+                    // Spread blue
+                    if a.isBlue || b.isBlue {
+                        a.isBlue = true
+                        b.isBlue = true
                     }
+
+                    // Elastic collision
+                    let delta = CGPoint(x: dx, y: dy)
+                    let distSquared = delta.x * delta.x + delta.y * delta.y
+                    guard distSquared > 0 else { continue }
+
+                    let vDiff = CGVector(
+                        dx: a.velocity.dx - b.velocity.dx,
+                        dy: a.velocity.dy - b.velocity.dy
+                    )
+                    let pDiff = CGVector(dx: delta.x, dy: delta.y)
+
+                    let dot = vDiff.dx * pDiff.dx + vDiff.dy * pDiff.dy
+                    let scale = dot / distSquared
+
+                    let impulse = CGVector(dx: scale * pDiff.dx, dy: scale * pDiff.dy)
+
+                    a.velocity.dx -= impulse.dx
+                    a.velocity.dy -= impulse.dy
+                    b.velocity.dx += impulse.dx
+                    b.velocity.dy += impulse.dy
+
+                    // Push apart to prevent overlap
+                    let overlap = 0.5 * (2 * ballRadius - distance)
+                    let norm = CGVector(dx: delta.x / distance, dy: delta.y / distance)
+
+                    a.position.x -= norm.dx * overlap
+                    a.position.y -= norm.dy * overlap
+                    b.position.x += norm.dx * overlap
+                    b.position.y += norm.dy * overlap
+
+                    updatedBalls[i] = a
+                    updatedBalls[j] = b
                 }
             }
         }
 
+        // Restart infection if only one blue ball remains
+        let blueBalls = updatedBalls.filter { $0.isBlue }
+        if blueBalls.count == 1 {
+            let id = blueBalls.first!.id
+            updatedBalls = updatedBalls.map {
+                Ball(position: $0.position, velocity: $0.velocity, isBlue: $0.id == id)
+            }
+        }
+
         balls = updatedBalls
-    }
-
-    func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
-        sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2))
-    }
-}
-
-struct BouncingBallsView_Previews: PreviewProvider {
-    static var previews: some View {
-        BouncingBallsView()
-    }
-}
+    }}
 
 #Preview {
     BouncingBallsView()
