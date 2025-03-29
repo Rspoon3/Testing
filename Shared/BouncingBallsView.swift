@@ -13,10 +13,11 @@ struct BouncingBallsView: View {
     @State private var canvasSize: CGSize = .zero
     @State private var hasInitialized = false
     @State private var infectionMode: InfectionMode = .blueInfectsRed
-    @State private var speed: CGFloat = 1.5
+    @AppStorage("speed") private var speed: Double = 1.5
+    @AppStorage("hapticsEnabled") private var hapticsEnabled = true
     private let generator = UIImpactFeedbackGenerator(style: .light)
     
-    let ballCount = 50
+    @AppStorage("initialBallCount") private var initialBallCount = 50
     let ballRadius: CGFloat = 10
     
     enum InfectionMode {
@@ -30,13 +31,16 @@ struct BouncingBallsView: View {
     
     var body: some View {
         VStack {
-            Slider(value: $speed, in: 0...9.9, step: 0.1)
+            Slider(value: $speed, in: 0...50, step: 0.1)
                 .padding(.horizontal)
 
             HStack {
                 Text("Speed \(formattedSpeed)")
                 
+                Toggle("Haptics", isOn: $hapticsEnabled)
+                
                 Button("Add") {
+                    initialBallCount += 1
                     balls.append(
                         Ball(
                             position: .zero,
@@ -51,6 +55,7 @@ struct BouncingBallsView: View {
                     .animation(.default, value: balls.count)
                 
                 Button("Remove") {
+                    initialBallCount -= 1
                     balls.removeLast()
                 }
             }
@@ -99,12 +104,11 @@ struct BouncingBallsView: View {
                     }
                 }
             }
-            .ignoresSafeArea()
         }
     }
     
     func initializeBalls(in size: CGSize) {
-        balls = (0..<ballCount).map { index in
+        balls = (0..<initialBallCount).map { index in
             let x = CGFloat.random(in: ballRadius...(size.width - ballRadius))
             let y = CGFloat.random(in: ballRadius...(size.height - ballRadius))
             let angle = Double.random(in: 0..<2 * .pi)
@@ -260,7 +264,7 @@ struct BouncingBallsView: View {
     }
     
     private func impactOccurred() {
-        guard speed <= 2 else { return }
+        guard hapticsEnabled else { return }
         generator.impactOccurred()
     }
 }
