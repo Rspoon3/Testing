@@ -14,6 +14,7 @@ struct BouncingBallsView: View {
     @State private var hasInitialized = false
     @State private var infectionMode: InfectionMode = .blueInfectsRed
     @State private var speed: CGFloat = 1.5
+    private let generator = UIImpactFeedbackGenerator(style: .light)
     
     let ballCount = 50
     let ballRadius: CGFloat = 10
@@ -25,7 +26,7 @@ struct BouncingBallsView: View {
     
     var body: some View {
         VStack {
-            Slider(value: $speed, in: 0.1...50, step: 0.1)
+            Slider(value: $speed, in: 0.1...5, step: 0.1)
             Text("Speed \(speed.formatted())")
         
             GeometryReader { geo in
@@ -56,6 +57,7 @@ struct BouncingBallsView: View {
                         if !hasInitialized && canvasSize != .zero {
                             initializeBalls(in: canvasSize)
                             hasInitialized = true
+                            generator.prepare()
                         }
                         
                         if hasInitialized {
@@ -143,14 +145,18 @@ struct BouncingBallsView: View {
                     if infectionMode == .blueInfectsRed {
                         if a.isBlue && !b.isBlue {
                             b.isBlue = true
+                            impactOccurred()
                         } else if b.isBlue && !a.isBlue {
                             a.isBlue = true
+                            impactOccurred()
                         }
                     } else { // redInfectsBlue
                         if !a.isBlue && b.isBlue {
                             b.isBlue = false
+                            impactOccurred()
                         } else if !b.isBlue && a.isBlue {
                             a.isBlue = false
+                            impactOccurred()
                         }
                     }
                     
@@ -206,6 +212,11 @@ struct BouncingBallsView: View {
         }
         
         balls = updatedBalls
+    }
+    
+    private func impactOccurred() {
+        guard speed <= 2 else { return }
+        generator.impactOccurred()
     }
 }
 
