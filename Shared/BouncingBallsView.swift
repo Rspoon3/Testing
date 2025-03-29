@@ -16,7 +16,7 @@ struct BouncingBallsView: View {
     
     let ballCount = 50
     let ballRadius: CGFloat = 10
-    let speed: CGFloat = 1.447 // 1 mph
+    let speed: CGFloat = 1.5
     
     enum InfectionMode {
         case blueInfectsRed
@@ -25,11 +25,10 @@ struct BouncingBallsView: View {
     
     var body: some View {
         GeometryReader { geo in
-            TimelineView(.animation(minimumInterval: 1 / 60)) { timeline in
+            TimelineView(.animation) { timeline in
                 let now = timeline.date
                 let deltaTime = now.timeIntervalSince(lastUpdate)
                 
-                // 1. Draw the balls with Canvas (NO state mutation)
                 Canvas { context, _ in
                     for ball in balls {
                         let color = ball.isBlue ? Color.blue : Color.red
@@ -39,7 +38,10 @@ struct BouncingBallsView: View {
                             width: ballRadius * 2,
                             height: ballRadius * 2
                         )
-                        context.fill(Path(ellipseIn: rect), with: .color(color))
+                        context.fill(
+                            Path(ellipseIn: rect),
+                            with: .color(color)
+                        )
                     }
                 }
                 .drawingGroup()
@@ -53,7 +55,10 @@ struct BouncingBallsView: View {
                     }
                     
                     if hasInitialized {
-                        updateBalls(in: canvasSize, deltaTime: deltaTime)
+                        updateBalls(
+                            in: canvasSize,
+                            deltaTime: deltaTime
+                        )
                         lastUpdate = newDate
                     }
                 }
@@ -67,9 +72,18 @@ struct BouncingBallsView: View {
             let x = CGFloat.random(in: ballRadius...(size.width - ballRadius))
             let y = CGFloat.random(in: ballRadius...(size.height - ballRadius))
             let angle = Double.random(in: 0..<2 * .pi)
-            let velocity = CGVector(dx: cos(angle) * speed * 60.0, dy: sin(angle) * speed * 60)
-            return Ball(position: CGPoint(x: x, y: y), velocity: velocity, isBlue: index == 0)
+            let speedMultiplier = speed * 60.0
+            let velocity = CGVector(
+                dx: cos(angle) * speedMultiplier,
+                dy: sin(angle) * speedMultiplier
+            )
+            return Ball(
+                position: CGPoint(x: x, y: y),
+                velocity: velocity,
+                isBlue: index == 0
+            )
         }
+        
         infectionMode = .blueInfectsRed
     }
     
@@ -140,7 +154,10 @@ struct BouncingBallsView: View {
                     let dot = vDiff.dx * pDiff.dx + vDiff.dy * pDiff.dy
                     let scale = dot / distSquared
                     
-                    let impulse = CGVector(dx: scale * pDiff.dx, dy: scale * pDiff.dy)
+                    let impulse = CGVector(
+                        dx: scale * pDiff.dx,
+                        dy: scale * pDiff.dy
+                    )
                     
                     a.velocity.dx -= impulse.dx
                     a.velocity.dy -= impulse.dy
