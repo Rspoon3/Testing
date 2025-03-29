@@ -14,7 +14,7 @@ struct BouncingBallsView: View {
     @State private var hasInitialized = false
     @State private var infectionMode: InfectionMode = .blueInfectsRed
     
-    let ballCount = 50
+    let ballCount = 5
     let ballRadius: CGFloat = 10
     let speed: CGFloat = 1.447 // 1 mph
     
