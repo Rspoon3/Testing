@@ -17,5 +17,6 @@ import SwiftSyntaxMacros
 struct CaseDetectionPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         CaseDetectionMacro.self,
+        CaseAssociatedValueDetectionMacro.self,
     ]
 }
