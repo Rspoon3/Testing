@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		94232D492EB51C250054E27F /* CaseDetectionMacro in Frameworks */ = {isa = PBXBuildFile; productRef = 94232D232EB51C550054E27F /* CaseDetectionMacro */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9483721C2EAE6B2F0094674D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -39,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94232D492EB51C250054E27F /* CaseDetectionMacro in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +95,7 @@
 			);
 			name = TestDrive;
 			packageProductDependencies = (
+				94232D232EB51C550054E27F /* CaseDetectionMacro */,
 			);
 			productName = TestDrive;
 			productReference = 9483720E2EAE6B2E0094674D /* TestDrive.app */;
@@ -146,6 +152,9 @@
 			);
 			mainGroup = 948372052EAE6B2E0094674D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				94232D242EB51C550054E27F /* XCLocalSwiftPackageReference "CaseDetectionMacro" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9483720F2EAE6B2E0094674D /* Products */;
 			projectDirPath = "";
@@ -460,6 +469,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		94232D242EB51C550054E27F /* XCLocalSwiftPackageReference "CaseDetectionMacro" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = CaseDetectionMacro;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		94232D232EB51C550054E27F /* CaseDetectionMacro */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94232D242EB51C550054E27F /* XCLocalSwiftPackageReference "CaseDetectionMacro" */;
+			productName = CaseDetectionMacro;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 948372062EAE6B2E0094674D /* Project object */;
 }
