@@ -252,4 +252,85 @@ struct CaseAssociatedValueDetectionMacroTests {
             indentationWidth: .spaces(2)
         )
     }
+
+    @Test("Fails on struct")
+    func testFailsOnStruct() {
+        assertMacroExpansion(
+            """
+            @CaseAssociatedValueDetection
+            struct Animal {
+              let name: String
+            }
+            """,
+            expandedSource: """
+              struct Animal {
+                let name: String
+              }
+              """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: "@CaseAssociatedValueDetection can only be applied to enums",
+                    line: 1,
+                    column: 1,
+                    severity: .error
+                )
+            ],
+            macros: macros,
+            indentationWidth: .spaces(2)
+        )
+    }
+
+    @Test("Fails on class")
+    func testFailsOnClass() {
+        assertMacroExpansion(
+            """
+            @CaseAssociatedValueDetection
+            class Animal {
+              let name: String
+            }
+            """,
+            expandedSource: """
+              class Animal {
+                let name: String
+              }
+              """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: "@CaseAssociatedValueDetection can only be applied to enums",
+                    line: 1,
+                    column: 1,
+                    severity: .error
+                )
+            ],
+            macros: macros,
+            indentationWidth: .spaces(2)
+        )
+    }
+
+    @Test("Fails on actor")
+    func testFailsOnActor() {
+        assertMacroExpansion(
+            """
+            @CaseAssociatedValueDetection
+            actor Animal {
+              let name: String
+            }
+            """,
+            expandedSource: """
+              actor Animal {
+                let name: String
+              }
+              """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: "@CaseAssociatedValueDetection can only be applied to enums",
+                    line: 1,
+                    column: 1,
+                    severity: .error
+                )
+            ],
+            macros: macros,
+            indentationWidth: .spaces(2)
+        )
+    }
 }

@@ -12,6 +12,7 @@
 
 import SwiftSyntax
 import SwiftSyntaxMacros
+import SwiftDiagnostics
 import Foundation
 
 /// Generates namespaced accessors for enum cases with associated values.
@@ -26,6 +27,16 @@ public enum CaseAssociatedValueDetectionMacro: MemberMacro {
         conformingTo: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
+        // Ensure the macro is only applied to enums
+        guard declaration.is(EnumDeclSyntax.self) else {
+            let diagnostic = Diagnostic(
+                node: node,
+                message: CaseAssociatedValueDetectionDiagnostic.notAnEnum
+            )
+            context.diagnose(diagnostic)
+            return []
+        }
+
         // Extract all enum cases with associated values
         let casesWithValues = declaration.memberBlock.members
             .compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }
@@ -102,6 +113,26 @@ public enum CaseAssociatedValueDetectionMacro: MemberMacro {
         }
 
         return declarations
+    }
+}
+
+/// Diagnostic messages for CaseAssociatedValueDetection macro
+enum CaseAssociatedValueDetectionDiagnostic: String, DiagnosticMessage {
+    case notAnEnum
+
+    var severity: DiagnosticSeverity {
+        .error
+    }
+
+    var message: String {
+        switch self {
+        case .notAnEnum:
+            "@CaseAssociatedValueDetection can only be applied to enums"
+        }
+    }
+
+    var diagnosticID: MessageID {
+        MessageID(domain: "CaseAssociatedValueDetectionMacro", id: rawValue)
     }
 }
 

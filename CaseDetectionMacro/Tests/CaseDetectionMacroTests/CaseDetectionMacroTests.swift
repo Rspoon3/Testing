@@ -56,4 +56,85 @@ struct CaseDetectionMacroTests {
             indentationWidth: .spaces(2)
         )
     }
+
+    @Test("Fails on struct")
+    func testFailsOnStruct() {
+        assertMacroExpansion(
+            """
+            @CaseDetection
+            struct Animal {
+              let name: String
+            }
+            """,
+            expandedSource: """
+              struct Animal {
+                let name: String
+              }
+              """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: "@CaseDetection can only be applied to enums",
+                    line: 1,
+                    column: 1,
+                    severity: .error
+                )
+            ],
+            macros: macros,
+            indentationWidth: .spaces(2)
+        )
+    }
+
+    @Test("Fails on class")
+    func testFailsOnClass() {
+        assertMacroExpansion(
+            """
+            @CaseDetection
+            class Animal {
+              let name: String
+            }
+            """,
+            expandedSource: """
+              class Animal {
+                let name: String
+              }
+              """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: "@CaseDetection can only be applied to enums",
+                    line: 1,
+                    column: 1,
+                    severity: .error
+                )
+            ],
+            macros: macros,
+            indentationWidth: .spaces(2)
+        )
+    }
+
+    @Test("Fails on actor")
+    func testFailsOnActor() {
+        assertMacroExpansion(
+            """
+            @CaseDetection
+            actor Animal {
+              let name: String
+            }
+            """,
+            expandedSource: """
+              actor Animal {
+                let name: String
+              }
+              """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: "@CaseDetection can only be applied to enums",
+                    line: 1,
+                    column: 1,
+                    severity: .error
+                )
+            ],
+            macros: macros,
+            indentationWidth: .spaces(2)
+        )
+    }
 }

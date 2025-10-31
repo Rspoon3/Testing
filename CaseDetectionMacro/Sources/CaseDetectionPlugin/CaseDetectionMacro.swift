@@ -12,6 +12,7 @@
 
 import SwiftSyntax
 import SwiftSyntaxMacros
+import SwiftDiagnostics
 
 public enum CaseDetectionMacro: MemberMacro {
     public static func expansion(
@@ -20,7 +21,17 @@ public enum CaseDetectionMacro: MemberMacro {
         conformingTo: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        declaration.memberBlock.members
+        // Ensure the macro is only applied to enums
+        guard declaration.is(EnumDeclSyntax.self) else {
+            let diagnostic = Diagnostic(
+                node: node,
+                message: CaseDetectionDiagnostic.notAnEnum
+            )
+            context.diagnose(diagnostic)
+            return []
+        }
+
+        return declaration.memberBlock.members
             .compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }
             .map { $0.elements.first!.name }
             .map { ($0, $0.initialUppercased) }
@@ -35,6 +46,26 @@ public enum CaseDetectionMacro: MemberMacro {
                 }
                 """
             }
+    }
+}
+
+/// Diagnostic messages for CaseDetection macro
+enum CaseDetectionDiagnostic: String, DiagnosticMessage {
+    case notAnEnum
+
+    var severity: DiagnosticSeverity {
+        .error
+    }
+
+    var message: String {
+        switch self {
+        case .notAnEnum:
+            "@CaseDetection can only be applied to enums"
+        }
+    }
+
+    var diagnosticID: MessageID {
+        MessageID(domain: "CaseDetectionMacro", id: rawValue)
     }
 }
 
