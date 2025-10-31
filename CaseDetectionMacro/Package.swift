@@ -27,5 +27,12 @@ let package = Package(
             name: "CaseDetectionMacro",
             dependencies: ["CaseDetectionPlugin"]
         ),
+        .testTarget(
+            name: "CaseDetectionMacroTests",
+            dependencies: [
+                "CaseDetectionPlugin",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+            ]
+        ),
     ]
 )
