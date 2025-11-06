@@ -93,8 +93,9 @@ final class DownloadManager: NSObject {
     /// - Parameter downloadedEpisode: The episode to delete.
     @MainActor
     func deleteEpisode(_ downloadedEpisode: DownloadedEpisode) {
-        // Delete the file
-        let fileURL = URL(fileURLWithPath: downloadedEpisode.localFilePath)
+        // Delete the file - reconstruct full path from filename
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = documentsPath.appendingPathComponent(downloadedEpisode.localFilePath)
         try? FileManager.default.removeItem(at: fileURL)
 
         // Delete from SwiftData
@@ -160,7 +161,8 @@ extension DownloadManager: URLSessionDownloadDelegate {
 
             // Get episode data from cache
             if let episode = episodeCache[episodeID] {
-                saveDownloadedEpisode(episode, localPath: destinationURL.path)
+                // Store just the filename, not the full path
+                saveDownloadedEpisode(episode, localPath: destinationURL.lastPathComponent)
             }
 
             // Clean up

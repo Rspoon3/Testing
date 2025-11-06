@@ -53,9 +53,18 @@ final class PlaybackManager {
         }
 
         currentEpisode = episode
-        let fileURL = URL(fileURLWithPath: episode.localFilePath)
-        let playerItem = AVPlayerItem(url: fileURL)
 
+        // Reconstruct the full path from the filename
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = documentsPath.appendingPathComponent(episode.localFilePath)
+
+        // Verify file exists
+        if !FileManager.default.fileExists(atPath: fileURL.path) {
+            print("Error: Audio file does not exist at path: \(fileURL.path)")
+            return
+        }
+
+        let playerItem = AVPlayerItem(url: fileURL)
         player = AVPlayer(playerItem: playerItem)
         duration = episode.duration
 
@@ -84,8 +93,23 @@ final class PlaybackManager {
 
     /// Resumes playback.
     func play() {
-        player?.play()
+        // Ensure audio session is active before playing
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Failed to activate audio session: \(error)")
+        }
+
+        guard let player = player else {
+            print("Error: No player available")
+            return
+        }
+
+        player.play()
         isPlaying = true
+
+        // Debug: Check if playback actually started
+        print("Player rate after play(): \(player.rate)")
     }
 
     /// Pauses playback.

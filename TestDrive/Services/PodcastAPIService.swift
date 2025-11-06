@@ -18,7 +18,7 @@ final class PodcastAPIService {
     /// - Parameter limit: Maximum number of episodes to fetch (default: 200).
     /// - Returns: An array of Episode objects sorted by publish date (newest first).
     /// - Throws: An error if the network request fails or JSON parsing fails.
-    func fetchEpisodes(limit: Int = 200) async throws -> [Episode] {
+    func fetchEpisodes(limit: Int = 50) async throws -> [Episode] {
         var components = URLComponents(string: baseURL)
         components?.queryItems = [
             URLQueryItem(name: "id", value: podcastID),
