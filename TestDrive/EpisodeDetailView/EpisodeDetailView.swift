@@ -4,6 +4,7 @@ import SwiftData
 /// Detailed view for a single podcast episode.
 struct EpisodeDetailView: View {
     @State private var viewModel: EpisodeDetailViewModel
+    @State private var showTranscript = false
 
     // MARK: - Initializer
 
@@ -48,6 +49,24 @@ struct EpisodeDetailView: View {
             .padding()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if viewModel.isDownloaded {
+                if #available(iOS 26.0, *) {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showTranscript = true
+                        } label: {
+                            Label("Transcribe", systemImage: "doc.text")
+                        }
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showTranscript) {
+            if #available(iOS 26.0, *) {
+                transcriptView
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             PlaybackControlsView(playbackManager: viewModel.playbackManager)
         }
@@ -66,6 +85,86 @@ struct EpisodeDetailView: View {
     }
 
     // MARK: - Private Views
+
+    @available(iOS 26.0, *)
+    private var transcriptView: some View {
+        NavigationStack {
+            if let service = viewModel.transcriptionService {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if service.isInstallingModel {
+                            VStack(spacing: 12) {
+                                HStack {
+                                    ProgressView()
+                                    Text("Installing speech model...")
+                                        .font(.headline)
+                                }
+
+                                ProgressView(value: service.modelInstallationProgress) {
+                                    Text("Downloading")
+                                        .font(.subheadline)
+                                }
+                                .tint(.blue)
+
+                                Text("\(Int(service.modelInstallationProgress * 100))% complete")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                        } else if service.isTranscribing {
+                            HStack {
+                                ProgressView()
+                                Text("Transcribing...")
+                                    .font(.headline)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                        }
+
+                        if let errorMessage = service.errorMessage {
+                            Text(errorMessage)
+                                .foregroundStyle(.red)
+                                .padding()
+                        }
+
+                        if !service.transcriptionText.isEmpty {
+                            Text(service.transcriptionText)
+                                .font(.body)
+                                .padding()
+                        } else if !service.isTranscribing && !service.isInstallingModel {
+                            ContentUnavailableView(
+                                "No Transcript",
+                                systemImage: "doc.text",
+                                description: Text("Tap the button below to start transcription")
+                            )
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .navigationTitle("Transcript")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Done") {
+                            showTranscript = false
+                        }
+                    }
+
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            Task {
+                                await viewModel.startTranscription()
+                            }
+                        } label: {
+                            Label("Start", systemImage: "play.circle")
+                        }
+                        .disabled(service.isTranscribing || service.isInstallingModel)
+                    }
+                }
+            }
+        }
+    }
 
     private var artwork: some View {
         Group {

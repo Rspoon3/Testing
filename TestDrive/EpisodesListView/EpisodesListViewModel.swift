@@ -101,8 +101,8 @@ final class EpisodesListViewModel {
     /// Deletes a downloaded episode.
     /// - Parameter episode: The episode to delete.
     func deleteEpisode(_ episode: DownloadedEpisode) async {
-        await downloadManager.deleteEpisode(episode)
-        await loadDownloadedEpisodes()
+        downloadManager.deleteEpisode(episode)
+        loadDownloadedEpisodes()
     }
 
     /// Checks if an episode is downloaded.
