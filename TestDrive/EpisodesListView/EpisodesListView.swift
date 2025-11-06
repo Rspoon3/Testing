@@ -44,30 +44,10 @@ struct EpisodesListView: View {
 
     private var episodesList: some View {
         List {
-            if !viewModel.downloadedEpisodes.isEmpty {
-                Section("Downloaded") {
-                    ForEach(viewModel.downloadedEpisodes, id: \.episodeID) { downloadedEpisode in
-                        Button {
-                            viewModel.playEpisode(downloadedEpisode)
-                        } label: {
-                            downloadedEpisodeRow(downloadedEpisode)
-                        }
-                        .buttonStyle(.plain)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                Task {
-                                    await viewModel.deleteEpisode(downloadedEpisode)
-                                }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    }
-                }
-            }
-
-            Section("All Episodes") {
-                ForEach(viewModel.episodes) { episode in
+            ForEach(viewModel.episodes) { episode in
+                NavigationLink {
+                    episodeDetailView(for: episode)
+                } label: {
                     EpisodeRowView(
                         episode: episode,
                         isDownloaded: viewModel.isDownloaded(episodeID: episode.id),
@@ -76,81 +56,10 @@ struct EpisodesListView: View {
                         onDownloadTap: {
                             viewModel.downloadEpisode(episode)
                         },
-                        onPlayTap: {
-                            if let downloaded = viewModel.getDownloadedEpisode(for: episode.id) {
-                                viewModel.playEpisode(downloaded)
-                            }
-                        }
+                        onPlayTap: nil
                     )
                 }
             }
-        }
-    }
-
-    private func downloadedEpisodeRow(_ downloadedEpisode: DownloadedEpisode) -> some View {
-        HStack(spacing: 12) {
-            downloadedThumbnail(for: downloadedEpisode)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(downloadedEpisode.title)
-                    .font(.headline)
-                    .lineLimit(2)
-
-                Text(formattedDate(downloadedEpisode.publishDate))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                HStack(spacing: 8) {
-                    if downloadedEpisode.playbackPosition > 0 {
-                        progressIndicator(for: downloadedEpisode)
-                    }
-
-                    Text(formattedDuration(downloadedEpisode.duration))
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
-            }
-
-            Spacer()
-
-            Image(systemName: "play.circle.fill")
-                .font(.title2)
-                .foregroundStyle(.blue)
-        }
-        .padding(.vertical, 4)
-    }
-
-    private func downloadedThumbnail(for episode: DownloadedEpisode) -> some View {
-        Group {
-            if let artworkURLString = episode.artworkURL,
-               let artworkURL = URL(string: artworkURLString) {
-                AsyncImage(url: artworkURL) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Rectangle()
-                        .fill(.gray.opacity(0.3))
-                }
-            } else {
-                Rectangle()
-                    .fill(.gray.opacity(0.3))
-            }
-        }
-        .frame(width: 60, height: 60)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-
-    private func progressIndicator(for episode: DownloadedEpisode) -> some View {
-        let progress = episode.playbackPosition / episode.duration
-
-        return HStack(spacing: 4) {
-            ProgressView(value: progress)
-                .frame(width: 60)
-
-            Text("\(Int(progress * 100))%")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
         }
     }
 
@@ -171,27 +80,16 @@ struct EpisodesListView: View {
 
     // MARK: - Private Helpers
 
-    /// Formats a date for display.
-    /// - Parameter date: The date to format.
-    /// - Returns: A formatted date string.
-    private func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
-    }
-
-    /// Formats a duration for display.
-    /// - Parameter duration: The duration in seconds.
-    /// - Returns: A formatted duration string.
-    private func formattedDuration(_ duration: TimeInterval) -> String {
-        let hours = Int(duration) / 3600
-        let minutes = Int(duration) / 60 % 60
-
-        if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        } else {
-            return "\(minutes)m"
-        }
+    /// Creates an episode detail view for the given episode.
+    /// - Parameter episode: The episode to display.
+    /// - Returns: An episode detail view.
+    private func episodeDetailView(for episode: Episode) -> some View {
+        let detailViewModel = EpisodeDetailViewModel(
+            episode: episode,
+            downloadManager: viewModel.downloadManager,
+            playbackManager: viewModel.playbackManager
+        )
+        return EpisodeDetailView(viewModel: detailViewModel)
     }
 }
 

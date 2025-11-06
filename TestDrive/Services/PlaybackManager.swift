@@ -46,6 +46,12 @@ final class PlaybackManager {
             savePlaybackPosition(for: current, position: currentTime)
         }
 
+        // Clean up old player's time observer BEFORE creating new player
+        if let timeObserver {
+            player?.removeTimeObserver(timeObserver)
+            self.timeObserver = nil
+        }
+
         currentEpisode = episode
         let fileURL = URL(fileURLWithPath: episode.localFilePath)
         let playerItem = AVPlayerItem(url: fileURL)
@@ -53,12 +59,23 @@ final class PlaybackManager {
         player = AVPlayer(playerItem: playerItem)
         duration = episode.duration
 
-        // Restore previous playback position
-        let savedPosition = episode.playbackPosition
+        // Restore previous playback position, or reset if completed/near end
+        var savedPosition = episode.playbackPosition
+
+        // Reset to beginning if episode was completed or within 30 seconds of end
+        if episode.isCompleted || (duration - savedPosition < 30 && savedPosition > 0) {
+            savedPosition = 0
+            episode.playbackPosition = 0
+            episode.isCompleted = false
+            try? modelContext.save()
+        }
+
         if savedPosition > 0 {
             let time = CMTime(seconds: savedPosition, preferredTimescale: 600)
             player?.seek(to: time)
             currentTime = savedPosition
+        } else {
+            currentTime = 0
         }
 
         setupPeriodicTimeObserver()
@@ -142,11 +159,6 @@ final class PlaybackManager {
 
     /// Sets up periodic time observation for tracking playback progress.
     private func setupPeriodicTimeObserver() {
-        // Remove existing observer if any
-        if let timeObserver {
-            player?.removeTimeObserver(timeObserver)
-        }
-
         // Add new observer that fires every 0.5 seconds
         let interval = CMTime(seconds: 0.5, preferredTimescale: 600)
         timeObserver = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in

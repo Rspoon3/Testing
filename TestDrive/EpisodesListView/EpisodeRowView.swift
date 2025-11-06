@@ -57,7 +57,11 @@ struct EpisodeRowView: View {
 
             Spacer()
 
-            actionButton
+            if !isDownloaded {
+                Image(systemName: "icloud.and.arrow.down")
+                    .foregroundStyle(.secondary)
+                    .font(.title3)
+            }
         }
         .padding(.vertical, 4)
     }
@@ -82,41 +86,6 @@ struct EpisodeRowView: View {
         }
         .frame(width: 60, height: 60)
         .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-
-    @ViewBuilder
-    private var actionButton: some View {
-        if isDownloaded {
-            Button {
-                onPlayTap?()
-            } label: {
-                Image(systemName: "play.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(.blue)
-            }
-            .buttonStyle(.plain)
-        } else if isDownloading, let progress = downloadProgress {
-            ZStack {
-                Circle()
-                    .stroke(.gray.opacity(0.3), lineWidth: 3)
-                    .frame(width: 30, height: 30)
-
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(.blue, lineWidth: 3)
-                    .frame(width: 30, height: 30)
-                    .rotationEffect(.degrees(-90))
-            }
-        } else {
-            Button {
-                onDownloadTap()
-            } label: {
-                Image(systemName: "arrow.down.circle")
-                    .font(.title2)
-                    .foregroundStyle(.blue)
-            }
-            .buttonStyle(.plain)
-        }
     }
 
     // MARK: - Private Helpers
@@ -149,13 +118,13 @@ struct EpisodeRowView: View {
                 title: "Episode 1: Introduction to Podcasting",
                 description: "A great episode about podcasting",
                 duration: 3665,
-                audioURL: URL(string: "https://example.com/episode.mp3")!,
+                audioURL: URL(string: "https://example.com/episode.mp3"),
                 publishDate: Date()
             ),
             isDownloaded: false,
             isDownloading: false,
             onDownloadTap: {},
-            onPlayTap: {}
+            onPlayTap: nil
         )
 
         EpisodeRowView(
@@ -164,13 +133,13 @@ struct EpisodeRowView: View {
                 title: "Episode 2: Advanced Topics",
                 description: "Deep dive into advanced topics",
                 duration: 5400,
-                audioURL: URL(string: "https://example.com/episode2.mp3")!,
+                audioURL: URL(string: "https://example.com/episode2.mp3"),
                 publishDate: Date().addingTimeInterval(-86400)
             ),
             isDownloaded: true,
             isDownloading: false,
             onDownloadTap: {},
-            onPlayTap: {}
+            onPlayTap: nil
         )
 
         EpisodeRowView(
@@ -179,7 +148,7 @@ struct EpisodeRowView: View {
                 title: "Episode 3: Downloading",
                 description: "Currently downloading",
                 duration: 4200,
-                audioURL: URL(string: "https://example.com/episode3.mp3")!,
+                audioURL: URL(string: "https://example.com/episode3.mp3"),
                 publishDate: Date().addingTimeInterval(-172800)
             ),
             isDownloaded: false,

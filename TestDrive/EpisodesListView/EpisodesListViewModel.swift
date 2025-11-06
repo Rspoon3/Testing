@@ -17,9 +17,10 @@ final class EpisodesListViewModel {
     var errorMessage: String?
 
     private let apiService: PodcastAPIService
-    private let downloadManager: DownloadManager
+    let downloadManager: DownloadManager
     let playbackManager: PlaybackManager
     private let modelContext: ModelContext
+    private var loadTask: Task<Void, Never>?
 
     // MARK: - Initializer
 
@@ -44,18 +45,31 @@ final class EpisodesListViewModel {
     // MARK: - Public Helpers
 
     /// Loads episodes from the API.
+    @MainActor
     func loadEpisodes() async {
-        isLoading = true
-        errorMessage = nil
+        // Cancel any existing load task
+        loadTask?.cancel()
 
-        do {
-            episodes = try await apiService.fetchEpisodes()
-            await loadDownloadedEpisodes()
-        } catch {
-            errorMessage = "Failed to load episodes: \(error.localizedDescription)"
+        loadTask = Task {
+            isLoading = true
+            errorMessage = nil
+
+            do {
+                episodes = try await apiService.fetchEpisodes()
+                loadDownloadedEpisodes()
+            } catch {
+                // Ignore cancellation errors - they happen during normal refresh
+                if let urlError = error as? URLError, urlError.code == .cancelled {
+                    // Task was cancelled, don't show error
+                } else if !Task.isCancelled {
+                    errorMessage = "Failed to load episodes: \(error.localizedDescription)"
+                }
+            }
+
+            isLoading = false
         }
 
-        isLoading = false
+        await loadTask?.value
     }
 
     /// Loads downloaded episodes from SwiftData.
