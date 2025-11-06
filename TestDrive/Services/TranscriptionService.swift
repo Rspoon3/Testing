@@ -1,6 +1,7 @@
 import Foundation
 import Speech
 import AVFoundation
+import SwiftData
 
 /// Protocol for transcription services.
 protocol TranscriptionServiceProtocol: AnyObject {
@@ -8,11 +9,15 @@ protocol TranscriptionServiceProtocol: AnyObject {
     var isTranscribing: Bool { get set }
     var isInstallingModel: Bool { get set }
     var modelInstallationProgress: Double { get set }
+    var transcriptionProgress: Double { get set }
+    var transcribedDuration: TimeInterval { get set }
+    var totalDuration: TimeInterval { get set }
     var errorMessage: String? { get set }
 
     func requestAuthorization() async -> Bool
     func installModelIfNeeded() async throws
-    func transcribe(fileURL: URL) async
+    func transcribe(fileURL: URL, duration: TimeInterval, episode: DownloadedEpisode, modelContext: ModelContext) async
+    func loadExistingTranscript(from episode: DownloadedEpisode)
     func cancelTranscription()
 }
 
@@ -52,6 +57,15 @@ final class TranscriptionService: TranscriptionServiceProtocol {
 
     /// Model installation progress (0.0 to 1.0).
     var modelInstallationProgress: Double = 0
+
+    /// Transcription progress (0.0 to 1.0).
+    var transcriptionProgress: Double = 0
+
+    /// Duration transcribed so far in seconds.
+    var transcribedDuration: TimeInterval = 0
+
+    /// Total duration of audio in seconds.
+    var totalDuration: TimeInterval = 0
 
     /// Error message if transcription fails.
     var errorMessage: String?
@@ -122,9 +136,24 @@ final class TranscriptionService: TranscriptionServiceProtocol {
         }
     }
 
+    /// Loads an existing transcript from a downloaded episode.
+    /// - Parameter episode: The episode with the saved transcript.
+    func loadExistingTranscript(from episode: DownloadedEpisode) {
+        if let transcript = episode.transcript {
+            transcriptionText = transcript
+            transcriptionProgress = 1.0
+            transcribedDuration = episode.duration
+            totalDuration = episode.duration
+        }
+    }
+
     /// Transcribes an audio file using the new SpeechAnalyzer API.
-    /// - Parameter fileURL: URL to the audio file.
-    func transcribe(fileURL: URL) async {
+    /// - Parameters:
+    ///   - fileURL: URL to the audio file.
+    ///   - duration: Total duration of the audio file in seconds.
+    ///   - episode: The downloaded episode to save the transcript to.
+    ///   - modelContext: SwiftData model context for saving.
+    func transcribe(fileURL: URL, duration: TimeInterval, episode: DownloadedEpisode, modelContext: ModelContext) async {
         // Cancel any existing task
         transcriptionTask?.cancel()
 
@@ -132,15 +161,20 @@ final class TranscriptionService: TranscriptionServiceProtocol {
             isTranscribing = true
             errorMessage = nil
             transcriptionText = ""
+            transcriptionProgress = 0
+            transcribedDuration = 0
+            totalDuration = duration
 
             do {
                 // Install model if needed
                 try await installModelIfNeeded()
 
-                // Create transcriber with transcription preset
+                // Create transcriber with transcription preset and audio time range attributes
                 let transcriber = SpeechTranscriber(
                     locale: locale,
-                    preset: .transcription
+                    transcriptionOptions: [],
+                    reportingOptions: [],
+                    attributeOptions: [.audioTimeRange]
                 )
 
                 // Create analyzer with the transcriber module
@@ -148,10 +182,27 @@ final class TranscriptionService: TranscriptionServiceProtocol {
 
                 // Process results in a separate task
                 let resultsTask = Task {
+                    var maxTranscribedTime: TimeInterval = 0
+
                     for try await result in transcriber.results {
                         // Update with both volatile and finalized results
                         if !Task.isCancelled {
                             transcriptionText += String(result.text.characters) + " "
+
+                            // Track progress using attributes
+                            for run in result.text.runs {
+                                if let timeRange = run[keyPath: \.audioTimeRange] {
+                                    let transcribedUpTo = timeRange.end.seconds
+                                    maxTranscribedTime = max(maxTranscribedTime, transcribedUpTo)
+
+                                    await MainActor.run {
+                                        transcribedDuration = maxTranscribedTime
+                                        if totalDuration > 0 {
+                                            transcriptionProgress = min(maxTranscribedTime / totalDuration, 1.0)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -166,6 +217,10 @@ final class TranscriptionService: TranscriptionServiceProtocol {
 
                 // Wait for all results to be processed
                 try await resultsTask.value
+
+                // Save the transcript to the episode
+                episode.transcript = transcriptionText
+                try? modelContext.save()
 
                 isTranscribing = false
             } catch let error as TranscriptionError {

@@ -113,10 +113,28 @@ struct EpisodeDetailView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding()
                         } else if service.isTranscribing {
-                            HStack {
-                                ProgressView()
-                                Text("Transcribing...")
-                                    .font(.headline)
+                            VStack(spacing: 12) {
+                                HStack {
+                                    ProgressView()
+                                    Text("Transcribing...")
+                                        .font(.headline)
+                                }
+
+                                ProgressView(value: service.transcriptionProgress) {
+                                    HStack {
+                                        Text("Progress")
+                                            .font(.subheadline)
+                                        Spacer()
+                                        Text(formattedTranscriptionTime(transcribed: service.transcribedDuration, total: service.totalDuration))
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .tint(.blue)
+
+                                Text("\(Int(service.transcriptionProgress * 100))% complete")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding()
@@ -161,6 +179,9 @@ struct EpisodeDetailView: View {
                         }
                         .disabled(service.isTranscribing || service.isInstallingModel)
                     }
+                }
+                .task {
+                    viewModel.loadTranscriptIfAvailable()
                 }
             }
         }
@@ -278,6 +299,30 @@ struct EpisodeDetailView: View {
             return "\(minutes)m"
         }
     }
+
+    /// Formats transcription progress time display.
+    /// - Parameters:
+    ///   - transcribed: Duration transcribed so far in seconds.
+    ///   - total: Total duration in seconds.
+    /// - Returns: Formatted string like "15:30 / 1:45:00".
+    private func formattedTranscriptionTime(transcribed: TimeInterval, total: TimeInterval) -> String {
+        return "\(formattedTime(transcribed)) / \(formattedTime(total))"
+    }
+
+    /// Formats a time interval in seconds to HH:MM:SS or MM:SS format.
+    /// - Parameter seconds: Time in seconds.
+    /// - Returns: Formatted time string.
+    private func formattedTime(_ seconds: TimeInterval) -> String {
+        let hours = Int(seconds) / 3600
+        let minutes = Int(seconds) / 60 % 60
+        let secs = Int(seconds) % 60
+
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, secs)
+        } else {
+            return String(format: "%d:%02d", minutes, secs)
+        }
+    }
 }
 
 #Preview {
@@ -302,7 +347,8 @@ struct EpisodeDetailView: View {
         let viewModel = EpisodeDetailViewModel(
             episode: episode,
             downloadManager: downloadManager,
-            playbackManager: playbackManager
+            playbackManager: playbackManager,
+            modelContext: context
         )
 
         return EpisodeDetailView(viewModel: viewModel)

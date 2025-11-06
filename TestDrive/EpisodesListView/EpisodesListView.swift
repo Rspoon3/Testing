@@ -87,7 +87,8 @@ struct EpisodesListView: View {
         let detailViewModel = EpisodeDetailViewModel(
             episode: episode,
             downloadManager: viewModel.downloadManager,
-            playbackManager: viewModel.playbackManager
+            playbackManager: viewModel.playbackManager,
+            modelContext: modelContext
         )
         return EpisodeDetailView(viewModel: detailViewModel)
     }

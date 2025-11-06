@@ -15,6 +15,7 @@ final class EpisodeDetailViewModel {
 
     private let downloadManager: DownloadManager
     let playbackManager: PlaybackManager
+    private let modelContext: ModelContext
 
     // MARK: - Initializer
 
@@ -23,14 +24,17 @@ final class EpisodeDetailViewModel {
     ///   - episode: The episode to display.
     ///   - downloadManager: Manager for downloading episodes.
     ///   - playbackManager: Manager for audio playback.
+    ///   - modelContext: SwiftData model context.
     init(
         episode: Episode,
         downloadManager: DownloadManager,
-        playbackManager: PlaybackManager
+        playbackManager: PlaybackManager,
+        modelContext: ModelContext
     ) {
         self.episode = episode
         self.downloadManager = downloadManager
         self.playbackManager = playbackManager
+        self.modelContext = modelContext
 
         // Initialize transcription service on iOS 26+
         if #available(iOS 26.0, *) {
@@ -94,11 +98,29 @@ final class EpisodeDetailViewModel {
         downloadManager.activeDownloads.contains(episode.id)
     }
 
+    /// Loads existing transcript if available (iOS 26+).
+    @available(iOS 26.0, *)
+    func loadTranscriptIfAvailable() {
+        guard let downloadedEpisode,
+              let service = transcriptionService else { return }
+
+        // Load existing transcript if available
+        if downloadedEpisode.transcript != nil {
+            service.loadExistingTranscript(from: downloadedEpisode)
+        }
+    }
+
     /// Starts transcription of the downloaded episode (iOS 26+).
     @available(iOS 26.0, *)
     func startTranscription() async {
         guard let downloadedEpisode,
               let service = transcriptionService else { return }
+
+        // Check if already transcribed
+        if downloadedEpisode.transcript != nil {
+            service.loadExistingTranscript(from: downloadedEpisode)
+            return
+        }
 
         // Request authorization first
         let authorized = await service.requestAuthorization()
@@ -111,7 +133,7 @@ final class EpisodeDetailViewModel {
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let fileURL = documentsPath.appendingPathComponent(downloadedEpisode.localFilePath)
 
-        // Start transcription
-        await service.transcribe(fileURL: fileURL)
+        // Start transcription with duration
+        await service.transcribe(fileURL: fileURL, duration: downloadedEpisode.duration, episode: downloadedEpisode, modelContext: modelContext)
     }
 }

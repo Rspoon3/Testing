@@ -31,6 +31,9 @@ final class DownloadedEpisode {
     /// Whether the episode has been fully listened to.
     var isCompleted: Bool
 
+    /// The transcription text if the episode has been transcribed.
+    var transcript: String?
+
     // MARK: - Initializer
 
     /// Creates a new DownloadedEpisode instance.
