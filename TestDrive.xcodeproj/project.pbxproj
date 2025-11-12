@@ -21,9 +21,22 @@
 		9483721B2EAE6B2F0094674D /* TestDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		94961DF62EC3E2F300CAC43A /* Exceptions for "TestDrive" folder in "TestDrive" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9483720D2EAE6B2E0094674D /* TestDrive */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		948372102EAE6B2E0094674D /* TestDrive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				94961DF62EC3E2F300CAC43A /* Exceptions for "TestDrive" folder in "TestDrive" target */,
+			);
 			path = TestDrive;
 			sourceTree = "<group>";
 		};
@@ -331,6 +344,9 @@
 				DEVELOPMENT_TEAM = 29BB6CT754;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TestDrive/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location to send notifications when you reach the\n  target are";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to send notifications when you reach the\n  target area";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -363,6 +379,9 @@
 				DEVELOPMENT_TEAM = 29BB6CT754;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TestDrive/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location to send notifications when you reach the\n  target are";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to send notifications when you reach the\n  target area";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
