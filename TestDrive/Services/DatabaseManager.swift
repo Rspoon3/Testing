@@ -20,6 +20,8 @@ struct DatabaseManager {
 
         let dbPath = appSupport.appendingPathComponent("highlights.db").path
 
+        print("📊 Highlights database location: \(dbPath)")
+
         let dbQueue = try DatabaseQueue(path: dbPath)
 
         // Run migrations to create tables

@@ -8,10 +8,22 @@ struct TranscriptDemoView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 timestampInputSection
                 fetchButton
-                contentSection
+
+                if viewModel.isLoading {
+                    ProgressView("Loading...")
+                        .frame(maxHeight: .infinity)
+                } else if let errorMessage = viewModel.errorMessage {
+                    errorView(errorMessage)
+                        .frame(maxHeight: .infinity)
+                } else if !viewModel.transcriptText.isEmpty {
+                    transcriptSection
+                } else {
+                    emptyStateView
+                        .frame(maxHeight: .infinity)
+                }
             }
             .padding()
             .navigationTitle("Transcript Demo")
@@ -56,19 +68,67 @@ struct TranscriptDemoView: View {
         .disabled(viewModel.isLoading || viewModel.timestampInput.isEmpty)
     }
 
-    private var contentSection: some View {
-        VStack {
-            if viewModel.isLoading {
-                ProgressView("Loading...")
-            } else if let errorMessage = viewModel.errorMessage {
-                errorView(errorMessage)
-            } else if !viewModel.segments.isEmpty {
-                segmentsList
-            } else {
-                emptyStateView
+    private var transcriptSection: some View {
+        VStack(spacing: 16) {
+            // Selectable text view
+            SelectableTextView(text: viewModel.transcriptText) { range in
+                viewModel.updateSelectionInfo(range: range)
+            }
+            .frame(maxHeight: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            // Selection info panel
+            if let selectionInfo = viewModel.selectionInfo {
+                selectionInfoPanel(selectionInfo)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private func selectionInfoPanel(_ info: SelectionInfo) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if let first = info.affectedSegments.first,
+               let last = info.affectedSegments.last {
+                HStack(spacing: 20) {
+                    // Start segment
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Start")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("Segment #\(first.segment.id)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        Text("Offset: \(first.startOffset)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                    // End segment
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("End")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("Segment #\(last.segment.id)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        Text("Offset: \(last.endOffset)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(radius: 2)
     }
 
     private func errorView(_ message: String) -> some View {
@@ -93,41 +153,6 @@ struct TranscriptDemoView: View {
                 .foregroundStyle(.secondary)
         }
         .padding()
-    }
-
-    private var segmentsList: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
-                ForEach(viewModel.segments, id: \.id) { segment in
-                    segmentRow(segment)
-                }
-            }
-            .padding(.vertical)
-        }
-    }
-
-    private func segmentRow(_ segment: TranscriptSegment) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(formatTime(segment.startTimeInSeconds))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("—")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(formatTime(segment.endTimeInSeconds))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-
-            Text(segment.text)
-                .font(.body)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Private Helpers
