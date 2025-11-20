@@ -39,20 +39,22 @@ struct DatabaseManager {
     /// - Throws: Database schema creation errors.
     private static func createTables(_ db: Database) throws {
         // Create highlights table (SQLiteData uses lowercase plural table names)
+        // SQLiteData stores UUIDs as text strings, not blobs
         try db.create(table: "highlights", ifNotExists: true) { t in
-            t.primaryKey("id", .blob)
+            t.primaryKey("id", .text)
             t.column("audiobookId", .text).notNull()
             t.column("timestamp", .real).notNull()
             t.column("highlightedText", .text).notNull()
             t.column("comment", .text)
-            t.column("createdAt", .real).notNull()
-            t.column("modifiedAt", .real).notNull()
+            t.column("createdAt", .text).notNull()
+            t.column("modifiedAt", .text).notNull()
         }
 
         // Create highlightSegments table (SQLiteData uses lowercase plural table names)
+        // SQLiteData stores UUIDs as text strings, not blobs
         try db.create(table: "highlightSegments", ifNotExists: true) { t in
-            t.primaryKey("id", .blob)
-            t.column("highlightId", .blob).notNull()
+            t.primaryKey("id", .text)
+            t.column("highlightId", .text).notNull()
             t.column("segmentId", .integer).notNull()
             t.column("startCharOffset", .integer).notNull()
             t.column("endCharOffset", .integer).notNull()

@@ -70,65 +70,14 @@ struct HighlightRepository {
     /// - Throws: Database errors.
     func highlights(for audiobookId: String) throws -> [Highlight] {
         try database.read { db in
-            let sql = """
-                SELECT id, audiobookId, timestamp, highlightedText, comment, createdAt, modifiedAt
-                FROM highlights
-                WHERE audiobookId = ?
-                ORDER BY timestamp
-                """
-
             print("🔍 Fetching highlights for audiobookId: \(audiobookId)")
-            let rows = try Row.fetchAll(db, sql: sql, arguments: [audiobookId])
-            print("🔍 Found \(rows.count) rows")
-            
-            let results = rows.compactMap { row -> Highlight? in
-                // Use GRDB's Row subscript to get the actual values
-                let idString: String = row["id"]
-                let audiobookId: String = row["audiobookId"]
-                let timestamp: Double = row["timestamp"]
-                let highlightedText: String = row["highlightedText"]
-                
-                // SQLiteData stores dates as ISO8601 strings
-                let createdAtString: String = row["createdAt"]
-                let modifiedAtString: String = row["modifiedAt"]
-                let comment: String? = row["comment"]
-                
-                // Parse UUID from string
-                guard let id = UUID(uuidString: idString) else {
-                    print("❌ Failed to parse UUID from: \(idString)")
-                    return nil
-                }
-                
-                // Parse date strings (format: "2025-11-20 20:12:16.690")
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
-                dateFormatter.timeZone = TimeZone.current
-                
-                guard let createdAt = dateFormatter.date(from: createdAtString) else {
-                    print("❌ Failed to parse createdAt: \(createdAtString)")
-                    return nil
-                }
-                
-                guard let modifiedAt = dateFormatter.date(from: modifiedAtString) else {
-                    print("❌ Failed to parse modifiedAt: \(modifiedAtString)")
-                    return nil
-                }
-                
-                let highlight = Highlight(
-                    id: id,
-                    audiobookId: audiobookId,
-                    timestamp: timestamp,
-                    highlightedText: highlightedText,
-                    comment: comment,
-                    createdAt: createdAt,
-                    modifiedAt: modifiedAt
-                )
-                
-                print("✅ Parsed highlight: \(highlight.id)")
-                return highlight
-            }
-            
-            print("🔍 Returning \(results.count) highlights")
+
+            let results = try Highlight
+                .where { $0.audiobookId.eq(audiobookId) }
+                .order { $0.timestamp.asc() }
+                .fetchAll(db)
+
+            print("🔍 Found \(results.count) highlights")
             return results
         }
     }
@@ -138,10 +87,10 @@ struct HighlightRepository {
     /// - Throws: Database errors.
     func deleteHighlight(_ highlightId: UUID) throws {
         try database.write { db in
-            try db.execute(
-                sql: "DELETE FROM highlights WHERE id = ?",
-                arguments: [highlightId]
-            )
+            try Highlight
+                .where { $0.id.eq(highlightId) }
+                .delete()
+                .execute(db)
         }
     }
 
@@ -152,10 +101,13 @@ struct HighlightRepository {
     /// - Throws: Database errors.
     func updateComment(_ highlightId: UUID, comment: String?) throws {
         try database.write { db in
-            try db.execute(
-                sql: "UPDATE highlights SET comment = ?, modifiedAt = ? WHERE id = ?",
-                arguments: [comment, Date(), highlightId]
-            )
+            try Highlight
+                .where { $0.id.eq(highlightId) }
+                .update {
+                    $0.comment = comment
+                    $0.modifiedAt = Date()
+                }
+                .execute(db)
         }
     }
 }
