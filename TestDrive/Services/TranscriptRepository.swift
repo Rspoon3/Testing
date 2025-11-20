@@ -38,19 +38,10 @@ struct TranscriptRepository {
             let startTimeMs = Int((timestamp - contextWindow) * 1000)
             let endTimeMs = Int((timestamp + contextWindow) * 1000)
 
-            let sql = """
-                SELECT * FROM transcript_segment
-                WHERE start <= ? AND end >= ?
-                ORDER BY start
-                """
-
-            let segments = try TranscriptSegment.fetchAll(
-                db,
-                sql: sql,
-                arguments: [endTimeMs, startTimeMs]
-            )
-
-            return segments
+            return try TranscriptSegment
+                .filter(Column("start") <= endTimeMs && Column("end") >= startTimeMs)
+                .order(Column("start"))
+                .fetchAll(db)
         }
     }
 
@@ -66,12 +57,9 @@ struct TranscriptRepository {
         let dbQueue = try DatabaseQueue(path: url.path)
 
         return try dbQueue.read { db in
-            let sql = """
-                SELECT * FROM transcript_segment
-                ORDER BY start
-                """
-
-            return try TranscriptSegment.fetchAll(db, sql: sql)
+            return try TranscriptSegment
+                .order(Column("start"))
+                .fetchAll(db)
         }
     }
 
@@ -95,17 +83,9 @@ struct TranscriptRepository {
             // Convert seconds to milliseconds
             let timestampMs = Int(timestamp * 1000)
 
-            let sql = """
-                SELECT * FROM transcript_segment
-                WHERE start <= ? AND end >= ?
-                LIMIT 1
-                """
-
-            return try TranscriptSegment.fetchOne(
-                db,
-                sql: sql,
-                arguments: [timestampMs, timestampMs]
-            )
+            return try TranscriptSegment
+                .filter(Column("start") <= timestampMs && Column("end") >= timestampMs)
+                .fetchOne(db)
         }
     }
 

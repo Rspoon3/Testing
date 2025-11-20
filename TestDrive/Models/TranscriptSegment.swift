@@ -3,7 +3,7 @@ import GRDB
 
 /// Represents a segment of an audiobook transcript with timing information.
 /// This model is used to read from downloaded transcript databases.
-struct TranscriptSegment: Codable, FetchableRecord {
+struct TranscriptSegment: Codable, FetchableRecord, TableRecord {
     /// Unique identifier for the segment.
     let id: Int
 
@@ -18,6 +18,10 @@ struct TranscriptSegment: Codable, FetchableRecord {
 
     /// The transcript text for this segment.
     let text: String
+
+    // MARK: - Database Configuration
+
+    static let databaseTableName = "transcript_segment"
 
     // MARK: - Database Column Mapping
 
