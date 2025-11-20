@@ -80,59 +80,54 @@ struct HighlightRepository {
             print("🔍 Fetching highlights for audiobookId: \(audiobookId)")
             let rows = try Row.fetchAll(db, sql: sql, arguments: [audiobookId])
             print("🔍 Found \(rows.count) rows")
-
+            
             let results = rows.compactMap { row -> Highlight? in
-                do {
-                    // Use GRDB's Row subscript to get the actual values
-                    let idString: String = try row["id"]
-                    let audiobookId: String = try row["audiobookId"]
-                    let timestamp: Double = try row["timestamp"]
-                    let highlightedText: String = try row["highlightedText"]
-
-                    // SQLiteData stores dates as ISO8601 strings
-                    let createdAtString: String = try row["createdAt"]
-                    let modifiedAtString: String = try row["modifiedAt"]
-                    let comment: String? = try? row["comment"]
-
-                    // Parse UUID from string
-                    guard let id = UUID(uuidString: idString) else {
-                        print("❌ Failed to parse UUID from: \(idString)")
-                        return nil
-                    }
-
-                    // Parse date strings (format: "2025-11-20 20:12:16.690")
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
-                    dateFormatter.timeZone = TimeZone.current
-
-                    guard let createdAt = dateFormatter.date(from: createdAtString) else {
-                        print("❌ Failed to parse createdAt: \(createdAtString)")
-                        return nil
-                    }
-
-                    guard let modifiedAt = dateFormatter.date(from: modifiedAtString) else {
-                        print("❌ Failed to parse modifiedAt: \(modifiedAtString)")
-                        return nil
-                    }
-
-                    let highlight = Highlight(
-                        id: id,
-                        audiobookId: audiobookId,
-                        timestamp: timestamp,
-                        highlightedText: highlightedText,
-                        comment: comment,
-                        createdAt: createdAt,
-                        modifiedAt: modifiedAt
-                    )
-
-                    print("✅ Parsed highlight: \(highlight.id)")
-                    return highlight
-                } catch {
-                    print("❌ Failed to parse row: \(error)")
+                // Use GRDB's Row subscript to get the actual values
+                let idString: String = row["id"]
+                let audiobookId: String = row["audiobookId"]
+                let timestamp: Double = row["timestamp"]
+                let highlightedText: String = row["highlightedText"]
+                
+                // SQLiteData stores dates as ISO8601 strings
+                let createdAtString: String = row["createdAt"]
+                let modifiedAtString: String = row["modifiedAt"]
+                let comment: String? = row["comment"]
+                
+                // Parse UUID from string
+                guard let id = UUID(uuidString: idString) else {
+                    print("❌ Failed to parse UUID from: \(idString)")
                     return nil
                 }
+                
+                // Parse date strings (format: "2025-11-20 20:12:16.690")
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+                dateFormatter.timeZone = TimeZone.current
+                
+                guard let createdAt = dateFormatter.date(from: createdAtString) else {
+                    print("❌ Failed to parse createdAt: \(createdAtString)")
+                    return nil
+                }
+                
+                guard let modifiedAt = dateFormatter.date(from: modifiedAtString) else {
+                    print("❌ Failed to parse modifiedAt: \(modifiedAtString)")
+                    return nil
+                }
+                
+                let highlight = Highlight(
+                    id: id,
+                    audiobookId: audiobookId,
+                    timestamp: timestamp,
+                    highlightedText: highlightedText,
+                    comment: comment,
+                    createdAt: createdAt,
+                    modifiedAt: modifiedAt
+                )
+                
+                print("✅ Parsed highlight: \(highlight.id)")
+                return highlight
             }
-
+            
             print("🔍 Returning \(results.count) highlights")
             return results
         }
