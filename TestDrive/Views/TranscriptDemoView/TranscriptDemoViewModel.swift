@@ -28,8 +28,18 @@ final class TranscriptDemoViewModel {
     /// Error message to display to the user.
     var errorMessage: String?
 
+    /// Whether the comment sheet is showing.
+    var showingCommentSheet = false
+
+    /// Comment text being edited.
+    var commentText = ""
+
+    /// Saved highlights for the audiobook.
+    var highlights: [Highlight] = []
+
     private let downloader = TranscriptDownloader()
     private let repository = TranscriptRepository()
+    private let highlightRepository = HighlightRepository()
 
     // MARK: - Public Helpers
 
@@ -122,6 +132,83 @@ final class TranscriptDemoViewModel {
         } else {
             selectionInfo = nil
         }
+    }
+
+    /// Shows the comment sheet to save a highlight.
+    func showCommentSheet() {
+        commentText = ""
+        showingCommentSheet = true
+    }
+
+    /// Saves the current selection as a highlight with the provided comment.
+    func saveHighlight() {
+        guard let selectionInfo else {
+            print("❌ No selection info")
+            return
+        }
+        guard let timestamp = Double(timestampInput) else {
+            print("❌ Invalid timestamp")
+            return
+        }
+
+        print("💾 Attempting to save highlight...")
+        print("  - Audiobook ID: \(audiobookId)")
+        print("  - Timestamp: \(timestamp)")
+        print("  - Selected text: \(selectionInfo.selectedText.prefix(50))...")
+        print("  - Segments: \(selectionInfo.affectedSegments.count)")
+
+        do {
+            let comment = commentText.isEmpty ? nil : commentText
+            let savedHighlight = try highlightRepository.saveHighlight(
+                audiobookId: audiobookId,
+                timestamp: timestamp,
+                highlightedText: selectionInfo.selectedText,
+                comment: comment,
+                segments: selectionInfo.affectedSegments
+            )
+
+            print("✅ Highlight saved with ID: \(savedHighlight.id)")
+
+            // Reload highlights
+            loadHighlights()
+            print("📚 Loaded \(highlights.count) highlights")
+
+            // Reset state
+            showingCommentSheet = false
+            commentText = ""
+        } catch {
+            print("❌ Failed to save highlight: \(error)")
+            errorMessage = "Failed to save highlight: \(error.localizedDescription)"
+        }
+    }
+
+    /// Loads all highlights for the current audiobook.
+    func loadHighlights() {
+        do {
+            highlights = try highlightRepository.highlights(for: audiobookId)
+            print("📖 Loaded \(highlights.count) highlights for \(audiobookId)")
+        } catch {
+            print("❌ Failed to load highlights: \(error)")
+            errorMessage = "Failed to load highlights: \(error.localizedDescription)"
+        }
+    }
+
+    /// Deletes a highlight.
+    func deleteHighlight(_ highlight: Highlight) {
+        do {
+            try highlightRepository.deleteHighlight(highlight.id)
+            loadHighlights()
+        } catch {
+            errorMessage = "Failed to delete highlight: \(error.localizedDescription)"
+        }
+    }
+
+    /// Clears the transcript and returns to highlights list.
+    func clearTranscript() {
+        transcriptText = ""
+        segments = []
+        selectionInfo = nil
+        timestampInput = ""
     }
 }
 

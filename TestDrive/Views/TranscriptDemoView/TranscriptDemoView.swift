@@ -10,7 +10,27 @@ struct TranscriptDemoView: View {
         NavigationStack {
             VStack(spacing: 16) {
                 timestampInputSection
-                fetchButton
+
+                HStack(spacing: 12) {
+                    Button {
+                        viewModel.fetchSegmentsAtTimestamp()
+                    } label: {
+                        Text("Fetch Transcript")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(viewModel.isLoading || viewModel.timestampInput.isEmpty)
+
+                    if !viewModel.transcriptText.isEmpty {
+                        Button {
+                            viewModel.clearTranscript()
+                        } label: {
+                            Text("Back to Highlights")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
 
                 if viewModel.isLoading {
                     ProgressView("Loading...")
@@ -21,14 +41,17 @@ struct TranscriptDemoView: View {
                 } else if !viewModel.transcriptText.isEmpty {
                     transcriptSection
                 } else {
-                    emptyStateView
-                        .frame(maxHeight: .infinity)
+                    highlightsList
                 }
             }
             .padding()
             .navigationTitle("Transcript Demo")
+            .sheet(isPresented: $viewModel.showingCommentSheet) {
+                commentSheet
+            }
             .task {
                 await viewModel.downloadTranscriptIfNeeded()
+                viewModel.loadHighlights()
             }
         }
     }
@@ -57,16 +80,6 @@ struct TranscriptDemoView: View {
         }
     }
 
-    private var fetchButton: some View {
-        Button {
-            viewModel.fetchSegmentsAtTimestamp()
-        } label: {
-            Text("Fetch Transcript")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .disabled(viewModel.isLoading || viewModel.timestampInput.isEmpty)
-    }
 
     private var transcriptSection: some View {
         VStack(spacing: 16) {
@@ -123,6 +136,14 @@ struct TranscriptDemoView: View {
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
+
+                Button {
+                    viewModel.showCommentSheet()
+                } label: {
+                    Label("Save Highlight", systemImage: "note.text.badge.plus")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
             }
         }
         .padding()
@@ -143,16 +164,90 @@ struct TranscriptDemoView: View {
         .padding()
     }
 
-    private var emptyStateView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "text.quote")
-                .font(.largeTitle)
-                .foregroundStyle(.secondary)
-            Text("Enter a timestamp to view transcript segments")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+    private var highlightsList: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                if viewModel.highlights.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "text.quote")
+                            .font(.largeTitle)
+                            .foregroundStyle(.secondary)
+                        Text("No highlights yet")
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                        Text("Enter a timestamp to view transcript and create highlights")
+                            .font(.caption)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                    .frame(maxHeight: .infinity)
+                } else {
+                    ForEach(viewModel.highlights, id: \.id) { highlight in
+                        highlightRow(highlight)
+                    }
+                }
+            }
+            .padding(.vertical)
+        }
+    }
+
+    private func highlightRow(_ highlight: Highlight) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(formatTime(highlight.timestamp))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button {
+                    viewModel.deleteHighlight(highlight)
+                } label: {
+                    Image(systemName: "trash")
+                        .foregroundStyle(.red)
+                }
+            }
+
+            Text(highlight.highlightedText)
+                .font(.body)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let comment = highlight.comment {
+                Text(comment)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .padding()
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var commentSheet: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                TextField("Add a comment (optional)", text: $viewModel.commentText, axis: .vertical)
+                    .textFieldStyle(.roundedBorder)
+                    .lineLimit(5...10)
+                    .padding()
+
+                Spacer()
+            }
+            .navigationTitle("Save Highlight")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        viewModel.showingCommentSheet = false
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        viewModel.saveHighlight()
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Private Helpers

@@ -38,8 +38,8 @@ struct DatabaseManager {
     /// - Parameter db: The database connection.
     /// - Throws: Database schema creation errors.
     private static func createTables(_ db: Database) throws {
-        // Create highlight table
-        try db.create(table: "Highlight", ifNotExists: true) { t in
+        // Create highlights table (SQLiteData uses lowercase plural table names)
+        try db.create(table: "highlights", ifNotExists: true) { t in
             t.primaryKey("id", .blob)
             t.column("audiobookId", .text).notNull()
             t.column("timestamp", .real).notNull()
@@ -49,8 +49,8 @@ struct DatabaseManager {
             t.column("modifiedAt", .real).notNull()
         }
 
-        // Create highlight_segment table
-        try db.create(table: "HighlightSegment", ifNotExists: true) { t in
+        // Create highlightSegments table (SQLiteData uses lowercase plural table names)
+        try db.create(table: "highlightSegments", ifNotExists: true) { t in
             t.primaryKey("id", .blob)
             t.column("highlightId", .blob).notNull()
             t.column("segmentId", .integer).notNull()
@@ -59,7 +59,7 @@ struct DatabaseManager {
 
             t.foreignKey(
                 ["highlightId"],
-                references: "Highlight",
+                references: "highlights",
                 columns: ["id"],
                 onDelete: .cascade
             )
@@ -68,14 +68,14 @@ struct DatabaseManager {
         // Create indexes for common queries
         try db.create(
             index: "idx_highlight_audiobook",
-            on: "Highlight",
+            on: "highlights",
             columns: ["audiobookId", "timestamp"],
             ifNotExists: true
         )
 
         try db.create(
             index: "idx_highlight_segment_highlight",
-            on: "HighlightSegment",
+            on: "highlightSegments",
             columns: ["highlightId"],
             ifNotExists: true
         )
