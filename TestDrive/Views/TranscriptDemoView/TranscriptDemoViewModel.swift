@@ -5,7 +5,7 @@ import SwiftUI
 @Observable
 final class TranscriptDemoViewModel {
     /// The audiobook ID to use for the demo.
-    var audiobookId = "ctx_2iyAq3QN4e7n9Kkt1Q8uyr"
+    let audiobookId: String
 
     /// User input for timestamp in seconds.
     var timestampInput = ""
@@ -40,6 +40,14 @@ final class TranscriptDemoViewModel {
     private let downloader = TranscriptDownloader()
     private let repository = TranscriptRepository()
     private let highlightRepository = HighlightRepository()
+
+    // MARK: - Initializer
+
+    /// Creates a new transcript demo view model.
+    /// - Parameter audiobookId: The audiobook identifier to display.
+    init(audiobookId: String) {
+        self.audiobookId = audiobookId
+    }
 
     // MARK: - Public Helpers
 

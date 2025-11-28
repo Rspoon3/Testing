@@ -12,3 +12,17 @@
 - Demo view with timestamp input and segment display
 
 **Status:** In Development
+
+## Audiobook Library View
+
+**Description:** Library interface for browsing and selecting audiobooks that have downloaded transcripts.
+
+**Components:**
+- Audiobook model with metadata (ID, highlight count, last accessed)
+- AudiobookRepository service for discovering audiobooks from transcript files
+- LibraryView for displaying list of available audiobooks
+- LibraryViewModel for managing audiobook discovery and selection
+- Navigation from library to transcript view for selected audiobooks
+- Last accessed tracking using UserDefaults
+
+**Status:** Completed

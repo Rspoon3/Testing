@@ -2,13 +2,20 @@ import SwiftUI
 
 /// Demo view for downloading transcripts and viewing segments at specific timestamps.
 struct TranscriptDemoView: View {
-    @State private var viewModel = TranscriptDemoViewModel()
+    @State private var viewModel: TranscriptDemoViewModel
+
+    // MARK: - Initializer
+
+    /// Creates a new transcript demo view.
+    /// - Parameter audiobookId: The audiobook identifier to display.
+    init(audiobookId: String) {
+        _viewModel = State(initialValue: TranscriptDemoViewModel(audiobookId: audiobookId))
+    }
 
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
+        VStack(spacing: 16) {
                 timestampInputSection
 
                 HStack(spacing: 12) {
@@ -44,15 +51,15 @@ struct TranscriptDemoView: View {
                     highlightsList
                 }
             }
-            .padding()
-            .navigationTitle("Transcript Demo")
-            .sheet(isPresented: $viewModel.showingCommentSheet) {
-                commentSheet
-            }
-            .task {
-                await viewModel.downloadTranscriptIfNeeded()
-                viewModel.loadHighlights()
-            }
+        .padding()
+        .navigationTitle(viewModel.audiobookId)
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $viewModel.showingCommentSheet) {
+            commentSheet
+        }
+        .task {
+            await viewModel.downloadTranscriptIfNeeded()
+            viewModel.loadHighlights()
         }
     }
 
@@ -260,5 +267,5 @@ struct TranscriptDemoView: View {
 }
 
 #Preview {
-    TranscriptDemoView()
+    TranscriptDemoView(audiobookId: "ctx_2iyAq3QN4e7n9Kkt1Q8uyr")
 }

@@ -26,7 +26,7 @@ struct TestDriveApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TranscriptDemoView()
+            LibraryView()
         }
     }
 }
