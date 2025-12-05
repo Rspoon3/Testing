@@ -5,6 +5,7 @@ import SFSymbols
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel = SettingsViewModel()
+    @State private var showingDebugLogs = false
 
     // MARK: - Body
 
@@ -85,6 +86,12 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
 
+                    Button {
+                        showingDebugLogs = true
+                    } label: {
+                        Label("View Debug Logs", symbol: .docText)
+                    }
+
                     Button(role: .destructive) {
                         viewModel.clearSavedMessages()
                     } label: {
@@ -93,7 +100,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Debug")
                 } footer: {
-                    Text("Clear all saved messages to reprocess workouts and receive new notifications.")
+                    Text("View debug logs to diagnose issues with HealthKit observers and notifications.")
                 }
             }
             .navigationTitle("Settings")
@@ -104,6 +111,9 @@ struct SettingsView: View {
                         dismiss()
                     }
                 }
+            }
+            .sheet(isPresented: $showingDebugLogs) {
+                DebugLogView()
             }
         }
     }

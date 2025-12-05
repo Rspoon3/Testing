@@ -3,6 +3,7 @@ import UIKit
 import os.log
 
 private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "BackgroundTaskService")
+private let debugLogger = DebugLogger.shared
 
 /// Manages health data processing.
 final class BackgroundTaskService {
@@ -46,22 +47,27 @@ final class BackgroundTaskService {
     ///   - sendNotification: Whether to send a notification for this workout.
     func processWorkout(_ workout: HKWorkout, sendNotification: Bool = true) async {
         let workoutID = workout.uuid.uuidString
+        let appState = await MainActor.run { UIApplication.shared.applicationState.rawValue }
         logger.info("🏃 Processing workout: \(workoutID) - sendNotification: \(sendNotification)")
-        logger.info("📱 App state: \(UIApplication.shared.applicationState.rawValue)")
+        logger.info("📱 App state: \(appState)")
+        debugLogger.log("Processing workout: \(workoutID), sendNotification: \(sendNotification), appState: \(appState)", category: .workout)
 
         guard workoutMessageStore.message(forWorkoutID: workoutID) == nil else {
             logger.info("⏭️ Workout already has a message, skipping")
+            debugLogger.log("Workout already processed, skipping: \(workoutID)", category: .workout)
             return
         }
 
         // Check if it's a tracked workout type
         guard HealthKitService.trackedWorkoutTypes.contains(workout.workoutActivityType) else {
             logger.info("⏭️ Workout type not tracked: \(workout.workoutActivityType.rawValue)")
+            debugLogger.log("Workout type not tracked: \(workout.workoutActivityType.rawValue)", category: .workout)
             return
         }
 
         let attitudes = userPreferences.selectedAttitudes
         logger.info("🎭 Using attitudes: \(attitudes.map(\.rawValue).joined(separator: ", "))")
+        debugLogger.log("Processing with attitudes: \(attitudes.map(\.rawValue).joined(separator: ", "))", category: .workout)
 
         do {
             // Fetch workout stats for context
@@ -91,6 +97,7 @@ final class BackgroundTaskService {
             logger.info("🔥 Streak: \(streak) days")
 
             logger.info("🤖 Calling ChatGPT...")
+            debugLogger.log("Calling OpenAI for workout message...", category: .openAI)
             let message = try await chatGPTService.generateMessage(
                 for: workout,
                 stats: stats,
@@ -101,6 +108,7 @@ final class BackgroundTaskService {
                 attitudes: attitudes
             )
             logger.info("✅ Got message: \(message)")
+            debugLogger.log("OpenAI response received: \(message)", category: .openAI)
 
             // Save the message
             let workoutMessage = WorkoutMessage(
@@ -119,17 +127,20 @@ final class BackgroundTaskService {
 
             if sendNotification {
                 logger.info("🔔 Scheduling notification...")
+                debugLogger.log("Scheduling workout notification...", category: .notification)
                 await notificationService.scheduleNotification(
                     title: "Workout Complete!",
                     body: message,
                     workoutID: workoutID
                 )
                 logger.info("✅ Notification scheduled")
+                debugLogger.log("Workout notification scheduled successfully", category: .notification)
             } else {
                 logger.info("⏭️ Skipping notification (bulk processing)")
             }
         } catch {
             logger.error("❌ ChatGPT API failed: \(error.localizedDescription)")
+            debugLogger.log("OpenAI API FAILED for workout: \(error.localizedDescription)", category: .error)
         }
     }
 
@@ -154,16 +165,20 @@ final class BackgroundTaskService {
     ///   - sendNotification: Whether to send a notification for this weight entry.
     func processWeightEntry(_ weightEntry: WeightEntry, sendNotification: Bool = true) async {
         let entryID = weightEntry.id
+        let appState = await MainActor.run { UIApplication.shared.applicationState.rawValue }
         logger.info("⚖️ Processing weight entry: \(entryID) - sendNotification: \(sendNotification)")
-        logger.info("📱 App state: \(UIApplication.shared.applicationState.rawValue)")
+        logger.info("📱 App state: \(appState)")
+        debugLogger.log("Processing weight entry: \(entryID), weight: \(weightEntry.formattedWeight), sendNotification: \(sendNotification), appState: \(appState)", category: .weight)
 
         guard weightMessageStore.message(forWeightEntryID: entryID) == nil else {
             logger.info("⏭️ Weight entry already has a message, skipping")
+            debugLogger.log("Weight entry already processed, skipping: \(entryID)", category: .weight)
             return
         }
 
         let attitudes = userPreferences.selectedAttitudes
         logger.info("🎭 Using attitudes: \(attitudes.map(\.rawValue).joined(separator: ", "))")
+        debugLogger.log("Processing weight with attitudes: \(attitudes.map(\.rawValue).joined(separator: ", "))", category: .weight)
 
         do {
             // Fetch weight stats for context
@@ -187,6 +202,7 @@ final class BackgroundTaskService {
             logger.info("🔥 Streak: \(streak) days")
 
             logger.info("🤖 Calling ChatGPT for weight message...")
+            debugLogger.log("Calling OpenAI for weight message...", category: .openAI)
             let message = try await chatGPTService.generateWeightMessage(
                 for: weightEntry,
                 weightStats: weightStats,
@@ -196,6 +212,7 @@ final class BackgroundTaskService {
                 attitudes: attitudes
             )
             logger.info("✅ Got message: \(message)")
+            debugLogger.log("OpenAI weight response received: \(message)", category: .openAI)
 
             // Save the message
             let weightMessage = WeightMessage(
@@ -210,17 +227,20 @@ final class BackgroundTaskService {
 
             if sendNotification {
                 logger.info("🔔 Scheduling notification...")
+                debugLogger.log("Scheduling weight notification...", category: .notification)
                 await notificationService.scheduleWeightNotification(
                     title: "Weight Logged!",
                     body: message,
                     weightEntryID: entryID
                 )
                 logger.info("✅ Notification scheduled")
+                debugLogger.log("Weight notification scheduled successfully", category: .notification)
             } else {
                 logger.info("⏭️ Skipping notification (bulk processing)")
             }
         } catch {
             logger.error("❌ ChatGPT API failed: \(error.localizedDescription)")
+            debugLogger.log("OpenAI API FAILED for weight: \(error.localizedDescription)", category: .error)
         }
     }
 
