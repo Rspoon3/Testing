@@ -10,6 +10,10 @@ final class UserPreferences {
         static let selectedAttitudes = "selectedAttitudes"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
         static let lastFetchTimestamp = "lastFetchTimestamp"
+        static let morningSummaryHour = "morningSummaryHour"
+        static let eveningSummaryHour = "eveningSummaryHour"
+        static let morningSummaryEnabled = "morningSummaryEnabled"
+        static let eveningSummaryEnabled = "eveningSummaryEnabled"
     }
 
     // MARK: - Properties
@@ -29,11 +33,6 @@ final class UserPreferences {
         }
     }
 
-    /// Returns a random attitude from the selected set.
-    var randomSelectedAttitude: Attitude {
-        selectedAttitudes.randomElement() ?? .encouraging
-    }
-
     /// Whether the user has completed onboarding.
     var hasCompletedOnboarding: Bool {
         get { defaults.bool(forKey: Keys.hasCompletedOnboarding) }
@@ -44,6 +43,52 @@ final class UserPreferences {
     var lastFetchTimestamp: Date? {
         get { defaults.object(forKey: Keys.lastFetchTimestamp) as? Date }
         set { defaults.set(newValue, forKey: Keys.lastFetchTimestamp) }
+    }
+
+    /// Hour for morning summary notification (0-23). Default: 8 AM.
+    var morningSummaryHour: Int {
+        get {
+            let value = defaults.integer(forKey: Keys.morningSummaryHour)
+            return value == 0 && !defaults.bool(forKey: Keys.morningSummaryHour + "_set") ? 8 : value
+        }
+        set {
+            defaults.set(newValue, forKey: Keys.morningSummaryHour)
+            defaults.set(true, forKey: Keys.morningSummaryHour + "_set")
+        }
+    }
+
+    /// Hour for evening summary notification (0-23). Default: 9 PM.
+    var eveningSummaryHour: Int {
+        get {
+            let value = defaults.integer(forKey: Keys.eveningSummaryHour)
+            return value == 0 && !defaults.bool(forKey: Keys.eveningSummaryHour + "_set") ? 21 : value
+        }
+        set {
+            defaults.set(newValue, forKey: Keys.eveningSummaryHour)
+            defaults.set(true, forKey: Keys.eveningSummaryHour + "_set")
+        }
+    }
+
+    /// Whether morning summary notifications are enabled. Default: true.
+    var morningSummaryEnabled: Bool {
+        get {
+            if defaults.object(forKey: Keys.morningSummaryEnabled) == nil {
+                return true
+            }
+            return defaults.bool(forKey: Keys.morningSummaryEnabled)
+        }
+        set { defaults.set(newValue, forKey: Keys.morningSummaryEnabled) }
+    }
+
+    /// Whether evening summary notifications are enabled. Default: true.
+    var eveningSummaryEnabled: Bool {
+        get {
+            if defaults.object(forKey: Keys.eveningSummaryEnabled) == nil {
+                return true
+            }
+            return defaults.bool(forKey: Keys.eveningSummaryEnabled)
+        }
+        set { defaults.set(newValue, forKey: Keys.eveningSummaryEnabled) }
     }
 
     // MARK: - Initializer

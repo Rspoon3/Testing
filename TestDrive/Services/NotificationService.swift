@@ -8,6 +8,8 @@ final class NotificationService: NSObject {
     static let shared = NotificationService()
     static let workoutIDKey = "workoutID"
     static let weightEntryIDKey = "weightEntryID"
+    static let morningSummaryID = "morning-summary"
+    static let eveningSummaryID = "evening-summary"
 
     private let center = UNUserNotificationCenter.current()
 
@@ -129,6 +131,56 @@ final class NotificationService: NSObject {
             logger.info("✅ Weight notification scheduled successfully")
         } catch {
             logger.error("❌ Failed to schedule weight notification: \(error.localizedDescription)")
+        }
+    }
+
+    /// Cancels a pending notification by identifier.
+    /// - Parameter identifier: The notification identifier to cancel.
+    func cancelNotification(identifier: String) async {
+        center.removePendingNotificationRequests(withIdentifiers: [identifier])
+        logger.info("🗑️ Cancelled notification: \(identifier)")
+    }
+
+    /// Schedules a daily repeating notification at a specific hour.
+    /// - Parameters:
+    ///   - identifier: Unique identifier for the notification.
+    ///   - title: The notification title.
+    ///   - body: The notification body text.
+    ///   - hour: The hour to deliver the notification (0-23).
+    func scheduleDailyNotification(
+        identifier: String,
+        title: String,
+        body: String,
+        hour: Int
+    ) async {
+        // Cancel existing notification with same identifier
+        center.removePendingNotificationRequests(withIdentifiers: [identifier])
+
+        var dateComponents = DateComponents()
+        dateComponents.hour = hour
+        dateComponents.minute = 0
+
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: dateComponents,
+            repeats: true
+        )
+
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+
+        do {
+            try await center.add(request)
+            logger.info("✅ Daily notification '\(identifier)' scheduled for \(hour):00")
+        } catch {
+            logger.error("❌ Failed to schedule daily notification: \(error.localizedDescription)")
         }
     }
 }

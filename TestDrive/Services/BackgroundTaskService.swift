@@ -60,8 +60,8 @@ final class BackgroundTaskService {
             return
         }
 
-        let attitude = userPreferences.randomSelectedAttitude
-        logger.info("🎭 Using attitude: \(attitude.rawValue)")
+        let attitudes = userPreferences.selectedAttitudes
+        logger.info("🎭 Using attitudes: \(attitudes.map(\.rawValue).joined(separator: ", "))")
 
         do {
             // Fetch workout stats for context
@@ -98,7 +98,7 @@ final class BackgroundTaskService {
                 lastWorkoutDate: lastWorkoutDate,
                 heartRate: heartRate,
                 streak: streak,
-                attitude: attitude
+                attitudes: attitudes
             )
             logger.info("✅ Got message: \(message)")
 
@@ -111,7 +111,7 @@ final class BackgroundTaskService {
                 calories: workout.totalEnergyBurned?.doubleValue(for: .kilocalorie()) ?? 0,
                 distance: workout.totalDistance?.doubleValue(for: .mile()) ?? 0,
                 message: message,
-                attitude: attitude.rawValue,
+                attitudes: attitudes.map(\.rawValue).sorted().joined(separator: ", "),
                 workoutDate: workout.endDate
             )
             workoutMessageStore.save(workoutMessage)
@@ -162,8 +162,8 @@ final class BackgroundTaskService {
             return
         }
 
-        let attitude = userPreferences.randomSelectedAttitude
-        logger.info("🎭 Using attitude: \(attitude.rawValue)")
+        let attitudes = userPreferences.selectedAttitudes
+        logger.info("🎭 Using attitudes: \(attitudes.map(\.rawValue).joined(separator: ", "))")
 
         do {
             // Fetch weight stats for context
@@ -193,7 +193,7 @@ final class BackgroundTaskService {
                 workoutStats: workoutStats,
                 userProfile: userProfile,
                 streak: streak,
-                attitude: attitude
+                attitudes: attitudes
             )
             logger.info("✅ Got message: \(message)")
 
@@ -202,7 +202,7 @@ final class BackgroundTaskService {
                 weightEntryID: entryID,
                 weightInPounds: weightEntry.weightInPounds,
                 message: message,
-                attitude: attitude.rawValue,
+                attitudes: attitudes.map(\.rawValue).sorted().joined(separator: ", "),
                 entryDate: weightEntry.date
             )
             weightMessageStore.save(weightMessage)

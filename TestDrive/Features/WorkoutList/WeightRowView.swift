@@ -55,7 +55,7 @@ struct WeightRowView: View {
                 weightEntryID: "123",
                 weightInPounds: 175.5,
                 message: "Nice progress!",
-                attitude: "encouraging",
+                attitudes: "encouraging",
                 entryDate: Date()
             ),
             formattedDate: "Today at 8:30 AM"

@@ -71,7 +71,7 @@ final class ChatGPTService {
     ///   - lastWorkoutDate: The date of the previous workout, if any.
     ///   - heartRate: Heart rate data for the workout.
     ///   - streak: Current consecutive workout day streak.
-    ///   - attitude: The user's selected attitude tone.
+    ///   - attitudes: The user's selected attitude tones.
     /// - Returns: A personalized message string.
     /// - Throws: ChatGPTError if the API call fails.
     func generateMessage(
@@ -81,7 +81,7 @@ final class ChatGPTService {
         lastWorkoutDate: Date?,
         heartRate: WorkoutHeartRate,
         streak: Int,
-        attitude: Attitude
+        attitudes: Set<Attitude>
     ) async throws -> String {
         try await fetchWorkoutMessage(
             workout: workout,
@@ -90,7 +90,7 @@ final class ChatGPTService {
             lastWorkoutDate: lastWorkoutDate,
             heartRate: heartRate,
             streak: streak,
-            attitude: attitude
+            attitudes: attitudes
         )
     }
 
@@ -101,7 +101,7 @@ final class ChatGPTService {
     ///   - workoutStats: The user's workout statistics for context.
     ///   - userProfile: The user's profile data from HealthKit.
     ///   - streak: Current consecutive workout day streak.
-    ///   - attitude: The user's selected attitude tone.
+    ///   - attitudes: The user's selected attitude tones.
     /// - Returns: A personalized message string.
     /// - Throws: ChatGPTError if the API call fails.
     func generateWeightMessage(
@@ -110,7 +110,7 @@ final class ChatGPTService {
         workoutStats: WorkoutStats,
         userProfile: UserProfile,
         streak: Int,
-        attitude: Attitude
+        attitudes: Set<Attitude>
     ) async throws -> String {
         try await fetchWeightMessage(
             weightEntry: weightEntry,
@@ -118,7 +118,57 @@ final class ChatGPTService {
             workoutStats: workoutStats,
             userProfile: userProfile,
             streak: streak,
-            attitude: attitude
+            attitudes: attitudes
+        )
+    }
+
+    /// Generates a morning summary message.
+    /// - Parameters:
+    ///   - workoutStats: The user's workout statistics.
+    ///   - weightStats: Weight statistics for the last 30 days.
+    ///   - userProfile: The user's profile data from HealthKit.
+    ///   - streak: Current consecutive workout day streak.
+    ///   - attitudes: The user's selected attitude tones.
+    /// - Returns: A personalized morning summary message.
+    /// - Throws: ChatGPTError if the API call fails.
+    func generateMorningSummary(
+        workoutStats: WorkoutStats,
+        weightStats: WeightStats,
+        userProfile: UserProfile,
+        streak: Int,
+        attitudes: Set<Attitude>
+    ) async throws -> String {
+        try await fetchMorningSummary(
+            workoutStats: workoutStats,
+            weightStats: weightStats,
+            userProfile: userProfile,
+            streak: streak,
+            attitudes: attitudes
+        )
+    }
+
+    /// Generates an evening summary message.
+    /// - Parameters:
+    ///   - workoutStats: The user's workout statistics.
+    ///   - weightStats: Weight statistics for the last 30 days.
+    ///   - userProfile: The user's profile data from HealthKit.
+    ///   - streak: Current consecutive workout day streak.
+    ///   - attitudes: The user's selected attitude tones.
+    /// - Returns: A personalized evening summary message.
+    /// - Throws: ChatGPTError if the API call fails.
+    func generateEveningSummary(
+        workoutStats: WorkoutStats,
+        weightStats: WeightStats,
+        userProfile: UserProfile,
+        streak: Int,
+        attitudes: Set<Attitude>
+    ) async throws -> String {
+        try await fetchEveningSummary(
+            workoutStats: workoutStats,
+            weightStats: weightStats,
+            userProfile: userProfile,
+            streak: streak,
+            attitudes: attitudes
         )
     }
 
@@ -131,12 +181,12 @@ final class ChatGPTService {
         lastWorkoutDate: Date?,
         heartRate: WorkoutHeartRate,
         streak: Int,
-        attitude: Attitude
+        attitudes: Set<Attitude>
     ) async throws -> String {
         let systemPrompt = """
         You are a health buddy. Your job is to comment on a person's recent fitness activity.
 
-        Based on the attitude parameter, vary your response:
+        The user has selected one or more attitudes that define your personality. Blend these attitudes naturally:
         - neutral: Matter-of-fact, informative
         - sarcastic: Playfully teasing, witty
         - funny: Humorous, lighthearted jokes
@@ -186,8 +236,10 @@ final class ChatGPTService {
         logger.info("💓 Heart rate: \(heartRateContext)")
         logger.info("🔥 Streak: \(streakContext)")
 
+        let attitudesString = attitudes.map(\.rawValue).sorted().joined(separator: ", ")
+
         let userPrompt = """
-        Attitude: \(attitude.rawValue)
+        Attitudes: \(attitudesString)
 
         \(currentTime)
 
@@ -265,12 +317,12 @@ final class ChatGPTService {
         workoutStats: WorkoutStats,
         userProfile: UserProfile,
         streak: Int,
-        attitude: Attitude
+        attitudes: Set<Attitude>
     ) async throws -> String {
         let systemPrompt = """
         You are a health buddy. Your job is to comment on a person's new weight entry.
 
-        Based on the attitude parameter, vary your response:
+        The user has selected one or more attitudes that define your personality. Blend these attitudes naturally:
         - neutral: Matter-of-fact, informative
         - sarcastic: Playfully teasing, witty
         - funny: Humorous, lighthearted jokes
@@ -315,8 +367,10 @@ final class ChatGPTService {
         logger.info("👤 Profile: \(profileContext)")
         logger.info("🔥 Streak: \(streakContext)")
 
+        let attitudesString = attitudes.map(\.rawValue).sorted().joined(separator: ", ")
+
         let userPrompt = """
-        Attitude: \(attitude.rawValue)
+        Attitudes: \(attitudesString)
 
         \(currentTime)
 
@@ -483,5 +537,216 @@ final class ChatGPTService {
         }
 
         return "Comparison to your averages: " + comparisons.joined(separator: ". ") + "."
+    }
+
+    private func fetchMorningSummary(
+        workoutStats: WorkoutStats,
+        weightStats: WeightStats,
+        userProfile: UserProfile,
+        streak: Int,
+        attitudes: Set<Attitude>
+    ) async throws -> String {
+        let systemPrompt = """
+        You are a health buddy delivering a morning motivation message.
+
+        The user has selected one or more attitudes that define your personality. Blend these attitudes naturally:
+        - neutral: Matter-of-fact, informative
+        - sarcastic: Playfully teasing, witty
+        - funny: Humorous, lighthearted jokes
+        - cute: Sweet, encouraging with enthusiasm
+        - encouraging: Motivational, supportive
+        - coaching: Professional trainer vibe, constructive feedback
+        - aggressive: Intense drill sergeant energy, push them harder, no excuses
+        - mean: Brutally honest, roast them, tough love with bite
+
+        You will receive:
+        - User profile (age, sex, height, weight)
+        - Yesterday's workout activity
+        - Weekly and monthly workout statistics
+        - Current workout streak
+        - Weight trends for the last 30 days
+
+        Your job is to:
+        - Greet them for the morning
+        - Briefly recap yesterday's activity (or lack thereof)
+        - Motivate them for the day ahead
+        - Reference their streak or overall progress
+        - Keep it short and punchy - this is a notification they'll glance at
+
+        Keep responses to 2-3 sentences max. Be conversational and natural.
+        """
+
+        let currentTime = formatCurrentTime()
+        let profileContext = userProfile.formatForPrompt()
+        let workoutContext = workoutStats.formatForPrompt()
+        let weightContext = weightStats.formatForPrompt()
+        let streakContext = formatStreak(streak)
+        let yesterdayContext = formatYesterdayWorkouts(workoutStats)
+
+        let attitudesString = attitudes.map(\.rawValue).sorted().joined(separator: ", ")
+
+        let userPrompt = """
+        Attitudes: \(attitudesString)
+
+        \(currentTime)
+
+        \(profileContext)
+
+        \(streakContext)
+
+        Yesterday's Activity:
+        \(yesterdayContext)
+
+        Overall Stats:
+        \(workoutContext)
+
+        Weight Trends:
+        \(weightContext)
+
+        Generate a morning motivation message.
+        """
+
+        return try await sendRequest(systemPrompt: systemPrompt, userPrompt: userPrompt)
+    }
+
+    private func fetchEveningSummary(
+        workoutStats: WorkoutStats,
+        weightStats: WeightStats,
+        userProfile: UserProfile,
+        streak: Int,
+        attitudes: Set<Attitude>
+    ) async throws -> String {
+        let systemPrompt = """
+        You are a health buddy delivering an end-of-day summary message.
+
+        The user has selected one or more attitudes that define your personality. Blend these attitudes naturally:
+        - neutral: Matter-of-fact, informative
+        - sarcastic: Playfully teasing, witty
+        - funny: Humorous, lighthearted jokes
+        - cute: Sweet, encouraging with enthusiasm
+        - encouraging: Motivational, supportive
+        - coaching: Professional trainer vibe, constructive feedback
+        - aggressive: Intense drill sergeant energy, push them harder, no excuses
+        - mean: Brutally honest, roast them, tough love with bite
+
+        You will receive:
+        - User profile (age, sex, height, weight)
+        - Today's workout activity
+        - Weekly and monthly workout statistics
+        - Current workout streak
+        - Weight trends for the last 30 days
+
+        Your job is to:
+        - Wrap up their day with a summary
+        - Highlight what they accomplished today (or call out if they skipped)
+        - Comment on their streak status
+        - Set them up for tomorrow
+        - Keep it short and punchy - this is a notification they'll glance at
+
+        Keep responses to 2-3 sentences max. Be conversational and natural.
+        """
+
+        let currentTime = formatCurrentTime()
+        let profileContext = userProfile.formatForPrompt()
+        let workoutContext = workoutStats.formatForPrompt()
+        let weightContext = weightStats.formatForPrompt()
+        let streakContext = formatStreak(streak)
+        let todayContext = formatTodayWorkouts(workoutStats)
+
+        let attitudesString = attitudes.map(\.rawValue).sorted().joined(separator: ", ")
+
+        let userPrompt = """
+        Attitudes: \(attitudesString)
+
+        \(currentTime)
+
+        \(profileContext)
+
+        \(streakContext)
+
+        Today's Activity:
+        \(todayContext)
+
+        Overall Stats:
+        \(workoutContext)
+
+        Weight Trends:
+        \(weightContext)
+
+        Generate an end-of-day summary message.
+        """
+
+        return try await sendRequest(systemPrompt: systemPrompt, userPrompt: userPrompt)
+    }
+
+    private func formatYesterdayWorkouts(_ stats: WorkoutStats) -> String {
+        let yesterday = stats.today // Using today's stats structure but we'd ideally have yesterday
+        if yesterday.totalWorkouts == 0 {
+            return "No workouts recorded yesterday - rest day!"
+        }
+        let totalCalories = yesterday.statsByType.values.reduce(0) { $0 + $1.totalCalories }
+        let totalDuration = yesterday.statsByType.values.reduce(0) { $0 + $1.totalDuration } / 60
+        return "\(yesterday.totalWorkouts) workout(s), \(Int(totalCalories)) calories burned, \(Int(totalDuration)) minutes total"
+    }
+
+    private func formatTodayWorkouts(_ stats: WorkoutStats) -> String {
+        let today = stats.today
+        if today.totalWorkouts == 0 {
+            return "No workouts recorded today yet"
+        }
+        let totalCalories = today.statsByType.values.reduce(0) { $0 + $1.totalCalories }
+        let totalDuration = today.statsByType.values.reduce(0) { $0 + $1.totalDuration } / 60
+        return "\(today.totalWorkouts) workout(s), \(Int(totalCalories)) calories burned, \(Int(totalDuration)) minutes total"
+    }
+
+    private func sendRequest(systemPrompt: String, userPrompt: String) async throws -> String {
+        let request = ChatGPTRequest(
+            model: "gpt-4o-mini",
+            messages: [
+                .init(role: "system", content: systemPrompt),
+                .init(role: "user", content: userPrompt)
+            ],
+            maxTokens: 150
+        )
+
+        var urlRequest = URLRequest(url: baseURL)
+        urlRequest.httpMethod = "POST"
+        urlRequest.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = try JSONEncoder().encode(request)
+
+        logger.info("🌐 Sending request to OpenAI...")
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            logger.error("❌ No HTTP response")
+            throw ChatGPTError.invalidResponse(statusCode: 0, body: "No HTTP response")
+        }
+
+        logger.info("📥 Response status: \(httpResponse.statusCode)")
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let body = String(data: data, encoding: .utf8) ?? "Unknown error"
+            logger.error("❌ API error: \(body)")
+            throw ChatGPTError.invalidResponse(statusCode: httpResponse.statusCode, body: body)
+        }
+
+        do {
+            let chatResponse = try JSONDecoder().decode(ChatGPTResponse.self, from: data)
+
+            guard let message = chatResponse.choices.first?.message.content else {
+                logger.error("❌ No content in response")
+                throw ChatGPTError.noContent
+            }
+
+            let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
+            logger.info("✅ Generated message: \(trimmedMessage)")
+            return trimmedMessage
+        } catch let error as DecodingError {
+            let body = String(data: data, encoding: .utf8) ?? "Unknown"
+            logger.error("❌ Decoding error: \(error.localizedDescription), body: \(body)")
+            throw ChatGPTError.decodingError(error)
+        }
     }
 }

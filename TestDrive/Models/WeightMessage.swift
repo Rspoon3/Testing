@@ -6,7 +6,7 @@ struct WeightMessage: Codable, Identifiable, Hashable {
     let weightEntryID: String
     let weightInPounds: Double
     let message: String
-    let attitude: String
+    let attitudes: String
     let entryDate: Date
     let createdAt: Date
 
@@ -17,7 +17,7 @@ struct WeightMessage: Codable, Identifiable, Hashable {
         weightEntryID: String,
         weightInPounds: Double,
         message: String,
-        attitude: String,
+        attitudes: String,
         entryDate: Date,
         createdAt: Date = Date()
     ) {
@@ -25,7 +25,7 @@ struct WeightMessage: Codable, Identifiable, Hashable {
         self.weightEntryID = weightEntryID
         self.weightInPounds = weightInPounds
         self.message = message
-        self.attitude = attitude
+        self.attitudes = attitudes
         self.entryDate = entryDate
         self.createdAt = createdAt
     }

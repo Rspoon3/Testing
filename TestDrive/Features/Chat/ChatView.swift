@@ -112,7 +112,7 @@ struct ChatView: View {
                 calories: 250,
                 distance: 3.2,
                 message: "Great job on that 30-minute run! You're building some serious endurance there.",
-                attitude: "encouraging",
+                attitudes: "encouraging",
                 workoutDate: Date()
             )
         )

@@ -49,6 +49,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                 logger.error("❌ HealthKit authorization failed: \(error.localizedDescription)")
             }
 
+            // Schedule daily summary notifications with ChatGPT-generated content (8 AM and 9 PM)
+            await DailySummaryService.shared.scheduleDailySummaries()
+            logger.info("✅ Daily summary notifications scheduled")
+
             // Process all recent workouts and weight entries on app launch
             logger.info("📥 Processing all recent workouts...")
             await BackgroundTaskService.shared.processAllRecentWorkouts()

@@ -10,7 +10,7 @@ struct WorkoutMessage: Codable, Identifiable, Hashable {
     let calories: Double
     let distance: Double
     let message: String
-    let attitude: String
+    let attitudes: String
     let workoutDate: Date
     let createdAt: Date
 
@@ -25,7 +25,7 @@ struct WorkoutMessage: Codable, Identifiable, Hashable {
         calories: Double,
         distance: Double,
         message: String,
-        attitude: String,
+        attitudes: String,
         workoutDate: Date,
         createdAt: Date = Date()
     ) {
@@ -37,7 +37,7 @@ struct WorkoutMessage: Codable, Identifiable, Hashable {
         self.calories = calories
         self.distance = distance
         self.message = message
-        self.attitude = attitude
+        self.attitudes = attitudes
         self.workoutDate = workoutDate
         self.createdAt = createdAt
     }

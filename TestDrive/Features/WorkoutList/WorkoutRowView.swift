@@ -70,7 +70,7 @@ struct WorkoutRowView: View {
                 calories: 245,
                 distance: 3.2,
                 message: "Great run!",
-                attitude: "encouraging",
+                attitudes: "encouraging",
                 workoutDate: Date()
             ),
             formattedDuration: "32 min",

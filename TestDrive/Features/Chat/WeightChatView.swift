@@ -96,7 +96,7 @@ struct WeightChatView: View {
                 weightEntryID: "123",
                 weightInPounds: 175.5,
                 message: "Nice! You're down half a pound from yesterday. Those workouts are paying off!",
-                attitude: "encouraging",
+                attitudes: "encouraging",
                 entryDate: Date()
             )
         )

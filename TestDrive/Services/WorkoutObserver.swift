@@ -24,10 +24,6 @@ final class HealthObserver {
     /// Enables background delivery and starts observing for workout and weight changes.
     /// Must be called from application(_:didFinishLaunchingWithOptions:).
     func startObserving() async {
-        #if DEBUG
-        await sendTestNotification(title: "Observer Started", body: "Observing for workouts and weight...")
-        #endif
-
         await enableBackgroundDelivery()
 
         // Run both observers concurrently (they use infinite AsyncStreams)
@@ -47,9 +43,6 @@ final class HealthObserver {
             logger.info("✅ Workout background delivery enabled")
         } catch {
             logger.error("❌ Failed to enable workout background delivery: \(error.localizedDescription)")
-            #if DEBUG
-            await sendTestNotification(title: "Background Delivery Failed", body: "Workouts: \(error.localizedDescription)")
-            #endif
         }
 
         if let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) {
@@ -58,9 +51,6 @@ final class HealthObserver {
                 logger.info("✅ Weight background delivery enabled")
             } catch {
                 logger.error("❌ Failed to enable weight background delivery: \(error.localizedDescription)")
-                #if DEBUG
-                await sendTestNotification(title: "Background Delivery Failed", body: "Weight: \(error.localizedDescription)")
-                #endif
             }
         }
     }
@@ -77,11 +67,6 @@ final class HealthObserver {
 
         for await _ in stream {
             logger.info("🔔 Workout observer fired!")
-
-            #if DEBUG
-            await sendTestNotification(title: "🧪 Workout Observer", body: "Fired at \(Date().formatted(date: .omitted, time: .standard))")
-            #endif
-
             await handleWorkoutUpdate()
         }
     }
@@ -101,11 +86,6 @@ final class HealthObserver {
 
         for await _ in stream {
             logger.info("🔔 Weight observer fired!")
-
-            #if DEBUG
-            await sendTestNotification(title: "🧪 Weight Observer", body: "Fired at \(Date().formatted(date: .omitted, time: .standard))")
-            #endif
-
             await handleWeightUpdate()
         }
     }
@@ -200,15 +180,4 @@ final class HealthObserver {
         logger.info("✅ Found weight entry: \(entry.formattedWeight) - \(entry.id)")
         await onWeightDetected?(entry)
     }
-
-    #if DEBUG
-    /// Sends a test notification for debugging.
-    private func sendTestNotification(title: String, body: String) async {
-        await NotificationService.shared.scheduleNotification(
-            title: title,
-            body: body,
-            delay: 0.5
-        )
-    }
-    #endif
 }

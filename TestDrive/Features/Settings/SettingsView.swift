@@ -25,6 +25,48 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle(isOn: $viewModel.morningSummaryEnabled) {
+                        Label("Morning Summary", symbol: .sunMax)
+                    }
+                    .onChange(of: viewModel.morningSummaryEnabled) {
+                        viewModel.saveNotificationSettings()
+                    }
+
+                    if viewModel.morningSummaryEnabled {
+                        Picker("Time", selection: $viewModel.morningSummaryHour) {
+                            ForEach(5..<12, id: \.self) { hour in
+                                Text(viewModel.formatHour(hour)).tag(hour)
+                            }
+                        }
+                        .onChange(of: viewModel.morningSummaryHour) {
+                            viewModel.saveNotificationSettings()
+                        }
+                    }
+
+                    Toggle(isOn: $viewModel.eveningSummaryEnabled) {
+                        Label("Evening Summary", symbol: .moonStars)
+                    }
+                    .onChange(of: viewModel.eveningSummaryEnabled) {
+                        viewModel.saveNotificationSettings()
+                    }
+
+                    if viewModel.eveningSummaryEnabled {
+                        Picker("Time", selection: $viewModel.eveningSummaryHour) {
+                            ForEach(17..<24, id: \.self) { hour in
+                                Text(viewModel.formatHour(hour)).tag(hour)
+                            }
+                        }
+                        .onChange(of: viewModel.eveningSummaryHour) {
+                            viewModel.saveNotificationSettings()
+                        }
+                    }
+                } header: {
+                    Text("Daily Summaries")
+                } footer: {
+                    Text("Get AI-generated summaries of your fitness activity.")
+                }
+
+                Section {
                     HStack {
                         Label("Version", symbol: .infoCircle)
                         Spacer()

@@ -5,6 +5,10 @@ import Foundation
 final class SettingsViewModel {
     var selectedAttitudes: Set<Attitude>
     var savedMessagesCount: Int
+    var morningSummaryEnabled: Bool
+    var eveningSummaryEnabled: Bool
+    var morningSummaryHour: Int
+    var eveningSummaryHour: Int
 
     private let userPreferences = UserPreferences.shared
     private let messageStore = WorkoutMessageStore.shared
@@ -14,6 +18,10 @@ final class SettingsViewModel {
     init() {
         self.selectedAttitudes = userPreferences.selectedAttitudes
         self.savedMessagesCount = WorkoutMessageStore.shared.count
+        self.morningSummaryEnabled = userPreferences.morningSummaryEnabled
+        self.eveningSummaryEnabled = userPreferences.eveningSummaryEnabled
+        self.morningSummaryHour = userPreferences.morningSummaryHour
+        self.eveningSummaryHour = userPreferences.eveningSummaryHour
     }
 
     // MARK: - Public Helpers
@@ -42,6 +50,31 @@ final class SettingsViewModel {
     /// - Returns: Whether the attitude is selected.
     func isSelected(_ attitude: Attitude) -> Bool {
         selectedAttitudes.contains(attitude)
+    }
+
+    /// Saves notification settings and reschedules notifications.
+    func saveNotificationSettings() {
+        userPreferences.morningSummaryEnabled = morningSummaryEnabled
+        userPreferences.eveningSummaryEnabled = eveningSummaryEnabled
+        userPreferences.morningSummaryHour = morningSummaryHour
+        userPreferences.eveningSummaryHour = eveningSummaryHour
+
+        // Reschedule notifications with new settings
+        Task {
+            await DailySummaryService.shared.scheduleDailySummaries()
+        }
+    }
+
+    /// Formats an hour as a time string (e.g., "8:00 AM").
+    /// - Parameter hour: The hour (0-23).
+    /// - Returns: Formatted time string.
+    func formatHour(_ hour: Int) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:00 a"
+        var components = DateComponents()
+        components.hour = hour
+        let date = Calendar.current.date(from: components) ?? Date()
+        return formatter.string(from: date)
     }
 
     /// Clears all saved messages. Use for testing.
