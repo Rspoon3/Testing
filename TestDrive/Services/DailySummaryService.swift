@@ -8,10 +8,14 @@ final class DailySummaryService {
     static let shared = DailySummaryService()
 
     private let healthKitService = HealthKitService()
-    private let chatGPTService = ChatGPTService()
     private let notificationService = NotificationService.shared
     private let userPreferences = UserPreferences.shared
     private let messageStore = DailySummaryMessageStore.shared
+
+    /// Returns the AI service based on user preferences.
+    private var aiService: AIMessageService {
+        AIServiceFactory.shared.currentService()
+    }
 
     // MARK: - Initializer
 
@@ -107,7 +111,7 @@ final class DailySummaryService {
         let streak = await healthKitService.fetchWorkoutStreak()
         let attitudes = userPreferences.selectedAttitudes
 
-        return try await chatGPTService.generateMorningSummary(
+        return try await aiService.generateMorningSummary(
             workoutStats: workoutStats,
             weightStats: weightStats,
             userProfile: userProfile,
@@ -123,7 +127,7 @@ final class DailySummaryService {
         let streak = await healthKitService.fetchWorkoutStreak()
         let attitudes = userPreferences.selectedAttitudes
 
-        return try await chatGPTService.generateEveningSummary(
+        return try await aiService.generateEveningSummary(
             workoutStats: workoutStats,
             weightStats: weightStats,
             userProfile: userProfile,

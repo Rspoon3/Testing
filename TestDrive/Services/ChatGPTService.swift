@@ -4,27 +4,6 @@ import os.log
 
 private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "ChatGPTService")
 
-/// Errors that can occur during ChatGPT API calls.
-enum ChatGPTError: Error, LocalizedError {
-    case invalidResponse(statusCode: Int, body: String)
-    case noContent
-    case networkError(Error)
-    case decodingError(Error)
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidResponse(let statusCode, let body):
-            return "Invalid response (status \(statusCode)): \(body)"
-        case .noContent:
-            return "No content in response"
-        case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
-        case .decodingError(let error):
-            return "Decoding error: \(error.localizedDescription)"
-        }
-    }
-}
-
 /// Request body for OpenAI Chat Completions API.
 private struct ChatGPTRequest: Encodable {
     let model: String
@@ -56,7 +35,7 @@ private struct ChatGPTResponse: Decodable {
 }
 
 /// Service for generating personalized messages via OpenAI API.
-final class ChatGPTService {
+final class ChatGPTService: AIMessageService, @unchecked Sendable {
     // MVP: Hardcoded API key (move to secure storage for production)
     private let apiKey = ""
     private let baseURL = URL(string: "https://api.openai.com/v1/chat/completions")!
@@ -282,7 +261,7 @@ final class ChatGPTService {
 
         guard let httpResponse = response as? HTTPURLResponse else {
             logger.error("❌ No HTTP response")
-            throw ChatGPTError.invalidResponse(statusCode: 0, body: "No HTTP response")
+            throw AIServiceError.invalidResponse(statusCode: 0, body: "No HTTP response")
         }
 
         logger.info("📥 Response status: \(httpResponse.statusCode)")
@@ -290,7 +269,7 @@ final class ChatGPTService {
         guard (200...299).contains(httpResponse.statusCode) else {
             let body = String(data: data, encoding: .utf8) ?? "Unknown error"
             logger.error("❌ API error: \(body)")
-            throw ChatGPTError.invalidResponse(statusCode: httpResponse.statusCode, body: body)
+            throw AIServiceError.invalidResponse(statusCode: httpResponse.statusCode, body: body)
         }
 
         do {
@@ -298,7 +277,7 @@ final class ChatGPTService {
 
             guard let message = chatResponse.choices.first?.message.content else {
                 logger.error("❌ No content in response")
-                throw ChatGPTError.noContent
+                throw AIServiceError.noContent
             }
 
             let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -307,7 +286,7 @@ final class ChatGPTService {
         } catch let error as DecodingError {
             let body = String(data: data, encoding: .utf8) ?? "Unknown"
             logger.error("❌ Decoding error: \(error.localizedDescription), body: \(body)")
-            throw ChatGPTError.decodingError(error)
+            throw AIServiceError.decodingError(error)
         }
     }
 
@@ -407,7 +386,7 @@ final class ChatGPTService {
 
         guard let httpResponse = response as? HTTPURLResponse else {
             logger.error("❌ No HTTP response")
-            throw ChatGPTError.invalidResponse(statusCode: 0, body: "No HTTP response")
+            throw AIServiceError.invalidResponse(statusCode: 0, body: "No HTTP response")
         }
 
         logger.info("📥 Response status: \(httpResponse.statusCode)")
@@ -415,7 +394,7 @@ final class ChatGPTService {
         guard (200...299).contains(httpResponse.statusCode) else {
             let body = String(data: data, encoding: .utf8) ?? "Unknown error"
             logger.error("❌ API error: \(body)")
-            throw ChatGPTError.invalidResponse(statusCode: httpResponse.statusCode, body: body)
+            throw AIServiceError.invalidResponse(statusCode: httpResponse.statusCode, body: body)
         }
 
         do {
@@ -423,7 +402,7 @@ final class ChatGPTService {
 
             guard let message = chatResponse.choices.first?.message.content else {
                 logger.error("❌ No content in response")
-                throw ChatGPTError.noContent
+                throw AIServiceError.noContent
             }
 
             let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -432,7 +411,7 @@ final class ChatGPTService {
         } catch let error as DecodingError {
             let body = String(data: data, encoding: .utf8) ?? "Unknown"
             logger.error("❌ Decoding error: \(error.localizedDescription), body: \(body)")
-            throw ChatGPTError.decodingError(error)
+            throw AIServiceError.decodingError(error)
         }
     }
 
@@ -716,7 +695,7 @@ final class ChatGPTService {
 
         guard let httpResponse = response as? HTTPURLResponse else {
             logger.error("❌ No HTTP response")
-            throw ChatGPTError.invalidResponse(statusCode: 0, body: "No HTTP response")
+            throw AIServiceError.invalidResponse(statusCode: 0, body: "No HTTP response")
         }
 
         logger.info("📥 Response status: \(httpResponse.statusCode)")
@@ -724,7 +703,7 @@ final class ChatGPTService {
         guard (200...299).contains(httpResponse.statusCode) else {
             let body = String(data: data, encoding: .utf8) ?? "Unknown error"
             logger.error("❌ API error: \(body)")
-            throw ChatGPTError.invalidResponse(statusCode: httpResponse.statusCode, body: body)
+            throw AIServiceError.invalidResponse(statusCode: httpResponse.statusCode, body: body)
         }
 
         do {
@@ -732,7 +711,7 @@ final class ChatGPTService {
 
             guard let message = chatResponse.choices.first?.message.content else {
                 logger.error("❌ No content in response")
-                throw ChatGPTError.noContent
+                throw AIServiceError.noContent
             }
 
             let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -741,7 +720,7 @@ final class ChatGPTService {
         } catch let error as DecodingError {
             let body = String(data: data, encoding: .utf8) ?? "Unknown"
             logger.error("❌ Decoding error: \(error.localizedDescription), body: \(body)")
-            throw ChatGPTError.decodingError(error)
+            throw AIServiceError.decodingError(error)
         }
     }
 }

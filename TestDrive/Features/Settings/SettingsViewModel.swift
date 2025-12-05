@@ -9,6 +9,7 @@ final class SettingsViewModel {
     var eveningSummaryEnabled: Bool
     var morningSummaryHour: Int
     var eveningSummaryHour: Int
+    var selectedAIProvider: AIProvider
 
     private let userPreferences = UserPreferences.shared
     private let messageStore = WorkoutMessageStore.shared
@@ -22,6 +23,7 @@ final class SettingsViewModel {
         self.eveningSummaryEnabled = userPreferences.eveningSummaryEnabled
         self.morningSummaryHour = userPreferences.morningSummaryHour
         self.eveningSummaryHour = userPreferences.eveningSummaryHour
+        self.selectedAIProvider = userPreferences.selectedAIProvider
     }
 
     // MARK: - Public Helpers
@@ -81,5 +83,10 @@ final class SettingsViewModel {
     func clearSavedMessages() {
         messageStore.deleteAll()
         savedMessagesCount = 0
+    }
+
+    /// Saves the selected AI provider to user preferences.
+    func saveAIProvider() {
+        userPreferences.selectedAIProvider = selectedAIProvider
     }
 }

@@ -67,6 +67,31 @@ struct SettingsView: View {
                     Text("Get AI-generated summaries of your fitness activity.")
                 }
 
+                if #available(iOS 26, *) {
+                    Section {
+                        Picker(selection: $viewModel.selectedAIProvider) {
+                            ForEach(AIProvider.allCases.filter(\.isAvailable)) { provider in
+                                HStack {
+                                    Image(symbol: provider.symbol)
+                                    Text(provider.displayName)
+                                }
+                                .tag(provider)
+                            }
+                        } label: {
+                            Label("AI Provider", symbol: .cpuFill)
+                        }
+                        .onChange(of: viewModel.selectedAIProvider) {
+                            viewModel.saveAIProvider()
+                        }
+                    } header: {
+                        Text("AI Provider")
+                    } footer: {
+                        Text(viewModel.selectedAIProvider == .chatGPT
+                             ? "ChatGPT requires an internet connection."
+                             : "Foundation Model runs entirely on-device.")
+                    }
+                }
+
                 Section {
                     HStack {
                         Label("Version", symbol: .infoCircle)

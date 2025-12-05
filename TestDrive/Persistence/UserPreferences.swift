@@ -14,6 +14,7 @@ final class UserPreferences {
         static let eveningSummaryHour = "eveningSummaryHour"
         static let morningSummaryEnabled = "morningSummaryEnabled"
         static let eveningSummaryEnabled = "eveningSummaryEnabled"
+        static let selectedAIProvider = "selectedAIProvider"
     }
 
     // MARK: - Properties
@@ -89,6 +90,18 @@ final class UserPreferences {
             return defaults.bool(forKey: Keys.eveningSummaryEnabled)
         }
         set { defaults.set(newValue, forKey: Keys.eveningSummaryEnabled) }
+    }
+
+    /// The user's selected AI provider. Default: .chatGPT.
+    var selectedAIProvider: AIProvider {
+        get {
+            guard let rawValue = defaults.string(forKey: Keys.selectedAIProvider),
+                  let provider = AIProvider(rawValue: rawValue) else {
+                return .chatGPT
+            }
+            return provider
+        }
+        set { defaults.set(newValue.rawValue, forKey: Keys.selectedAIProvider) }
     }
 
     // MARK: - Initializer

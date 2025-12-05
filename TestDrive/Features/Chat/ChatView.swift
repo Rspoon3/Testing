@@ -3,23 +3,41 @@ import SFSymbols
 
 /// Displays the AI-generated message for a workout.
 struct ChatView: View {
-    let workoutMessage: WorkoutMessage
+    @State private var viewModel: ChatViewModel
+
+    // MARK: - Initializer
+
+    init(workoutMessage: WorkoutMessage) {
+        _viewModel = State(initialValue: ChatViewModel(workoutMessage: workoutMessage))
+    }
 
     // MARK: - Body
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                WorkoutSummaryCard(workoutMessage: workoutMessage)
+                WorkoutSummaryCard(workoutMessage: viewModel.workoutMessage)
 
-                MessageBubble(message: workoutMessage.message)
+                MessageBubble(
+                    message: viewModel.workoutMessage.message,
+                    isRegenerating: viewModel.isRegenerating
+                )
+
+                RegenerateButton(
+                    isRegenerating: viewModel.isRegenerating,
+                    errorMessage: viewModel.errorMessage
+                ) {
+                    Task {
+                        await viewModel.regenerateMessage()
+                    }
+                }
 
                 Spacer()
             }
             .padding()
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle(workoutMessage.activityName)
+        .navigationTitle(viewModel.workoutMessage.activityName)
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -77,7 +95,7 @@ struct ChatView: View {
         }
     }
 
-    private func MessageBubble(message: String) -> some View {
+    private func MessageBubble(message: String, isRegenerating: Bool) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 6) {
@@ -89,14 +107,60 @@ struct ChatView: View {
                 }
                 .foregroundStyle(.secondary)
 
-                Text(message)
-                    .font(.body)
+                if isRegenerating {
+                    HStack {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Generating new message...")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text(message)
+                        .font(.body)
+                }
             }
             .padding()
             .background(Color(.secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))
 
             Spacer()
+        }
+    }
+
+    private func RegenerateButton(
+        isRegenerating: Bool,
+        errorMessage: String?,
+        action: @escaping () -> Void
+    ) -> some View {
+        VStack(spacing: 8) {
+            Button {
+                action()
+            } label: {
+                HStack {
+                    if isRegenerating {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(symbol: .arrowClockwise)
+                    }
+                    Text(isRegenerating ? "Regenerating..." : "Regenerate Message")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .disabled(isRegenerating)
+
+            if let error = errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+            }
+
+            Text("Using: \(UserPreferences.shared.selectedAIProvider.displayName)")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
     }
 }

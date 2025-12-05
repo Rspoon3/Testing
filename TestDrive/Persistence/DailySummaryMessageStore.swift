@@ -54,6 +54,17 @@ final class DailySummaryMessageStore {
         loadAll().first { $0.id == id }
     }
 
+    /// Updates an existing daily summary message by its ID.
+    /// - Parameter message: The updated message.
+    func update(_ message: DailySummaryMessage) {
+        var messages = loadAll()
+        if let index = messages.firstIndex(where: { $0.id == message.id }) {
+            messages[index] = message
+            persist(messages)
+            logger.info("📝 Updated \(message.summaryType.rawValue) summary: \(message.id)")
+        }
+    }
+
     /// Deletes all saved messages.
     func deleteAll() {
         try? fileManager.removeItem(at: fileURL)

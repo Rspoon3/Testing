@@ -3,16 +3,34 @@ import SFSymbols
 
 /// Displays the AI-generated message for a weight entry.
 struct WeightChatView: View {
-    let weightMessage: WeightMessage
+    @State private var viewModel: WeightChatViewModel
+
+    // MARK: - Initializer
+
+    init(weightMessage: WeightMessage) {
+        _viewModel = State(initialValue: WeightChatViewModel(weightMessage: weightMessage))
+    }
 
     // MARK: - Body
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                WeightSummaryCard(weightMessage: weightMessage)
+                WeightSummaryCard(weightMessage: viewModel.weightMessage)
 
-                MessageBubble(message: weightMessage.message)
+                MessageBubble(
+                    message: viewModel.weightMessage.message,
+                    isRegenerating: viewModel.isRegenerating
+                )
+
+                RegenerateButton(
+                    isRegenerating: viewModel.isRegenerating,
+                    errorMessage: viewModel.errorMessage
+                ) {
+                    Task {
+                        await viewModel.regenerateMessage()
+                    }
+                }
 
                 Spacer()
             }
@@ -65,7 +83,7 @@ struct WeightChatView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func MessageBubble(message: String) -> some View {
+    private func MessageBubble(message: String, isRegenerating: Bool) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 6) {
@@ -77,14 +95,60 @@ struct WeightChatView: View {
                 }
                 .foregroundStyle(.secondary)
 
-                Text(message)
-                    .font(.body)
+                if isRegenerating {
+                    HStack {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Generating new message...")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text(message)
+                        .font(.body)
+                }
             }
             .padding()
             .background(Color(.secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))
 
             Spacer()
+        }
+    }
+
+    private func RegenerateButton(
+        isRegenerating: Bool,
+        errorMessage: String?,
+        action: @escaping () -> Void
+    ) -> some View {
+        VStack(spacing: 8) {
+            Button {
+                action()
+            } label: {
+                HStack {
+                    if isRegenerating {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(symbol: .arrowClockwise)
+                    }
+                    Text(isRegenerating ? "Regenerating..." : "Regenerate Message")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .disabled(isRegenerating)
+
+            if let error = errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+            }
+
+            Text("Using: \(UserPreferences.shared.selectedAIProvider.displayName)")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
     }
 }

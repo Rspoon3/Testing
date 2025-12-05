@@ -61,6 +61,17 @@ final class WeightMessageStore {
         loadAll().first { $0.id == id }
     }
 
+    /// Updates an existing weight message by its ID.
+    /// - Parameter message: The updated message.
+    func update(_ message: WeightMessage) {
+        var messages = loadAll()
+        if let index = messages.firstIndex(where: { $0.id == message.id }) {
+            messages[index] = message
+            persist(messages)
+            logger.info("📝 Updated weight message: \(message.id)")
+        }
+    }
+
     /// Deletes all saved messages.
     func deleteAll() {
         try? fileManager.removeItem(at: fileURL)

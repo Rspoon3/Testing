@@ -61,6 +61,17 @@ final class WorkoutMessageStore {
         loadAll().first { $0.id == id }
     }
 
+    /// Updates an existing workout message by its ID.
+    /// - Parameter message: The updated message.
+    func update(_ message: WorkoutMessage) {
+        var messages = loadAll()
+        if let index = messages.firstIndex(where: { $0.id == message.id }) {
+            messages[index] = message
+            persist(messages)
+            logger.info("📝 Updated message: \(message.id)")
+        }
+    }
+
     /// Deletes all saved messages.
     func deleteAll() {
         try? fileManager.removeItem(at: fileURL)

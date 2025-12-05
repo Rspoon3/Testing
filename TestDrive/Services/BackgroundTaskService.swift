@@ -10,11 +10,15 @@ final class BackgroundTaskService {
     static let shared = BackgroundTaskService()
 
     private let healthKitService = HealthKitService()
-    private let chatGPTService = ChatGPTService()
     private let notificationService = NotificationService.shared
     private let workoutMessageStore = WorkoutMessageStore.shared
     private let weightMessageStore = WeightMessageStore.shared
     private let userPreferences = UserPreferences.shared
+
+    /// Returns the AI service based on user preferences.
+    private var aiService: AIMessageService {
+        AIServiceFactory.shared.currentService()
+    }
 
     // MARK: - Initializer
 
@@ -96,9 +100,9 @@ final class BackgroundTaskService {
             let streak = await healthKitService.fetchWorkoutStreak()
             logger.info("🔥 Streak: \(streak) days")
 
-            logger.info("🤖 Calling ChatGPT...")
-            debugLogger.log("Calling OpenAI for workout message...", category: .openAI)
-            let message = try await chatGPTService.generateMessage(
+            logger.info("🤖 Calling AI service (\(self.userPreferences.selectedAIProvider.rawValue))...")
+            debugLogger.log("Calling AI service for workout message...", category: .openAI)
+            let message = try await aiService.generateMessage(
                 for: workout,
                 stats: stats,
                 userProfile: userProfile,
@@ -201,9 +205,9 @@ final class BackgroundTaskService {
             let streak = await healthKitService.fetchWorkoutStreak()
             logger.info("🔥 Streak: \(streak) days")
 
-            logger.info("🤖 Calling ChatGPT for weight message...")
-            debugLogger.log("Calling OpenAI for weight message...", category: .openAI)
-            let message = try await chatGPTService.generateWeightMessage(
+            logger.info("🤖 Calling AI service for weight message (\(self.userPreferences.selectedAIProvider.rawValue))...")
+            debugLogger.log("Calling AI service for weight message...", category: .openAI)
+            let message = try await aiService.generateWeightMessage(
                 for: weightEntry,
                 weightStats: weightStats,
                 workoutStats: workoutStats,

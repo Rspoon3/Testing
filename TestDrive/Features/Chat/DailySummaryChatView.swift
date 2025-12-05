@@ -3,23 +3,41 @@ import SFSymbols
 
 /// Displays the AI-generated daily summary message.
 struct DailySummaryChatView: View {
-    let summaryMessage: DailySummaryMessage
+    @State private var viewModel: DailySummaryChatViewModel
+
+    // MARK: - Initializer
+
+    init(summaryMessage: DailySummaryMessage) {
+        _viewModel = State(initialValue: DailySummaryChatViewModel(summaryMessage: summaryMessage))
+    }
 
     // MARK: - Body
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                SummaryHeader(summaryMessage: summaryMessage)
+                SummaryHeader(summaryMessage: viewModel.summaryMessage)
 
-                MessageBubble(message: summaryMessage.message)
+                MessageBubble(
+                    message: viewModel.summaryMessage.message,
+                    isRegenerating: viewModel.isRegenerating
+                )
+
+                RegenerateButton(
+                    isRegenerating: viewModel.isRegenerating,
+                    errorMessage: viewModel.errorMessage
+                ) {
+                    Task {
+                        await viewModel.regenerateMessage()
+                    }
+                }
 
                 Spacer()
             }
             .padding()
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle(summaryMessage.title)
+        .navigationTitle(viewModel.summaryMessage.title)
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -60,7 +78,7 @@ struct DailySummaryChatView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func MessageBubble(message: String) -> some View {
+    private func MessageBubble(message: String, isRegenerating: Bool) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 6) {
@@ -72,8 +90,18 @@ struct DailySummaryChatView: View {
                 }
                 .foregroundStyle(.secondary)
 
-                Text(message)
-                    .font(.body)
+                if isRegenerating {
+                    HStack {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Generating new message...")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text(message)
+                        .font(.body)
+                }
             }
             .padding()
             .background(Color(.secondarySystemGroupedBackground))
@@ -83,10 +111,46 @@ struct DailySummaryChatView: View {
         }
     }
 
+    private func RegenerateButton(
+        isRegenerating: Bool,
+        errorMessage: String?,
+        action: @escaping () -> Void
+    ) -> some View {
+        VStack(spacing: 8) {
+            Button {
+                action()
+            } label: {
+                HStack {
+                    if isRegenerating {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(symbol: .arrowClockwise)
+                    }
+                    Text(isRegenerating ? "Regenerating..." : "Regenerate Message")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .disabled(isRegenerating)
+
+            if let error = errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+            }
+
+            Text("Using: \(UserPreferences.shared.selectedAIProvider.displayName)")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+    }
+
     // MARK: - Private Helpers
 
     private var iconColor: Color {
-        switch summaryMessage.summaryType {
+        switch viewModel.summaryMessage.summaryType {
         case .morning:
             return .orange
         case .evening:
