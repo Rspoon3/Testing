@@ -6,17 +6,13 @@ private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "AppDe
 
 /// App delegate for handling background tasks and HealthKit observer.
 class AppDelegate: NSObject, UIApplicationDelegate {
-    private var workoutObserver: WorkoutObserver?
+    private var healthObserver: HealthObserver?
 
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         logger.info("🚀 App launched")
-
-        // Register background tasks
-        BackgroundTaskService.shared.registerBackgroundTask()
-        logger.info("✅ Background task registered")
 
         // Setup HealthKit background delivery
         setupHealthKitObserver()
@@ -29,26 +25,39 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     private func setupHealthKitObserver() {
         logger.info("🏥 Setting up HealthKit observer...")
 
-        let healthStore = HKHealthStore()
-        workoutObserver = WorkoutObserver(healthStore: healthStore)
+        // Use shared health store - must be same instance for background delivery
+        let healthStore = HealthKitService.sharedHealthStore
+        healthObserver = HealthObserver(healthStore: healthStore)
 
         Task {
             do {
-                try await workoutObserver?.enableBackgroundDelivery()
+                // Ensure authorization before enabling background delivery
+                let healthKitService = HealthKitService()
+                try await healthKitService.requestAuthorization()
+                logger.info("✅ HealthKit authorization completed")
+
+                try await healthObserver?.enableBackgroundDelivery()
                 logger.info("✅ Background delivery enabled")
 
-                // Process all recent workouts on app launch
+                // Start observing BEFORE processing to catch any new data
+                healthObserver?.startObserving()
+                logger.info("✅ Health observer started")
+
+                // Process all recent workouts and weight entries on app launch
                 logger.info("📥 Processing all recent workouts...")
                 await BackgroundTaskService.shared.processAllRecentWorkouts()
 
-                workoutObserver?.startObserving()
-                logger.info("✅ Workout observer started")
+                logger.info("📥 Processing all recent weight entries...")
+                await BackgroundTaskService.shared.processAllRecentWeightEntries()
 
-                workoutObserver?.onWorkoutDetected = { workout in
+                healthObserver?.onWorkoutDetected = { workout in
                     logger.info("🏋️ Workout detected: \(workout.workoutActivityType.rawValue)")
-                    Task {
-                        await BackgroundTaskService.shared.processWorkout(workout)
-                    }
+                    await BackgroundTaskService.shared.processWorkout(workout)
+                }
+
+                healthObserver?.onWeightDetected = { weightEntry in
+                    logger.info("⚖️ Weight detected: \(weightEntry.formattedWeight)")
+                    await BackgroundTaskService.shared.processWeightEntry(weightEntry)
                 }
             } catch {
                 logger.error("❌ Failed to setup HealthKit observer: \(error.localizedDescription)")

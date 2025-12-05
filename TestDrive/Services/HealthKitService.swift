@@ -10,7 +10,10 @@ enum HealthKitError: Error {
 /// Service responsible for HealthKit authorization and data access.
 @Observable
 final class HealthKitService {
-    private let healthStore = HKHealthStore()
+    /// Shared health store instance - must be the same instance for background delivery to work.
+    static let sharedHealthStore = HKHealthStore()
+
+    private let healthStore = HealthKitService.sharedHealthStore
 
     /// The workout types to monitor.
     static let trackedWorkoutTypes: [HKWorkoutActivityType] = [
@@ -396,5 +399,119 @@ final class HealthKitService {
             weekly: PeriodWorkoutStats.from(workouts: weeklyWorkouts, period: .week),
             monthly: PeriodWorkoutStats.from(workouts: allWorkouts, period: .month)
         )
+    }
+
+    /// Fetches weight statistics for the last 30 days.
+    /// - Returns: WeightStats containing all weight entries and calculated statistics.
+    func fetchWeightStats() async -> WeightStats {
+        guard let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
+            return WeightStats(
+                entries: [],
+                currentWeight: nil,
+                previousWeight: nil,
+                monthAgoWeight: nil,
+                minWeight: nil,
+                maxWeight: nil,
+                averageWeight: nil
+            )
+        }
+
+        let calendar = Calendar.current
+        let now = Date()
+        let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: now)!
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: thirtyDaysAgo,
+            end: now,
+            options: .strictStartDate
+        )
+
+        let sortDescriptor = NSSortDescriptor(
+            key: HKSampleSortIdentifierStartDate,
+            ascending: false
+        )
+
+        return await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: weightType,
+                predicate: predicate,
+                limit: HKObjectQueryNoLimit,
+                sortDescriptors: [sortDescriptor]
+            ) { _, samples, _ in
+                guard let samples = samples as? [HKQuantitySample], !samples.isEmpty else {
+                    continuation.resume(returning: WeightStats(
+                        entries: [],
+                        currentWeight: nil,
+                        previousWeight: nil,
+                        monthAgoWeight: nil,
+                        minWeight: nil,
+                        maxWeight: nil,
+                        averageWeight: nil
+                    ))
+                    return
+                }
+
+                let entries = samples.map { sample in
+                    WeightEntry(
+                        id: sample.uuid.uuidString,
+                        weightInPounds: sample.quantity.doubleValue(for: .pound()),
+                        date: sample.startDate
+                    )
+                }
+
+                let weights = entries.map(\.weightInPounds)
+                let currentWeight = entries.first?.weightInPounds
+                let previousWeight = entries.count > 1 ? entries[1].weightInPounds : nil
+                let monthAgoWeight = entries.last?.weightInPounds
+
+                continuation.resume(returning: WeightStats(
+                    entries: entries,
+                    currentWeight: currentWeight,
+                    previousWeight: previousWeight,
+                    monthAgoWeight: monthAgoWeight,
+                    minWeight: weights.min(),
+                    maxWeight: weights.max(),
+                    averageWeight: weights.isEmpty ? nil : weights.reduce(0, +) / Double(weights.count)
+                ))
+            }
+
+            healthStore.execute(query)
+        }
+    }
+
+    /// Fetches the most recent weight entry.
+    /// - Returns: The most recent WeightEntry or nil if none exists.
+    func fetchMostRecentWeightEntry() async -> WeightEntry? {
+        guard let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
+            return nil
+        }
+
+        let sortDescriptor = NSSortDescriptor(
+            key: HKSampleSortIdentifierStartDate,
+            ascending: false
+        )
+
+        return await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: weightType,
+                predicate: nil,
+                limit: 1,
+                sortDescriptors: [sortDescriptor]
+            ) { _, samples, _ in
+                guard let sample = samples?.first as? HKQuantitySample else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                let entry = WeightEntry(
+                    id: sample.uuid.uuidString,
+                    weightInPounds: sample.quantity.doubleValue(for: .pound()),
+                    date: sample.startDate
+                )
+                continuation.resume(returning: entry)
+            }
+
+            healthStore.execute(query)
+        }
     }
 }

@@ -1,19 +1,21 @@
 import HealthKit
+import Foundation
 
-/// View model for the workout list screen.
+/// View model for the health events list screen.
 @Observable
 final class WorkoutListViewModel {
-    var workouts: [HKWorkout] = []
+    var healthEvents: [HealthEvent] = []
     var isLoading = false
     var errorMessage: String?
 
     private let healthKitService = HealthKitService()
-    private let messageStore = WorkoutMessageStore.shared
+    private let workoutMessageStore = WorkoutMessageStore.shared
+    private let weightMessageStore = WeightMessageStore.shared
 
     // MARK: - Public Helpers
 
-    /// Fetches workouts from HealthKit.
-    func fetchWorkouts() async {
+    /// Fetches workouts and weight entries.
+    func fetchHealthEvents() async {
         isLoading = true
         errorMessage = nil
 
@@ -21,19 +23,30 @@ final class WorkoutListViewModel {
             if !healthKitService.isAuthorized {
                 try await healthKitService.requestAuthorization()
             }
-            workouts = try await healthKitService.fetchRecentWorkouts()
+
+            // Load all saved messages (both workouts and weight)
+            let workoutMessages = workoutMessageStore.loadAll()
+            let weightMessages = weightMessageStore.loadAll()
+
+            // Convert to health events
+            var events: [HealthEvent] = []
+            events.append(contentsOf: workoutMessages.map { .workout($0) })
+            events.append(contentsOf: weightMessages.map { .weight($0) })
+
+            // Sort by date (newest first)
+            healthEvents = events.sorted { $0.date > $1.date }
         } catch {
-            errorMessage = "Unable to load workouts. Please check Health permissions."
+            errorMessage = "Unable to load health data. Please check Health permissions."
         }
 
         isLoading = false
     }
 
-    /// Formats the duration of a workout.
-    /// - Parameter workout: The workout to format.
+    /// Formats the duration of a workout message.
+    /// - Parameter message: The workout message to format.
     /// - Returns: A human-readable duration string.
-    func formattedDuration(_ workout: HKWorkout) -> String {
-        let minutes = Int(workout.duration / 60)
+    func formattedDuration(_ message: WorkoutMessage) -> String {
+        let minutes = Int(message.duration / 60)
         if minutes >= 60 {
             let hours = minutes / 60
             let remainingMinutes = minutes % 60
@@ -42,45 +55,28 @@ final class WorkoutListViewModel {
         return "\(minutes) min"
     }
 
-    /// Formats the calories of a workout.
-    /// - Parameter workout: The workout to format.
+    /// Formats the calories of a workout message.
+    /// - Parameter message: The workout message to format.
     /// - Returns: A human-readable calories string or nil if not available.
-    func formattedCalories(_ workout: HKWorkout) -> String? {
-        guard let calories = workout.totalEnergyBurned?.doubleValue(for: .kilocalorie()),
-              calories > 0 else {
-            return nil
-        }
-        return "\(Int(calories)) cal"
+    func formattedCalories(_ message: WorkoutMessage) -> String? {
+        guard message.calories > 0 else { return nil }
+        return "\(Int(message.calories)) cal"
     }
 
-    /// Formats the date of a workout.
-    /// - Parameter workout: The workout to format.
+    /// Formats a date for display.
+    /// - Parameter date: The date to format.
     /// - Returns: A human-readable date string.
-    func formattedDate(_ workout: HKWorkout) -> String {
+    func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
 
-        if Calendar.current.isDateInToday(workout.startDate) {
+        if Calendar.current.isDateInToday(date) {
             formatter.dateFormat = "'Today at' h:mm a"
-        } else if Calendar.current.isDateInYesterday(workout.startDate) {
+        } else if Calendar.current.isDateInYesterday(date) {
             formatter.dateFormat = "'Yesterday at' h:mm a"
         } else {
             formatter.dateFormat = "MMM d 'at' h:mm a"
         }
 
-        return formatter.string(from: workout.startDate)
-    }
-
-    /// Checks if a workout has a saved message.
-    /// - Parameter workout: The workout to check.
-    /// - Returns: Whether a message exists for this workout.
-    func hasMessage(for workout: HKWorkout) -> Bool {
-        messageStore.message(forWorkoutID: workout.uuid.uuidString) != nil
-    }
-
-    /// Gets the saved message for a workout.
-    /// - Parameter workout: The workout.
-    /// - Returns: The message if one exists.
-    func message(for workout: HKWorkout) -> WorkoutMessage? {
-        messageStore.message(forWorkoutID: workout.uuid.uuidString)
+        return formatter.string(from: date)
     }
 }

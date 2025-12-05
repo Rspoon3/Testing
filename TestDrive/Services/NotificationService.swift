@@ -7,11 +7,15 @@ private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "Notif
 final class NotificationService: NSObject {
     static let shared = NotificationService()
     static let workoutIDKey = "workoutID"
+    static let weightEntryIDKey = "weightEntryID"
 
     private let center = UNUserNotificationCenter.current()
 
     /// Callback when a notification is tapped with a workout ID.
-    var onNotificationTapped: ((String) -> Void)?
+    var onWorkoutNotificationTapped: ((String) -> Void)?
+
+    /// Callback when a notification is tapped with a weight entry ID.
+    var onWeightNotificationTapped: ((String) -> Void)?
 
     // MARK: - Initializer
 
@@ -59,7 +63,7 @@ final class NotificationService: NSObject {
         workoutID: String? = nil,
         delay: TimeInterval = 1
     ) async {
-        logger.info("📝 Scheduling notification - Title: \(title)")
+        logger.info("📝 Scheduling notification - Title: \(title), Body length: \(body.count)")
 
         let content = UNMutableNotificationContent()
         content.title = title
@@ -88,6 +92,45 @@ final class NotificationService: NSObject {
             logger.error("❌ Failed to schedule notification: \(error.localizedDescription)")
         }
     }
+
+    /// Schedules a local notification for a weight entry.
+    /// - Parameters:
+    ///   - title: The notification title.
+    ///   - body: The notification body text.
+    ///   - weightEntryID: The weight entry ID for deep linking.
+    ///   - delay: Seconds to wait before showing (default: 1).
+    func scheduleWeightNotification(
+        title: String,
+        body: String,
+        weightEntryID: String,
+        delay: TimeInterval = 1
+    ) async {
+        logger.info("📝 Scheduling weight notification - Title: \(title)")
+
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        content.userInfo = [Self.weightEntryIDKey: weightEntryID]
+
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: delay,
+            repeats: false
+        )
+
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: trigger
+        )
+
+        do {
+            try await center.add(request)
+            logger.info("✅ Weight notification scheduled successfully")
+        } catch {
+            logger.error("❌ Failed to schedule weight notification: \(error.localizedDescription)")
+        }
+    }
 }
 
 // MARK: - UNUserNotificationCenterDelegate
@@ -110,7 +153,10 @@ extension NotificationService: UNUserNotificationCenterDelegate {
 
         if let workoutID = userInfo[Self.workoutIDKey] as? String {
             logger.info("📲 Notification tapped for workout: \(workoutID)")
-            onNotificationTapped?(workoutID)
+            onWorkoutNotificationTapped?(workoutID)
+        } else if let weightEntryID = userInfo[Self.weightEntryIDKey] as? String {
+            logger.info("📲 Notification tapped for weight entry: \(weightEntryID)")
+            onWeightNotificationTapped?(weightEntryID)
         }
 
         completionHandler()

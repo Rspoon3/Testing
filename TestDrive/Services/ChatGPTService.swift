@@ -83,7 +83,7 @@ final class ChatGPTService {
         streak: Int,
         attitude: Attitude
     ) async throws -> String {
-        try await fetchFromAPI(
+        try await fetchWorkoutMessage(
             workout: workout,
             stats: stats,
             userProfile: userProfile,
@@ -94,9 +94,37 @@ final class ChatGPTService {
         )
     }
 
+    /// Generates a personalized message for a weight entry.
+    /// - Parameters:
+    ///   - weightEntry: The new weight entry.
+    ///   - weightStats: Weight statistics for the last 30 days.
+    ///   - workoutStats: The user's workout statistics for context.
+    ///   - userProfile: The user's profile data from HealthKit.
+    ///   - streak: Current consecutive workout day streak.
+    ///   - attitude: The user's selected attitude tone.
+    /// - Returns: A personalized message string.
+    /// - Throws: ChatGPTError if the API call fails.
+    func generateWeightMessage(
+        for weightEntry: WeightEntry,
+        weightStats: WeightStats,
+        workoutStats: WorkoutStats,
+        userProfile: UserProfile,
+        streak: Int,
+        attitude: Attitude
+    ) async throws -> String {
+        try await fetchWeightMessage(
+            weightEntry: weightEntry,
+            weightStats: weightStats,
+            workoutStats: workoutStats,
+            userProfile: userProfile,
+            streak: streak,
+            attitude: attitude
+        )
+    }
+
     // MARK: - Private Helpers
 
-    private func fetchFromAPI(
+    private func fetchWorkoutMessage(
         workout: HKWorkout,
         stats: WorkoutStats,
         userProfile: UserProfile,
@@ -223,6 +251,134 @@ final class ChatGPTService {
 
             let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
             logger.info("✅ Generated message: \(trimmedMessage)")
+            return trimmedMessage
+        } catch let error as DecodingError {
+            let body = String(data: data, encoding: .utf8) ?? "Unknown"
+            logger.error("❌ Decoding error: \(error.localizedDescription), body: \(body)")
+            throw ChatGPTError.decodingError(error)
+        }
+    }
+
+    private func fetchWeightMessage(
+        weightEntry: WeightEntry,
+        weightStats: WeightStats,
+        workoutStats: WorkoutStats,
+        userProfile: UserProfile,
+        streak: Int,
+        attitude: Attitude
+    ) async throws -> String {
+        let systemPrompt = """
+        You are a health buddy. Your job is to comment on a person's new weight entry.
+
+        Based on the attitude parameter, vary your response:
+        - neutral: Matter-of-fact, informative
+        - sarcastic: Playfully teasing, witty
+        - funny: Humorous, lighthearted jokes
+        - cute: Sweet, encouraging with enthusiasm
+        - encouraging: Motivational, supportive
+        - coaching: Professional trainer vibe, constructive feedback
+        - aggressive: Intense drill sergeant energy, push them harder, no excuses
+        - mean: Brutally honest, roast them, tough love with bite
+
+        You will receive:
+        - Current time
+        - User profile (age, sex, height - use to personalize if relevant)
+        - New weight entry with date
+        - Weight statistics for the last 30 days (all entries, min/max/avg, changes)
+        - Fitness context (workout stats, current streak)
+
+        Use this data to provide context:
+        - Focus primarily on the weight entry - this is the main topic
+        - Comment on the change from their last weigh-in (up, down, or stable)
+        - Reference their 30-day trend if notable
+        - If they're at their monthly low or high, mention it
+        - Connect weight to their fitness activity if relevant (e.g., "all those workouts are paying off!")
+        - Consider their workout streak when framing the message
+        - Adjust tone appropriately based on attitude
+
+        Keep responses under 2-5 sentences. Be conversational and natural. Don't list statistics back - weave insights naturally into your message.
+        """
+
+        let currentTime = formatCurrentTime()
+        let profileContext = userProfile.formatForPrompt()
+        let weightContext = weightStats.formatForPrompt()
+        let workoutContext = workoutStats.formatForPrompt()
+        let streakContext = formatStreak(streak)
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d, yyyy 'at' h:mm a"
+        let entryDateString = formatter.string(from: weightEntry.date)
+
+        logger.info("⚖️ Weight entry: \(weightEntry.formattedWeight)")
+        logger.info("📊 Weight stats: \(weightContext)")
+        logger.info("🏋️ Workout context: \(workoutContext)")
+        logger.info("👤 Profile: \(profileContext)")
+        logger.info("🔥 Streak: \(streakContext)")
+
+        let userPrompt = """
+        Attitude: \(attitude.rawValue)
+
+        \(currentTime)
+
+        \(profileContext)
+
+        \(streakContext)
+
+        New Weight Entry:
+        Weight: \(weightEntry.formattedWeight)
+        Recorded: \(entryDateString)
+
+        Weight History (Last 30 Days):
+        \(weightContext)
+
+        Fitness Context:
+        \(workoutContext)
+
+        Generate a personalized message about this weight entry.
+        """
+
+        let request = ChatGPTRequest(
+            model: "gpt-4o-mini",
+            messages: [
+                .init(role: "system", content: systemPrompt),
+                .init(role: "user", content: userPrompt)
+            ],
+            maxTokens: 200
+        )
+
+        var urlRequest = URLRequest(url: baseURL)
+        urlRequest.httpMethod = "POST"
+        urlRequest.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = try JSONEncoder().encode(request)
+
+        logger.info("🌐 Sending weight message request to OpenAI...")
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            logger.error("❌ No HTTP response")
+            throw ChatGPTError.invalidResponse(statusCode: 0, body: "No HTTP response")
+        }
+
+        logger.info("📥 Response status: \(httpResponse.statusCode)")
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let body = String(data: data, encoding: .utf8) ?? "Unknown error"
+            logger.error("❌ API error: \(body)")
+            throw ChatGPTError.invalidResponse(statusCode: httpResponse.statusCode, body: body)
+        }
+
+        do {
+            let chatResponse = try JSONDecoder().decode(ChatGPTResponse.self, from: data)
+
+            guard let message = chatResponse.choices.first?.message.content else {
+                logger.error("❌ No content in response")
+                throw ChatGPTError.noContent
+            }
+
+            let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
+            logger.info("✅ Generated weight message: \(trimmedMessage)")
             return trimmedMessage
         } catch let error as DecodingError {
             let body = String(data: data, encoding: .utf8) ?? "Unknown"

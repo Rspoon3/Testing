@@ -1,18 +1,18 @@
-import BackgroundTasks
 import HealthKit
+import UIKit
 import os.log
 
 private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "BackgroundTaskService")
 
-/// Manages background task scheduling and execution.
+/// Manages health data processing.
 final class BackgroundTaskService {
     static let shared = BackgroundTaskService()
-    static let taskIdentifier = "com.rspoon3.TestDrive.workoutRefresh"
 
     private let healthKitService = HealthKitService()
     private let chatGPTService = ChatGPTService()
     private let notificationService = NotificationService.shared
-    private let messageStore = WorkoutMessageStore.shared
+    private let workoutMessageStore = WorkoutMessageStore.shared
+    private let weightMessageStore = WeightMessageStore.shared
     private let userPreferences = UserPreferences.shared
 
     // MARK: - Initializer
@@ -40,40 +40,16 @@ final class BackgroundTaskService {
         }
     }
 
-    /// Registers the background task handler. Call in AppDelegate.
-    func registerBackgroundTask() {
-        BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: Self.taskIdentifier,
-            using: nil
-        ) { [weak self] task in
-            logger.info("📋 Background task handler called")
-            self?.handleBackgroundTask(task as! BGProcessingTask)
-        }
-    }
-
-    /// Schedules a background processing task.
-    func scheduleBackgroundTask() {
-        let request = BGProcessingTaskRequest(identifier: Self.taskIdentifier)
-        request.requiresNetworkConnectivity = true
-        request.requiresExternalPower = false
-
-        do {
-            try BGTaskScheduler.shared.submit(request)
-            logger.info("✅ Background task scheduled")
-        } catch {
-            logger.error("❌ Failed to schedule background task: \(error.localizedDescription)")
-        }
-    }
-
     /// Processes a new workout detected via observer query.
     /// - Parameters:
     ///   - workout: The detected workout.
     ///   - sendNotification: Whether to send a notification for this workout.
     func processWorkout(_ workout: HKWorkout, sendNotification: Bool = true) async {
         let workoutID = workout.uuid.uuidString
-        logger.info("🏃 Processing workout: \(workoutID)")
+        logger.info("🏃 Processing workout: \(workoutID) - sendNotification: \(sendNotification)")
+        logger.info("📱 App state: \(UIApplication.shared.applicationState.rawValue)")
 
-        guard messageStore.message(forWorkoutID: workoutID) == nil else {
+        guard workoutMessageStore.message(forWorkoutID: workoutID) == nil else {
             logger.info("⏭️ Workout already has a message, skipping")
             return
         }
@@ -138,7 +114,7 @@ final class BackgroundTaskService {
                 attitude: attitude.rawValue,
                 workoutDate: workout.endDate
             )
-            messageStore.save(workoutMessage)
+            workoutMessageStore.save(workoutMessage)
             logger.info("💾 Message saved")
 
             if sendNotification {
@@ -157,36 +133,95 @@ final class BackgroundTaskService {
         }
     }
 
-    // MARK: - Private Helpers
+    /// Processes all recent weight entries that haven't been processed yet.
+    /// - Parameter sendNotifications: Whether to send notifications for processed weight entries.
+    func processAllRecentWeightEntries(sendNotifications: Bool = false) async {
+        logger.info("📥 Fetching all recent weight entries...")
 
-    private func handleBackgroundTask(_ task: BGProcessingTask) {
-        logger.info("🔄 Handling background task...")
-        scheduleBackgroundTask()
+        let weightStats = await healthKitService.fetchWeightStats()
+        logger.info("📊 Found \(weightStats.entries.count) total weight entries")
 
-        task.expirationHandler = {
-            logger.warning("⚠️ Background task expired")
-            task.setTaskCompleted(success: false)
+        for entry in weightStats.entries {
+            await processWeightEntry(entry, sendNotification: sendNotifications)
         }
 
-        Task {
-            do {
-                try await processNewWorkouts()
-                logger.info("✅ Background task completed successfully")
-                task.setTaskCompleted(success: true)
-            } catch {
-                logger.error("❌ Background task failed: \(error.localizedDescription)")
-                task.setTaskCompleted(success: false)
+        logger.info("✅ Finished processing all weight entries")
+    }
+
+    /// Processes a new weight entry detected via observer query.
+    /// - Parameters:
+    ///   - weightEntry: The detected weight entry.
+    ///   - sendNotification: Whether to send a notification for this weight entry.
+    func processWeightEntry(_ weightEntry: WeightEntry, sendNotification: Bool = true) async {
+        let entryID = weightEntry.id
+        logger.info("⚖️ Processing weight entry: \(entryID) - sendNotification: \(sendNotification)")
+        logger.info("📱 App state: \(UIApplication.shared.applicationState.rawValue)")
+
+        guard weightMessageStore.message(forWeightEntryID: entryID) == nil else {
+            logger.info("⏭️ Weight entry already has a message, skipping")
+            return
+        }
+
+        let attitude = userPreferences.randomSelectedAttitude
+        logger.info("🎭 Using attitude: \(attitude.rawValue)")
+
+        do {
+            // Fetch weight stats for context
+            logger.info("📊 Fetching weight stats...")
+            let weightStats = await healthKitService.fetchWeightStats()
+            logger.info("📊 Weight stats: \(weightStats.entries.count) entries")
+
+            // Fetch workout stats for fitness context
+            logger.info("🏋️ Fetching workout stats...")
+            let workoutStats = try await healthKitService.fetchWorkoutStats()
+            logger.info("🏋️ Workout stats: \(workoutStats.monthly.totalWorkouts) workouts this month")
+
+            // Fetch user profile
+            logger.info("👤 Fetching user profile...")
+            let userProfile = await healthKitService.fetchUserProfile()
+            logger.info("👤 Profile: \(userProfile.formatForPrompt())")
+
+            // Fetch workout streak
+            logger.info("🔥 Fetching streak...")
+            let streak = await healthKitService.fetchWorkoutStreak()
+            logger.info("🔥 Streak: \(streak) days")
+
+            logger.info("🤖 Calling ChatGPT for weight message...")
+            let message = try await chatGPTService.generateWeightMessage(
+                for: weightEntry,
+                weightStats: weightStats,
+                workoutStats: workoutStats,
+                userProfile: userProfile,
+                streak: streak,
+                attitude: attitude
+            )
+            logger.info("✅ Got message: \(message)")
+
+            // Save the message
+            let weightMessage = WeightMessage(
+                weightEntryID: entryID,
+                weightInPounds: weightEntry.weightInPounds,
+                message: message,
+                attitude: attitude.rawValue,
+                entryDate: weightEntry.date
+            )
+            weightMessageStore.save(weightMessage)
+            logger.info("💾 Weight message saved")
+
+            if sendNotification {
+                logger.info("🔔 Scheduling notification...")
+                await notificationService.scheduleWeightNotification(
+                    title: "Weight Logged!",
+                    body: message,
+                    weightEntryID: entryID
+                )
+                logger.info("✅ Notification scheduled")
+            } else {
+                logger.info("⏭️ Skipping notification (bulk processing)")
             }
+        } catch {
+            logger.error("❌ ChatGPT API failed: \(error.localizedDescription)")
         }
     }
 
-    private func processNewWorkouts() async throws {
-        logger.info("📥 Fetching recent workouts...")
-        let workouts = try await healthKitService.fetchRecentWorkouts()
-        logger.info("📊 Found \(workouts.count) workouts")
-
-        for workout in workouts {
-            await processWorkout(workout)
-        }
-    }
 }

@@ -5,6 +5,7 @@ import SwiftUI
 final class AppCoordinator {
     var hasCompletedOnboarding: Bool
     var selectedWorkoutMessage: WorkoutMessage?
+    var selectedWeightMessage: WeightMessage?
 
     // MARK: - Initializer
 
@@ -27,5 +28,14 @@ final class AppCoordinator {
             return
         }
         selectedWorkoutMessage = message
+    }
+
+    /// Navigates to a weight message by its weight entry ID.
+    /// - Parameter weightEntryID: The weight entry UUID string.
+    func navigateToWeightEntry(weightEntryID: String) {
+        guard let message = WeightMessageStore.shared.message(forWeightEntryID: weightEntryID) else {
+            return
+        }
+        selectedWeightMessage = message
     }
 }

@@ -25,8 +25,11 @@ struct TestDriveApp: App {
             }
             .animation(.easeInOut, value: coordinator.hasCompletedOnboarding)
             .onAppear {
-                NotificationService.shared.onNotificationTapped = { workoutID in
+                NotificationService.shared.onWorkoutNotificationTapped = { workoutID in
                     coordinator.navigateToWorkout(workoutID: workoutID)
+                }
+                NotificationService.shared.onWeightNotificationTapped = { weightEntryID in
+                    coordinator.navigateToWeightEntry(weightEntryID: weightEntryID)
                 }
             }
         }

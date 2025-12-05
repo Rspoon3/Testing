@@ -1,7 +1,7 @@
 import SwiftUI
 import SFSymbols
 
-/// Main screen showing the user's workout history.
+/// Main screen showing the user's health history (workouts and weight).
 struct WorkoutListView: View {
     @Bindable var coordinator: AppCoordinator
     @State private var viewModel = WorkoutListViewModel()
@@ -14,16 +14,16 @@ struct WorkoutListView: View {
         NavigationStack(path: $navigationPath) {
             Group {
                 if viewModel.isLoading {
-                    ProgressView("Loading workouts...")
+                    ProgressView("Loading...")
                 } else if let error = viewModel.errorMessage {
                     errorView(error)
-                } else if viewModel.workouts.isEmpty {
+                } else if viewModel.healthEvents.isEmpty {
                     emptyStateView
                 } else {
-                    workoutList
+                    healthEventsList
                 }
             }
-            .navigationTitle("Workouts")
+            .navigationTitle("Activity")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -37,15 +37,21 @@ struct WorkoutListView: View {
                 SettingsView()
             }
             .task {
-                await viewModel.fetchWorkouts()
+                await viewModel.fetchHealthEvents()
             }
             .refreshable {
-                await viewModel.fetchWorkouts()
+                await viewModel.fetchHealthEvents()
             }
             .onChange(of: coordinator.selectedWorkoutMessage) { _, newValue in
                 if let message = newValue {
-                    navigationPath.append(message)
+                    navigationPath.append(HealthEvent.workout(message))
                     coordinator.selectedWorkoutMessage = nil
+                }
+            }
+            .onChange(of: coordinator.selectedWeightMessage) { _, newValue in
+                if let message = newValue {
+                    navigationPath.append(HealthEvent.weight(message))
+                    coordinator.selectedWeightMessage = nil
                 }
             }
         }
@@ -53,38 +59,40 @@ struct WorkoutListView: View {
 
     // MARK: - Private Views
 
-    private var workoutList: some View {
-        List(viewModel.workouts, id: \.uuid) { workout in
-            if let message = viewModel.message(for: workout) {
-                NavigationLink(value: message) {
+    private var healthEventsList: some View {
+        List(viewModel.healthEvents) { event in
+            NavigationLink(value: event) {
+                switch event {
+                case .workout(let message):
                     WorkoutRowView(
-                        workout: workout,
-                        formattedDuration: viewModel.formattedDuration(workout),
-                        formattedCalories: viewModel.formattedCalories(workout),
-                        formattedDate: viewModel.formattedDate(workout),
-                        hasMessage: true
+                        workoutMessage: message,
+                        formattedDuration: viewModel.formattedDuration(message),
+                        formattedCalories: viewModel.formattedCalories(message),
+                        formattedDate: viewModel.formattedDate(message.workoutDate)
+                    )
+                case .weight(let message):
+                    WeightRowView(
+                        weightMessage: message,
+                        formattedDate: viewModel.formattedDate(message.entryDate)
                     )
                 }
-            } else {
-                WorkoutRowView(
-                    workout: workout,
-                    formattedDuration: viewModel.formattedDuration(workout),
-                    formattedCalories: viewModel.formattedCalories(workout),
-                    formattedDate: viewModel.formattedDate(workout),
-                    hasMessage: false
-                )
             }
         }
-        .navigationDestination(for: WorkoutMessage.self) { message in
-            ChatView(workoutMessage: message)
+        .navigationDestination(for: HealthEvent.self) { event in
+            switch event {
+            case .workout(let message):
+                ChatView(workoutMessage: message)
+            case .weight(let message):
+                WeightChatView(weightMessage: message)
+            }
         }
     }
 
     private var emptyStateView: some View {
         ContentUnavailableView(
-            "No Workouts Yet",
-            systemImage: "figure.run",
-            description: Text("Complete a workout and it will appear here")
+            "No Activity Yet",
+            systemImage: "heart.text.square",
+            description: Text("Complete a workout or log your weight to see it here")
         )
     }
 

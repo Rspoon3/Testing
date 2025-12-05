@@ -1,69 +1,78 @@
 import SwiftUI
-import HealthKit
 import SFSymbols
 
-/// A row displaying a single workout.
+/// A row displaying a single workout message.
 struct WorkoutRowView: View {
-    let workout: HKWorkout
+    let workoutMessage: WorkoutMessage
     let formattedDuration: String
     let formattedCalories: String?
     let formattedDate: String
-    var hasMessage: Bool = false
 
     // MARK: - Body
 
     var body: some View {
-        HStack(spacing: 16) {
-            workoutIcon
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color.blue.opacity(0.15))
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: "figure.run")
+                    .font(.system(size: 20))
+                    .foregroundStyle(.blue)
+            }
 
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text(workout.workoutActivityType.displayName)
-                        .font(.headline)
+                Text(workoutMessage.activityName)
+                    .font(.headline)
 
-                    if hasMessage {
-                        Image(symbol: .sparkles)
-                            .font(.caption)
-                            .foregroundStyle(.blue)
-                    }
-                }
-
-                HStack(spacing: 12) {
-                    Label(formattedDuration, symbol: .clock)
+                HStack(spacing: 8) {
+                    Text(formattedDuration)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
 
                     if let calories = formattedCalories {
-                        Label(calories, symbol: .flameFill)
+                        Text("•")
+                            .foregroundStyle(.secondary)
+
+                        Text(calories)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
+
+                    Text("•")
+                        .foregroundStyle(.secondary)
+
+                    Text(formattedDate)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            Text(formattedDate)
+            Image(symbol: .bubbleLeftFill)
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.blue)
         }
         .padding(.vertical, 4)
-    }
-
-    // MARK: - Private Views
-
-    private var workoutIcon: some View {
-        Image(symbol: workout.workoutActivityType.symbol)
-            .font(.title2)
-            .foregroundStyle(.blue)
-            .frame(width: 44, height: 44)
-            .background(Color.accentColor.opacity(0.1))
-            .clipShape(Circle())
     }
 }
 
 #Preview {
     List {
         WorkoutRowView(
-            workout: HKWorkout(activityType: .running, start: Date(), end: Date()),
+            workoutMessage: WorkoutMessage(
+                workoutID: "123",
+                activityType: "running",
+                activityName: "Running",
+                duration: 1920,
+                calories: 245,
+                distance: 3.2,
+                message: "Great run!",
+                attitude: "encouraging",
+                workoutDate: Date()
+            ),
             formattedDuration: "32 min",
             formattedCalories: "245 cal",
             formattedDate: "Today at 7:30 AM"
