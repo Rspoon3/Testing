@@ -1,9 +1,10 @@
 import Foundation
 
-/// A unified type representing either a workout or weight entry in the health list.
+/// A unified type representing a workout, weight entry, or daily summary in the health list.
 enum HealthEvent: Identifiable, Hashable {
     case workout(WorkoutMessage)
     case weight(WeightMessage)
+    case dailySummary(DailySummaryMessage)
 
     var id: String {
         switch self {
@@ -11,6 +12,8 @@ enum HealthEvent: Identifiable, Hashable {
             return "workout-\(message.id)"
         case .weight(let message):
             return "weight-\(message.id)"
+        case .dailySummary(let message):
+            return "summary-\(message.id)"
         }
     }
 
@@ -21,6 +24,8 @@ enum HealthEvent: Identifiable, Hashable {
             return message.workoutDate
         case .weight(let message):
             return message.entryDate
+        case .dailySummary(let message):
+            return message.summaryDate
         }
     }
 
@@ -30,6 +35,8 @@ enum HealthEvent: Identifiable, Hashable {
         case .workout(let message):
             return message.createdAt
         case .weight(let message):
+            return message.createdAt
+        case .dailySummary(let message):
             return message.createdAt
         }
     }

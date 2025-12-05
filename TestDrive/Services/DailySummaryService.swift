@@ -11,6 +11,7 @@ final class DailySummaryService {
     private let chatGPTService = ChatGPTService()
     private let notificationService = NotificationService.shared
     private let userPreferences = UserPreferences.shared
+    private let messageStore = DailySummaryMessageStore.shared
 
     // MARK: - Initializer
 
@@ -25,13 +26,24 @@ final class DailySummaryService {
 
         do {
             let message = try await generateMorningSummary()
+
+            // Save to activity list
+            let summaryMessage = DailySummaryMessage(
+                summaryType: .morning,
+                message: message,
+                attitudes: userPreferences.selectedAttitudes.map(\.rawValue).sorted().joined(separator: ", "),
+                summaryDate: Date()
+            )
+            messageStore.save(summaryMessage)
+
+            // Schedule notification
             await notificationService.scheduleDailyNotification(
                 identifier: NotificationService.morningSummaryID,
-                title: "Good Morning! ☀️",
+                title: "Good Morning!",
                 body: message,
                 hour: hour
             )
-            logger.info("✅ Morning summary scheduled")
+            logger.info("✅ Morning summary saved and scheduled")
         } catch {
             logger.error("❌ Failed to generate morning summary: \(error.localizedDescription)")
         }
@@ -44,13 +56,24 @@ final class DailySummaryService {
 
         do {
             let message = try await generateEveningSummary()
+
+            // Save to activity list
+            let summaryMessage = DailySummaryMessage(
+                summaryType: .evening,
+                message: message,
+                attitudes: userPreferences.selectedAttitudes.map(\.rawValue).sorted().joined(separator: ", "),
+                summaryDate: Date()
+            )
+            messageStore.save(summaryMessage)
+
+            // Schedule notification
             await notificationService.scheduleDailyNotification(
                 identifier: NotificationService.eveningSummaryID,
-                title: "Daily Wrap-Up 🌙",
+                title: "Daily Wrap-Up",
                 body: message,
                 hour: hour
             )
-            logger.info("✅ Evening summary scheduled")
+            logger.info("✅ Evening summary saved and scheduled")
         } catch {
             logger.error("❌ Failed to generate evening summary: \(error.localizedDescription)")
         }

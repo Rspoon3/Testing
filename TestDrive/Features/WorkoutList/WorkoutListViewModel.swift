@@ -11,10 +11,11 @@ final class WorkoutListViewModel {
     private let healthKitService = HealthKitService()
     private let workoutMessageStore = WorkoutMessageStore.shared
     private let weightMessageStore = WeightMessageStore.shared
+    private let dailySummaryMessageStore = DailySummaryMessageStore.shared
 
     // MARK: - Public Helpers
 
-    /// Fetches workouts and weight entries.
+    /// Fetches workouts, weight entries, and daily summaries.
     func fetchHealthEvents() async {
         isLoading = true
         errorMessage = nil
@@ -24,14 +25,16 @@ final class WorkoutListViewModel {
                 try await healthKitService.requestAuthorization()
             }
 
-            // Load all saved messages (both workouts and weight)
+            // Load all saved messages
             let workoutMessages = workoutMessageStore.loadAll()
             let weightMessages = weightMessageStore.loadAll()
+            let dailySummaryMessages = dailySummaryMessageStore.loadAll()
 
             // Convert to health events
             var events: [HealthEvent] = []
             events.append(contentsOf: workoutMessages.map { .workout($0) })
             events.append(contentsOf: weightMessages.map { .weight($0) })
+            events.append(contentsOf: dailySummaryMessages.map { .dailySummary($0) })
 
             // Sort by date (newest first)
             healthEvents = events.sorted { $0.date > $1.date }

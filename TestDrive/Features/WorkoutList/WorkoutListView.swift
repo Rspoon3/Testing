@@ -75,6 +75,11 @@ struct WorkoutListView: View {
                         weightMessage: message,
                         formattedDate: viewModel.formattedDate(message.entryDate)
                     )
+                case .dailySummary(let message):
+                    DailySummaryRowView(
+                        summaryMessage: message,
+                        formattedDate: viewModel.formattedDate(message.summaryDate)
+                    )
                 }
             }
         }
@@ -84,6 +89,8 @@ struct WorkoutListView: View {
                 ChatView(workoutMessage: message)
             case .weight(let message):
                 WeightChatView(weightMessage: message)
+            case .dailySummary(let message):
+                DailySummaryChatView(summaryMessage: message)
             }
         }
     }
