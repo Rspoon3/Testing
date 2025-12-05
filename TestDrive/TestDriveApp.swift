@@ -9,9 +9,21 @@ import SwiftUI
 
 @main
 struct TestDriveApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @State private var coordinator = AppCoordinator()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Group {
+                if coordinator.hasCompletedOnboarding {
+                    WorkoutListView()
+                } else {
+                    OnboardingView {
+                        coordinator.completeOnboarding()
+                    }
+                }
+            }
+            .animation(.easeInOut, value: coordinator.hasCompletedOnboarding)
         }
     }
 }
