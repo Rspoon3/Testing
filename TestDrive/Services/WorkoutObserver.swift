@@ -1,14 +1,11 @@
 import HealthKit
-import UIKit
 import os.log
 
-private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "WorkoutObserver")
+private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "HealthObserver")
 
 /// Observes HealthKit for new workout completions and weight entries.
 final class HealthObserver {
     private let healthStore: HKHealthStore
-    private var workoutObserverQuery: HKObserverQuery?
-    private var weightObserverQuery: HKObserverQuery?
 
     /// Callback invoked when new workouts are detected.
     var onWorkoutDetected: ((HKWorkout) async -> Void)?
@@ -24,162 +21,96 @@ final class HealthObserver {
 
     // MARK: - Public Helpers
 
-    /// Starts observing for workout and weight changes.
-    func startObserving() {
-        startWorkoutObserver()
-        startWeightObserver()
-    }
+    /// Enables background delivery and starts observing for workout and weight changes.
+    /// Must be called from application(_:didFinishLaunchingWithOptions:).
+    func startObserving() async {
+        #if DEBUG
+        await sendTestNotification(title: "Observer Started", body: "Observing for workouts and weight...")
+        #endif
 
-    /// Enables background delivery for workouts and weight.
-    func enableBackgroundDelivery() async throws {
-        let workoutType = HKObjectType.workoutType()
-        logger.info("📡 Enabling background delivery for workouts...")
+        await enableBackgroundDelivery()
 
-        try await healthStore.enableBackgroundDelivery(
-            for: workoutType,
-            frequency: .immediate
-        )
-        logger.info("✅ Workout background delivery enabled")
-
-        if let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) {
-            logger.info("📡 Enabling background delivery for weight...")
-            try await healthStore.enableBackgroundDelivery(
-                for: weightType,
-                frequency: .immediate
-            )
-            logger.info("✅ Weight background delivery enabled")
-        }
-    }
-
-    /// Stops observing all changes.
-    func stopObserving() {
-        if let query = workoutObserverQuery {
-            healthStore.stop(query)
-            workoutObserverQuery = nil
-            logger.info("🛑 Workout observer stopped")
-        }
-
-        if let query = weightObserverQuery {
-            healthStore.stop(query)
-            weightObserverQuery = nil
-            logger.info("🛑 Weight observer stopped")
-        }
+        // Run both observers concurrently (they use infinite AsyncStreams)
+        async let workoutTask: () = observeWorkouts()
+        async let weightTask: () = observeWeight()
+        _ = await (workoutTask, weightTask)
     }
 
     // MARK: - Private Helpers
 
-    private func startWorkoutObserver() {
+    /// Enables background delivery for workouts and weight.
+    private func enableBackgroundDelivery() async {
         let workoutType = HKObjectType.workoutType()
-        logger.info("👀 Starting workout observer query...")
 
-        workoutObserverQuery = HKObserverQuery(
-            sampleType: workoutType,
-            predicate: nil
-        ) { [weak self] _, completionHandler, error in
-            if let error {
-                logger.error("❌ Workout observer error: \(error.localizedDescription)")
-                completionHandler()
-                return
-            }
-
-            logger.info("🔔 Workout observer fired!")
-
-            // All UI API calls must happen on main thread
-            DispatchQueue.main.async {
-                // Test notification to verify observer is firing
-                Task {
-                    await NotificationService.shared.scheduleNotification(
-                        title: "🧪 Workout Observer",
-                        body: "Observer fired at \(Date().formatted(date: .omitted, time: .standard))",
-                        delay: 0.5
-                    )
-                }
-
-                // Request background time for processing
-                var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
-                backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "ProcessWorkout") {
-                    logger.warning("⚠️ Workout background task expired")
-                    UIApplication.shared.endBackgroundTask(backgroundTaskID)
-                    backgroundTaskID = .invalid
-                }
-
-                Task { [weak self] in
-                    await self?.handleWorkoutUpdate()
-                    completionHandler()
-
-                    if backgroundTaskID != .invalid {
-                        await MainActor.run {
-                            UIApplication.shared.endBackgroundTask(backgroundTaskID)
-                        }
-                    }
-                }
-            }
+        do {
+            try await healthStore.enableBackgroundDelivery(for: workoutType, frequency: .immediate)
+            logger.info("✅ Workout background delivery enabled")
+        } catch {
+            logger.error("❌ Failed to enable workout background delivery: \(error.localizedDescription)")
+            #if DEBUG
+            await sendTestNotification(title: "Background Delivery Failed", body: "Workouts: \(error.localizedDescription)")
+            #endif
         }
 
-        if let query = workoutObserverQuery {
-            healthStore.execute(query)
-            logger.info("✅ Workout observer executing")
+        if let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) {
+            do {
+                try await healthStore.enableBackgroundDelivery(for: weightType, frequency: .immediate)
+                logger.info("✅ Weight background delivery enabled")
+            } catch {
+                logger.error("❌ Failed to enable weight background delivery: \(error.localizedDescription)")
+                #if DEBUG
+                await sendTestNotification(title: "Background Delivery Failed", body: "Weight: \(error.localizedDescription)")
+                #endif
+            }
         }
     }
 
-    private func startWeightObserver() {
+    /// Observes workout updates using AsyncStream.
+    private func observeWorkouts() async {
+        let workoutType = HKObjectType.workoutType()
+
+        let stream = HKObserverQuery.stream(
+            sampleType: workoutType,
+            predicate: nil,
+            healthStore: healthStore
+        )
+
+        for await _ in stream {
+            logger.info("🔔 Workout observer fired!")
+
+            #if DEBUG
+            await sendTestNotification(title: "🧪 Workout Observer", body: "Fired at \(Date().formatted(date: .omitted, time: .standard))")
+            #endif
+
+            await handleWorkoutUpdate()
+        }
+    }
+
+    /// Observes weight updates using AsyncStream.
+    private func observeWeight() async {
         guard let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
             logger.error("❌ Could not get weight type")
             return
         }
 
-        logger.info("👀 Starting weight observer query...")
-
-        weightObserverQuery = HKObserverQuery(
+        let stream = HKObserverQuery.stream(
             sampleType: weightType,
-            predicate: nil
-        ) { [weak self] _, completionHandler, error in
-            if let error {
-                logger.error("❌ Weight observer error: \(error.localizedDescription)")
-                completionHandler()
-                return
-            }
+            predicate: nil,
+            healthStore: healthStore
+        )
 
+        for await _ in stream {
             logger.info("🔔 Weight observer fired!")
 
-            // All UI API calls must happen on main thread
-            DispatchQueue.main.async {
-                // Test notification to verify observer is firing
-                Task {
-                    await NotificationService.shared.scheduleNotification(
-                        title: "🧪 Weight Observer",
-                        body: "Observer fired at \(Date().formatted(date: .omitted, time: .standard))",
-                        delay: 0.5
-                    )
-                }
+            #if DEBUG
+            await sendTestNotification(title: "🧪 Weight Observer", body: "Fired at \(Date().formatted(date: .omitted, time: .standard))")
+            #endif
 
-                // Request background time for processing
-                var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
-                backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "ProcessWeight") {
-                    logger.warning("⚠️ Weight background task expired")
-                    UIApplication.shared.endBackgroundTask(backgroundTaskID)
-                    backgroundTaskID = .invalid
-                }
-
-                Task { [weak self] in
-                    await self?.handleWeightUpdate()
-                    completionHandler()
-
-                    if backgroundTaskID != .invalid {
-                        await MainActor.run {
-                            UIApplication.shared.endBackgroundTask(backgroundTaskID)
-                        }
-                    }
-                }
-            }
-        }
-
-        if let query = weightObserverQuery {
-            healthStore.execute(query)
-            logger.info("✅ Weight observer executing")
+            await handleWeightUpdate()
         }
     }
 
+    /// Fetches the most recent workout and notifies callback.
     private func handleWorkoutUpdate() async {
         logger.info("🔄 Handling workout update...")
 
@@ -219,6 +150,7 @@ final class HealthObserver {
         await onWorkoutDetected?(workout)
     }
 
+    /// Fetches the most recent weight entry and notifies callback.
     private func handleWeightUpdate() async {
         logger.info("🔄 Handling weight update...")
 
@@ -268,4 +200,15 @@ final class HealthObserver {
         logger.info("✅ Found weight entry: \(entry.formattedWeight) - \(entry.id)")
         await onWeightDetected?(entry)
     }
+
+    #if DEBUG
+    /// Sends a test notification for debugging.
+    private func sendTestNotification(title: String, body: String) async {
+        await NotificationService.shared.scheduleNotification(
+            title: title,
+            body: body,
+            delay: 0.5
+        )
+    }
+    #endif
 }
