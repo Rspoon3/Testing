@@ -5,6 +5,37 @@ private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "Healt
 private let debugLogger = DebugLogger.shared
 
 /// Observes HealthKit for new workout completions and weight entries.
+///
+/// This class uses `HKObserverQuery` to monitor HealthKit for changes, enabling the app
+/// to be woken in the background when new data is available.
+///
+/// ## Background Delivery Requirements
+///
+/// For background delivery to work correctly, the `HKObserverQuery` completion handler
+/// must be called **after** all processing is complete. Calling it prematurely signals
+/// to iOS that the app is done with its work, allowing the system to suspend the app
+/// before processing finishes.
+///
+/// ### Correct Pattern
+/// ```swift
+/// HKObserverQuery(sampleType: type, predicate: nil) { _, completionHandler, _ in
+///     Task {
+///         await self.processData()
+///         completionHandler()  // Called AFTER work completes
+///     }
+/// }
+/// ```
+///
+/// ### Incorrect Pattern (causes issues on iOS 26+)
+/// ```swift
+/// HKObserverQuery(sampleType: type, predicate: nil) { _, completionHandler, _ in
+///     completionHandler()  // Called immediately - app may suspend before work completes
+///     Task { await self.processData() }
+/// }
+/// ```
+///
+/// - Note: iOS 26 is more aggressive about suspending apps after `completionHandler()` is called.
+///   Always ensure all async work completes before calling the completion handler.
 final class HealthObserver {
     private let healthStore: HKHealthStore
     private var workoutQuery: HKObserverQuery?
@@ -63,8 +94,11 @@ final class HealthObserver {
         }
     }
 
-    /// Observes workout updates using HKObserverQuery.
-    /// The completion handler is called AFTER work completes to ensure background delivery works correctly.
+    /// Starts observing workout updates using `HKObserverQuery`.
+    ///
+    /// The query runs indefinitely and fires whenever HealthKit detects new workout data.
+    /// The completion handler is intentionally called **after** `handleWorkoutUpdate()` completes
+    /// to ensure all background work finishes before iOS suspends the app.
     private func observeWorkouts() {
         debugLogger.log("Workout observer starting...", category: .observer)
         let workoutType = HKObjectType.workoutType()
@@ -97,8 +131,11 @@ final class HealthObserver {
         }
     }
 
-    /// Observes weight updates using HKObserverQuery.
-    /// The completion handler is called AFTER work completes to ensure background delivery works correctly.
+    /// Starts observing weight updates using `HKObserverQuery`.
+    ///
+    /// The query runs indefinitely and fires whenever HealthKit detects new weight data.
+    /// The completion handler is intentionally called **after** `handleWeightUpdate()` completes
+    /// to ensure all background work finishes before iOS suspends the app.
     private func observeWeight() {
         debugLogger.log("Weight observer starting...", category: .observer)
         guard let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
