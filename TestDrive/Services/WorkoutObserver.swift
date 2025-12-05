@@ -7,6 +7,8 @@ private let debugLogger = DebugLogger.shared
 /// Observes HealthKit for new workout completions and weight entries.
 final class HealthObserver {
     private let healthStore: HKHealthStore
+    private var workoutQuery: HKObserverQuery?
+    private var weightQuery: HKObserverQuery?
 
     /// Callback invoked when new workouts are detected.
     var onWorkoutDetected: ((HKWorkout) async -> Void)?
@@ -30,10 +32,8 @@ final class HealthObserver {
 
         debugLogger.log("Background delivery enabled, starting workout and weight observers", category: .observer)
 
-        // Run both observers concurrently (they use infinite AsyncStreams)
-        async let workoutTask: () = observeWorkouts()
-        async let weightTask: () = observeWeight()
-        _ = await (workoutTask, weightTask)
+        observeWorkouts()
+        observeWeight()
     }
 
     // MARK: - Private Helpers
@@ -63,43 +63,75 @@ final class HealthObserver {
         }
     }
 
-    /// Observes workout updates using AsyncStream.
-    private func observeWorkouts() async {
-        debugLogger.log("Workout observer stream starting...", category: .observer)
+    /// Observes workout updates using HKObserverQuery.
+    /// The completion handler is called AFTER work completes to ensure background delivery works correctly.
+    private func observeWorkouts() {
+        debugLogger.log("Workout observer starting...", category: .observer)
         let workoutType = HKObjectType.workoutType()
 
-        let stream = HKObserverQuery.stream(
-            sampleType: workoutType,
-            predicate: nil,
-            healthStore: healthStore
-        )
+        workoutQuery = HKObserverQuery(sampleType: workoutType, predicate: nil) { [weak self] _, completionHandler, error in
+            guard let self else {
+                completionHandler()
+                return
+            }
 
-        for await _ in stream {
+            if let error {
+                logger.error("❌ Workout observer error: \(error.localizedDescription)")
+                debugLogger.log("Workout observer error: \(error.localizedDescription)", category: .error)
+                completionHandler()
+                return
+            }
+
             logger.info("🔔 Workout observer fired!")
             debugLogger.log("WORKOUT OBSERVER FIRED - Query callback received", category: .workout)
-            await handleWorkoutUpdate()
+
+            Task {
+                await self.handleWorkoutUpdate()
+                completionHandler()
+            }
+        }
+
+        if let workoutQuery {
+            healthStore.execute(workoutQuery)
+            debugLogger.log("Workout observer query executed", category: .observer)
         }
     }
 
-    /// Observes weight updates using AsyncStream.
-    private func observeWeight() async {
-        debugLogger.log("Weight observer stream starting...", category: .observer)
+    /// Observes weight updates using HKObserverQuery.
+    /// The completion handler is called AFTER work completes to ensure background delivery works correctly.
+    private func observeWeight() {
+        debugLogger.log("Weight observer starting...", category: .observer)
         guard let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
             logger.error("❌ Could not get weight type")
             debugLogger.log("FAILED to get weight type for observer", category: .error)
             return
         }
 
-        let stream = HKObserverQuery.stream(
-            sampleType: weightType,
-            predicate: nil,
-            healthStore: healthStore
-        )
+        weightQuery = HKObserverQuery(sampleType: weightType, predicate: nil) { [weak self] _, completionHandler, error in
+            guard let self else {
+                completionHandler()
+                return
+            }
 
-        for await _ in stream {
+            if let error {
+                logger.error("❌ Weight observer error: \(error.localizedDescription)")
+                debugLogger.log("Weight observer error: \(error.localizedDescription)", category: .error)
+                completionHandler()
+                return
+            }
+
             logger.info("🔔 Weight observer fired!")
             debugLogger.log("WEIGHT OBSERVER FIRED - Query callback received", category: .weight)
-            await handleWeightUpdate()
+
+            Task {
+                await self.handleWeightUpdate()
+                completionHandler()
+            }
+        }
+
+        if let weightQuery {
+            healthStore.execute(weightQuery)
+            debugLogger.log("Weight observer query executed", category: .observer)
         }
     }
 
