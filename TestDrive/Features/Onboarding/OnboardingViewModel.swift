@@ -6,7 +6,7 @@ final class OnboardingViewModel {
     var selectedAttitudes: Set<Attitude> = []
 
     private let healthKitService = HealthKitService()
-    private let notificationService = NotificationService()
+    private let notificationService = NotificationService.shared
     private let userPreferences = UserPreferences.shared
 
     /// Whether at least one attitude is selected.

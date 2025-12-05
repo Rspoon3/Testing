@@ -3,13 +3,15 @@ import SFSymbols
 
 /// Main screen showing the user's workout history.
 struct WorkoutListView: View {
+    @Bindable var coordinator: AppCoordinator
     @State private var viewModel = WorkoutListViewModel()
     @State private var showSettings = false
+    @State private var navigationPath = NavigationPath()
 
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             Group {
                 if viewModel.isLoading {
                     ProgressView("Loading workouts...")
@@ -40,6 +42,12 @@ struct WorkoutListView: View {
             .refreshable {
                 await viewModel.fetchWorkouts()
             }
+            .onChange(of: coordinator.selectedWorkoutMessage) { _, newValue in
+                if let message = newValue {
+                    navigationPath.append(message)
+                    coordinator.selectedWorkoutMessage = nil
+                }
+            }
         }
     }
 
@@ -47,12 +55,28 @@ struct WorkoutListView: View {
 
     private var workoutList: some View {
         List(viewModel.workouts, id: \.uuid) { workout in
-            WorkoutRowView(
-                workout: workout,
-                formattedDuration: viewModel.formattedDuration(workout),
-                formattedCalories: viewModel.formattedCalories(workout),
-                formattedDate: viewModel.formattedDate(workout)
-            )
+            if let message = viewModel.message(for: workout) {
+                NavigationLink(value: message) {
+                    WorkoutRowView(
+                        workout: workout,
+                        formattedDuration: viewModel.formattedDuration(workout),
+                        formattedCalories: viewModel.formattedCalories(workout),
+                        formattedDate: viewModel.formattedDate(workout),
+                        hasMessage: true
+                    )
+                }
+            } else {
+                WorkoutRowView(
+                    workout: workout,
+                    formattedDuration: viewModel.formattedDuration(workout),
+                    formattedCalories: viewModel.formattedCalories(workout),
+                    formattedDate: viewModel.formattedDate(workout),
+                    hasMessage: false
+                )
+            }
+        }
+        .navigationDestination(for: WorkoutMessage.self) { message in
+            ChatView(workoutMessage: message)
         }
     }
 
@@ -74,5 +98,5 @@ struct WorkoutListView: View {
 }
 
 #Preview {
-    WorkoutListView()
+    WorkoutListView(coordinator: AppCoordinator())
 }

@@ -37,10 +37,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                 try await workoutObserver?.enableBackgroundDelivery()
                 logger.info("✅ Background delivery enabled")
 
-                // Mark the start time BEFORE starting to observe
-                // This ensures we only process workouts that complete after this point
-                BackgroundTaskService.shared.markObserverStarted()
-
                 workoutObserver?.startObserving()
                 logger.info("✅ Workout observer started")
 

@@ -8,6 +8,7 @@ struct WorkoutRowView: View {
     let formattedDuration: String
     let formattedCalories: String?
     let formattedDate: String
+    var hasMessage: Bool = false
 
     // MARK: - Body
 
@@ -16,8 +17,16 @@ struct WorkoutRowView: View {
             workoutIcon
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(workout.workoutActivityType.displayName)
-                    .font(.headline)
+                HStack(spacing: 6) {
+                    Text(workout.workoutActivityType.displayName)
+                        .font(.headline)
+
+                    if hasMessage {
+                        Image(symbol: .sparkles)
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
 
                 HStack(spacing: 12) {
                     Label(formattedDuration, symbol: .clock)

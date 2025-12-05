@@ -16,7 +16,7 @@ struct TestDriveApp: App {
         WindowGroup {
             Group {
                 if coordinator.hasCompletedOnboarding {
-                    WorkoutListView()
+                    WorkoutListView(coordinator: coordinator)
                 } else {
                     OnboardingView {
                         coordinator.completeOnboarding()
@@ -24,6 +24,11 @@ struct TestDriveApp: App {
                 }
             }
             .animation(.easeInOut, value: coordinator.hasCompletedOnboarding)
+            .onAppear {
+                NotificationService.shared.onNotificationTapped = { workoutID in
+                    coordinator.navigateToWorkout(workoutID: workoutID)
+                }
+            }
         }
     }
 }

@@ -5,11 +5,17 @@ private let logger = Logger(subsystem: "com.rspoon3.TestDrive", category: "Notif
 
 /// Service for managing local notifications.
 final class NotificationService: NSObject {
+    static let shared = NotificationService()
+    static let workoutIDKey = "workoutID"
+
     private let center = UNUserNotificationCenter.current()
+
+    /// Callback when a notification is tapped with a workout ID.
+    var onNotificationTapped: ((String) -> Void)?
 
     // MARK: - Initializer
 
-    override init() {
+    private override init() {
         super.init()
         center.delegate = self
     }
@@ -45,10 +51,12 @@ final class NotificationService: NSObject {
     /// - Parameters:
     ///   - title: The notification title.
     ///   - body: The notification body text.
+    ///   - workoutID: Optional workout ID for deep linking.
     ///   - delay: Seconds to wait before showing (default: 1).
     func scheduleNotification(
         title: String,
         body: String,
+        workoutID: String? = nil,
         delay: TimeInterval = 1
     ) async {
         logger.info("📝 Scheduling notification - Title: \(title)")
@@ -57,6 +65,10 @@ final class NotificationService: NSObject {
         content.title = title
         content.body = body
         content.sound = .default
+
+        if let workoutID {
+            content.userInfo = [Self.workoutIDKey: workoutID]
+        }
 
         let trigger = UNTimeIntervalNotificationTrigger(
             timeInterval: delay,
@@ -94,6 +106,13 @@ extension NotificationService: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
+        let userInfo = response.notification.request.content.userInfo
+
+        if let workoutID = userInfo[Self.workoutIDKey] as? String {
+            logger.info("📲 Notification tapped for workout: \(workoutID)")
+            onNotificationTapped?(workoutID)
+        }
+
         completionHandler()
     }
 }

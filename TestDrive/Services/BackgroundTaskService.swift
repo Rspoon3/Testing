@@ -11,24 +11,14 @@ final class BackgroundTaskService {
 
     private let healthKitService = HealthKitService()
     private let chatGPTService = ChatGPTService()
-    private let notificationService = NotificationService()
+    private let notificationService = NotificationService.shared
     private let processedWorkoutsStore = ProcessedWorkoutsStore()
+    private let messageStore = WorkoutMessageStore.shared
     private let userPreferences = UserPreferences.shared
-
-    /// Timestamp when the observer started - only process workouts after this time
-    private var observerStartTime: Date?
 
     // MARK: - Initializer
 
     private init() {}
-
-    // MARK: - Public Helpers
-
-    /// Marks the observer as started. Workouts before this time will be ignored.
-    func markObserverStarted() {
-        observerStartTime = Date()
-        logger.info("⏱️ Observer start time set: \(self.observerStartTime!)")
-    }
 
     /// Registers the background task handler. Call in AppDelegate.
     func registerBackgroundTask() {
@@ -61,14 +51,6 @@ final class BackgroundTaskService {
         let workoutID = workout.uuid.uuidString
         logger.info("🏃 Processing workout: \(workoutID)")
 
-        // Only process workouts that ended after we started observing
-        if let startTime = observerStartTime {
-            guard workout.endDate > startTime else {
-                logger.info("⏭️ Workout ended before observer started, skipping (ended: \(workout.endDate), observer started: \(startTime))")
-                return
-            }
-        }
-
         guard !processedWorkoutsStore.isProcessed(workoutID) else {
             logger.info("⏭️ Workout already processed, skipping")
             return
@@ -88,10 +70,26 @@ final class BackgroundTaskService {
             let message = try await chatGPTService.generateMessage(for: workout, attitude: attitude)
             logger.info("✅ Got message: \(message)")
 
+            // Save the message
+            let workoutMessage = WorkoutMessage(
+                workoutID: workoutID,
+                activityType: String(workout.workoutActivityType.rawValue),
+                activityName: workout.workoutActivityType.displayName,
+                duration: workout.duration,
+                calories: workout.totalEnergyBurned?.doubleValue(for: .kilocalorie()) ?? 0,
+                distance: workout.totalDistance?.doubleValue(for: .mile()) ?? 0,
+                message: message,
+                attitude: attitude.rawValue,
+                workoutDate: workout.endDate
+            )
+            messageStore.save(workoutMessage)
+            logger.info("💾 Message saved")
+
             logger.info("🔔 Scheduling notification...")
             await notificationService.scheduleNotification(
                 title: "Workout Complete!",
-                body: message
+                body: message,
+                workoutID: workoutID
             )
             logger.info("✅ Notification scheduled")
 

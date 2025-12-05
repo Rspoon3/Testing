@@ -8,6 +8,7 @@ final class WorkoutListViewModel {
     var errorMessage: String?
 
     private let healthKitService = HealthKitService()
+    private let messageStore = WorkoutMessageStore.shared
 
     // MARK: - Public Helpers
 
@@ -67,5 +68,19 @@ final class WorkoutListViewModel {
         }
 
         return formatter.string(from: workout.startDate)
+    }
+
+    /// Checks if a workout has a saved message.
+    /// - Parameter workout: The workout to check.
+    /// - Returns: Whether a message exists for this workout.
+    func hasMessage(for workout: HKWorkout) -> Bool {
+        messageStore.message(forWorkoutID: workout.uuid.uuidString) != nil
+    }
+
+    /// Gets the saved message for a workout.
+    /// - Parameter workout: The workout.
+    /// - Returns: The message if one exists.
+    func message(for workout: HKWorkout) -> WorkoutMessage? {
+        messageStore.message(forWorkoutID: workout.uuid.uuidString)
     }
 }
