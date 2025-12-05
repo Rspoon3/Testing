@@ -30,7 +30,6 @@ final class HealthObserver {
 
         debugLogger.log("Background delivery enabled, starting workout and weight observers", category: .observer)
 
-        // Run both observers concurrently (they use infinite AsyncStreams)
         async let workoutTask: () = observeWorkouts()
         async let weightTask: () = observeWeight()
         _ = await (workoutTask, weightTask)
@@ -74,10 +73,11 @@ final class HealthObserver {
             healthStore: healthStore
         )
 
-        for await _ in stream {
+        for await completion in stream {
             logger.info("🔔 Workout observer fired!")
             debugLogger.log("WORKOUT OBSERVER FIRED - Query callback received", category: .workout)
             await handleWorkoutUpdate()
+            completion()
         }
     }
 
@@ -96,10 +96,11 @@ final class HealthObserver {
             healthStore: healthStore
         )
 
-        for await _ in stream {
+        for await completion in stream {
             logger.info("🔔 Weight observer fired!")
             debugLogger.log("WEIGHT OBSERVER FIRED - Query callback received", category: .weight)
             await handleWeightUpdate()
+            completion()
         }
     }
 
