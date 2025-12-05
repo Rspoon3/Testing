@@ -66,30 +66,63 @@ final class ChatGPTService {
     /// Generates a personalized message for a workout.
     /// - Parameters:
     ///   - workout: The completed workout.
+    ///   - stats: The user's workout statistics for today, weekly, and monthly.
     ///   - attitude: The user's selected attitude tone.
     /// - Returns: A personalized message string.
     /// - Throws: ChatGPTError if the API call fails.
-    func generateMessage(for workout: HKWorkout, attitude: Attitude) async throws -> String {
-        try await fetchFromAPI(workout: workout, attitude: attitude)
+    func generateMessage(
+        for workout: HKWorkout,
+        stats: WorkoutStats,
+        attitude: Attitude
+    ) async throws -> String {
+        try await fetchFromAPI(workout: workout, stats: stats, attitude: attitude)
     }
 
     // MARK: - Private Helpers
 
-    private func fetchFromAPI(workout: HKWorkout, attitude: Attitude) async throws -> String {
+    private func fetchFromAPI(
+        workout: HKWorkout,
+        stats: WorkoutStats,
+        attitude: Attitude
+    ) async throws -> String {
         let systemPrompt = """
-        You are a health buddy. Your job is to comment on a person's recent fitness activity. \
-        Based on the attitude parameter, vary your response. Keep responses under 2 sentences. \
-        Be conversational and natural.
+        You are a health buddy. Your job is to comment on a person's recent fitness activity.
+
+        Based on the attitude parameter, vary your response:
+        - neutral: Matter-of-fact, informative
+        - sarcastic: Playfully teasing, witty
+        - funny: Humorous, lighthearted jokes
+        - cute: Sweet, encouraging with enthusiasm
+        - encouraging: Motivational, supportive
+        - coaching: Professional trainer vibe, constructive feedback
+
+        You will receive the current workout details, today's activity, and 30-day statistics (with min/max/avg). Use this data to provide context:
+        - If they've done multiple workouts today, acknowledge their dedication or hustle
+        - If this workout's metrics are near their personal best (max), celebrate it
+        - If this workout is significantly below their average or near their minimum, gently mention it (adjust tone based on attitude)
+        - Reference their monthly totals to show progress awareness
+
+        Keep responses under 2-3 sentences. Be conversational and natural. Don't list statistics back - weave insights naturally into your message.
         """
 
         let workoutDetails = formatWorkoutDetails(workout)
+        let comparison = formatComparison(workout: workout, stats: stats)
+        let statsContext = stats.formatForPrompt()
+
         logger.info("📋 Workout details: \(workoutDetails)")
+        logger.info("📊 Stats context: \(statsContext)")
 
         let userPrompt = """
         Attitude: \(attitude.rawValue)
-        Workout: \(workoutDetails)
 
-        Generate a short, personalized message about this workout completion.
+        Current Workout:
+        \(workoutDetails)
+
+        \(statsContext)
+
+        \(comparison)
+
+        Generate a personalized message about this workout.
         """
 
         let request = ChatGPTRequest(
@@ -98,7 +131,7 @@ final class ChatGPTService {
                 .init(role: "system", content: systemPrompt),
                 .init(role: "user", content: userPrompt)
             ],
-            maxTokens: 100
+            maxTokens: 200
         )
 
         var urlRequest = URLRequest(url: baseURL)
@@ -159,5 +192,53 @@ final class ChatGPTService {
         }
 
         return details
+    }
+
+    private func formatComparison(workout: HKWorkout, stats: WorkoutStats) -> String {
+        guard let typeStats = stats.monthlyStats(for: workout.workoutActivityType) else {
+            return "This is their first \(workout.workoutActivityType.displayName) workout in the last 30 days!"
+        }
+
+        let calories = workout.totalEnergyBurned?.doubleValue(for: .kilocalorie()) ?? 0
+        let distance = workout.totalDistance?.doubleValue(for: .mile()) ?? 0
+        let duration = workout.duration / 60
+
+        var comparisons: [String] = []
+
+        // Compare calories
+        if typeStats.averageCalories > 0 && calories > 0 {
+            let calorieDiff = ((calories - typeStats.averageCalories) / typeStats.averageCalories) * 100
+            if calorieDiff < -20 {
+                comparisons.append("Calories are \(Int(abs(calorieDiff)))% below your average")
+            } else if calorieDiff > 20 {
+                comparisons.append("Calories are \(Int(calorieDiff))% above your average")
+            }
+        }
+
+        // Compare distance
+        if typeStats.averageDistance > 0 && distance > 0 {
+            let distanceDiff = ((distance - typeStats.averageDistance) / typeStats.averageDistance) * 100
+            if distanceDiff < -20 {
+                comparisons.append("Distance is \(Int(abs(distanceDiff)))% below your average")
+            } else if distanceDiff > 20 {
+                comparisons.append("Distance is \(Int(distanceDiff))% above your average")
+            }
+        }
+
+        // Compare duration
+        if typeStats.averageDuration > 0 {
+            let durationDiff = ((duration - typeStats.averageDuration) / typeStats.averageDuration) * 100
+            if durationDiff < -20 {
+                comparisons.append("Duration is \(Int(abs(durationDiff)))% below your average")
+            } else if durationDiff > 20 {
+                comparisons.append("Duration is \(Int(durationDiff))% above your average")
+            }
+        }
+
+        if comparisons.isEmpty {
+            return "This workout is right around your typical \(workout.workoutActivityType.displayName) performance."
+        }
+
+        return "Comparison to your averages: " + comparisons.joined(separator: ". ") + "."
     }
 }

@@ -111,4 +111,53 @@ final class HealthKitService {
     var store: HKHealthStore {
         healthStore
     }
+
+    /// Fetches workout statistics for today, last 7 days, and last 30 days.
+    /// - Returns: WorkoutStats containing aggregated data for all periods.
+    func fetchWorkoutStats() async throws -> WorkoutStats {
+        let workoutType = HKObjectType.workoutType()
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Get last 30 days of workouts (includes today and weekly)
+        let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: now)!
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: thirtyDaysAgo,
+            end: now,
+            options: .strictStartDate
+        )
+
+        let allWorkouts: [HKWorkout] = try await withCheckedThrowingContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: workoutType,
+                predicate: predicate,
+                limit: HKObjectQueryNoLimit,
+                sortDescriptors: nil
+            ) { _, samples, error in
+                if let error {
+                    continuation.resume(throwing: HealthKitError.queryFailed(error))
+                    return
+                }
+
+                let workouts = (samples as? [HKWorkout]) ?? []
+                continuation.resume(returning: workouts)
+            }
+
+            healthStore.execute(query)
+        }
+
+        // Filter workouts by period
+        let startOfToday = calendar.startOfDay(for: now)
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: now)!
+
+        let todayWorkouts = allWorkouts.filter { $0.startDate >= startOfToday }
+        let weeklyWorkouts = allWorkouts.filter { $0.startDate >= sevenDaysAgo }
+
+        return WorkoutStats(
+            today: PeriodWorkoutStats.from(workouts: todayWorkouts, period: .today),
+            weekly: PeriodWorkoutStats.from(workouts: weeklyWorkouts, period: .week),
+            monthly: PeriodWorkoutStats.from(workouts: allWorkouts, period: .month)
+        )
+    }
 }

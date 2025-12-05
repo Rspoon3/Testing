@@ -66,8 +66,17 @@ final class BackgroundTaskService {
         logger.info("🎭 Using attitude: \(attitude.rawValue)")
 
         do {
+            // Fetch workout stats for context
+            logger.info("📊 Fetching workout stats...")
+            let stats = try await healthKitService.fetchWorkoutStats()
+            logger.info("📊 Stats: \(stats.today.totalWorkouts) today, \(stats.weekly.totalWorkouts) this week, \(stats.monthly.totalWorkouts) this month")
+
             logger.info("🤖 Calling ChatGPT...")
-            let message = try await chatGPTService.generateMessage(for: workout, attitude: attitude)
+            let message = try await chatGPTService.generateMessage(
+                for: workout,
+                stats: stats,
+                attitude: attitude
+            )
             logger.info("✅ Got message: \(message)")
 
             // Save the message
