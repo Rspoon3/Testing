@@ -197,7 +197,7 @@ final class ChatGPTService {
         - mean: Brutally honest, roast them, tough love with bite
 
         You will receive:
-        - Current time (use for time-appropriate greetings like "early bird!" or "late night workout!")
+        - Workout time (when the workout started - use for time-appropriate greetings like "early bird!" or "late night workout!")
         - User profile (age, sex, height, weight - use to personalize if relevant)
         - Last workout date (when they last exercised before this workout)
         - Current workout details (type, duration, start/end times, calories, distance)
@@ -206,7 +206,7 @@ final class ChatGPTService {
         - Today's, weekly, and monthly statistics (with min/max/avg)
 
         Use this data to provide context:
-        - Consider the time of day (early morning, late night, lunch break, etc.)
+        - Consider the time of day the workout occurred (early morning, late night, lunch break, etc.)
         - Reference how long it's been since their last workout (e.g., "back at it after 3 days!" or "two days in a row!")
         - If it's been more than a few days, welcome them back; if it's consecutive days, celebrate their streak
         - Comment on their heart rate if notable (high intensity, staying in zone, etc.)
@@ -223,7 +223,7 @@ final class ChatGPTService {
         let comparison = formatComparison(workout: workout, stats: stats)
         let statsContext = stats.formatForPrompt()
         let profileContext = userProfile.formatForPrompt()
-        let currentTime = formatCurrentTime()
+        let workoutTime = formatTime(workout.startDate, label: "Workout time")
         let lastWorkoutContext = formatLastWorkoutDate(lastWorkoutDate)
         let heartRateContext = heartRate.formatForPrompt()
         let streakContext = formatStreak(streak)
@@ -231,7 +231,7 @@ final class ChatGPTService {
         logger.info("📋 Workout details: \(workoutDetails)")
         logger.info("📊 Stats context: \(statsContext)")
         logger.info("👤 Profile: \(profileContext)")
-        logger.info("🕐 Time: \(currentTime)")
+        logger.info("🕐 Time: \(workoutTime)")
         logger.info("📅 Last workout: \(lastWorkoutContext)")
         logger.info("💓 Heart rate: \(heartRateContext)")
         logger.info("🔥 Streak: \(streakContext)")
@@ -241,7 +241,7 @@ final class ChatGPTService {
         let userPrompt = """
         Attitudes: \(attitudesString)
 
-        \(currentTime)
+        \(workoutTime)
 
         \(profileContext)
 
@@ -333,9 +333,9 @@ final class ChatGPTService {
         - mean: Brutally honest, roast them, tough love with bite
 
         You will receive:
-        - Current time
+        - Weight recorded time (when the weight was logged - use for time-appropriate context)
         - User profile (age, sex, height - use to personalize if relevant)
-        - New weight entry with date
+        - New weight entry
         - Weight statistics for the last 30 days (all entries, min/max/avg, changes)
         - Fitness context (workout stats, current streak)
 
@@ -351,15 +351,11 @@ final class ChatGPTService {
         Keep responses under 2-5 sentences. Be conversational and natural. Don't list statistics back - weave insights naturally into your message.
         """
 
-        let currentTime = formatCurrentTime()
+        let weightTime = formatTime(weightEntry.date, label: "Weight recorded")
         let profileContext = userProfile.formatForPrompt()
         let weightContext = weightStats.formatForPrompt()
         let workoutContext = workoutStats.formatForPrompt()
         let streakContext = formatStreak(streak)
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d, yyyy 'at' h:mm a"
-        let entryDateString = formatter.string(from: weightEntry.date)
 
         logger.info("⚖️ Weight entry: \(weightEntry.formattedWeight)")
         logger.info("📊 Weight stats: \(weightContext)")
@@ -372,7 +368,7 @@ final class ChatGPTService {
         let userPrompt = """
         Attitudes: \(attitudesString)
 
-        \(currentTime)
+        \(weightTime)
 
         \(profileContext)
 
@@ -380,7 +376,6 @@ final class ChatGPTService {
 
         New Weight Entry:
         Weight: \(weightEntry.formattedWeight)
-        Recorded: \(entryDateString)
 
         Weight History (Last 30 Days):
         \(weightContext)
@@ -475,10 +470,10 @@ final class ChatGPTService {
         }
     }
 
-    private func formatCurrentTime() -> String {
+    private func formatTime(_ date: Date, label: String = "Time") -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMMM d, yyyy 'at' h:mm a"
-        return "Current time: \(formatter.string(from: Date()))"
+        return "\(label): \(formatter.string(from: date))"
     }
 
     private func formatLastWorkoutDate(_ lastWorkoutDate: Date?) -> String {
@@ -576,7 +571,7 @@ final class ChatGPTService {
         Keep responses to 2-3 sentences max. Be conversational and natural.
         """
 
-        let currentTime = formatCurrentTime()
+        let currentTime = formatTime(Date(), label: "Current time")
         let profileContext = userProfile.formatForPrompt()
         let workoutContext = workoutStats.formatForPrompt()
         let weightContext = weightStats.formatForPrompt()
@@ -646,7 +641,7 @@ final class ChatGPTService {
         Keep responses to 2-3 sentences max. Be conversational and natural.
         """
 
-        let currentTime = formatCurrentTime()
+        let currentTime = formatTime(Date(), label: "Current time")
         let profileContext = userProfile.formatForPrompt()
         let workoutContext = workoutStats.formatForPrompt()
         let weightContext = weightStats.formatForPrompt()
