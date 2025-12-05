@@ -28,13 +28,29 @@ final class HealthKitService {
 
     // MARK: - Public Helpers
 
-    /// Requests authorization to read workout data.
+    /// Requests authorization to read workout and profile data.
     func requestAuthorization() async throws {
         guard HKHealthStore.isHealthDataAvailable() else {
             throw HealthKitError.notAvailable
         }
 
-        let typesToRead: Set<HKObjectType> = [HKObjectType.workoutType()]
+        var typesToRead: Set<HKObjectType> = [HKObjectType.workoutType()]
+
+        // Add characteristic types
+        if let biologicalSex = HKObjectType.characteristicType(forIdentifier: .biologicalSex) {
+            typesToRead.insert(biologicalSex)
+        }
+        if let dateOfBirth = HKObjectType.characteristicType(forIdentifier: .dateOfBirth) {
+            typesToRead.insert(dateOfBirth)
+        }
+
+        // Add quantity types for weight and height
+        if let weight = HKObjectType.quantityType(forIdentifier: .bodyMass) {
+            typesToRead.insert(weight)
+        }
+        if let height = HKObjectType.quantityType(forIdentifier: .height) {
+            typesToRead.insert(height)
+        }
 
         try await healthStore.requestAuthorization(toShare: [], read: typesToRead)
         isAuthorized = true
@@ -110,6 +126,69 @@ final class HealthKitService {
     /// Returns the underlying HKHealthStore for observer queries.
     var store: HKHealthStore {
         healthStore
+    }
+
+    /// Fetches the user's profile data from HealthKit.
+    /// - Returns: UserProfile with available data.
+    func fetchUserProfile() async -> UserProfile {
+        // Get age from date of birth
+        var age: Int?
+        if let dateOfBirth = try? healthStore.dateOfBirthComponents().date {
+            age = Calendar.current.dateComponents([.year], from: dateOfBirth, to: Date()).year
+        }
+
+        // Get biological sex
+        var biologicalSex: HKBiologicalSex?
+        if let sex = try? healthStore.biologicalSex().biologicalSex {
+            biologicalSex = sex
+        }
+
+        // Get most recent weight
+        let weight = await fetchMostRecentQuantity(for: .bodyMass, unit: .pound())
+
+        // Get most recent height
+        let height = await fetchMostRecentQuantity(for: .height, unit: .inch())
+
+        return UserProfile(
+            age: age,
+            biologicalSex: biologicalSex,
+            weightInPounds: weight,
+            heightInInches: height
+        )
+    }
+
+    // MARK: - Private Helpers
+
+    private func fetchMostRecentQuantity(
+        for identifier: HKQuantityTypeIdentifier,
+        unit: HKUnit
+    ) async -> Double? {
+        guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
+            return nil
+        }
+
+        let sortDescriptor = NSSortDescriptor(
+            key: HKSampleSortIdentifierStartDate,
+            ascending: false
+        )
+
+        return await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: quantityType,
+                predicate: nil,
+                limit: 1,
+                sortDescriptors: [sortDescriptor]
+            ) { _, samples, _ in
+                guard let sample = samples?.first as? HKQuantitySample else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+                let value = sample.quantity.doubleValue(for: unit)
+                continuation.resume(returning: value)
+            }
+
+            healthStore.execute(query)
+        }
     }
 
     /// Fetches workout statistics for today, last 7 days, and last 30 days.

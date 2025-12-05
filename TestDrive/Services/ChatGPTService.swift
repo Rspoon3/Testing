@@ -67,15 +67,17 @@ final class ChatGPTService {
     /// - Parameters:
     ///   - workout: The completed workout.
     ///   - stats: The user's workout statistics for today, weekly, and monthly.
+    ///   - userProfile: The user's profile data from HealthKit.
     ///   - attitude: The user's selected attitude tone.
     /// - Returns: A personalized message string.
     /// - Throws: ChatGPTError if the API call fails.
     func generateMessage(
         for workout: HKWorkout,
         stats: WorkoutStats,
+        userProfile: UserProfile,
         attitude: Attitude
     ) async throws -> String {
-        try await fetchFromAPI(workout: workout, stats: stats, attitude: attitude)
+        try await fetchFromAPI(workout: workout, stats: stats, userProfile: userProfile, attitude: attitude)
     }
 
     // MARK: - Private Helpers
@@ -83,6 +85,7 @@ final class ChatGPTService {
     private func fetchFromAPI(
         workout: HKWorkout,
         stats: WorkoutStats,
+        userProfile: UserProfile,
         attitude: Attitude
     ) async throws -> String {
         let systemPrompt = """
@@ -96,24 +99,39 @@ final class ChatGPTService {
         - encouraging: Motivational, supportive
         - coaching: Professional trainer vibe, constructive feedback
 
-        You will receive the current workout details, today's activity, and 30-day statistics (with min/max/avg). Use this data to provide context:
+        You will receive:
+        - Current time (use for time-appropriate greetings like "early bird!" or "late night workout!")
+        - User profile (age, sex, height, weight - use to personalize if relevant)
+        - Current workout details
+        - Today's, weekly, and monthly statistics (with min/max/avg)
+
+        Use this data to provide context:
+        - Consider the time of day (early morning, late night, lunch break, etc.)
         - If they've done multiple workouts today, acknowledge their dedication or hustle
         - If this workout's metrics are near their personal best (max), celebrate it
         - If this workout is significantly below their average or near their minimum, gently mention it (adjust tone based on attitude)
         - Reference their monthly totals to show progress awareness
 
-        Keep responses under 2-3 sentences. Be conversational and natural. Don't list statistics back - weave insights naturally into your message.
+        Keep responses under 2-5 sentences. Be conversational and natural. Don't list statistics back - weave insights naturally into your message.
         """
 
         let workoutDetails = formatWorkoutDetails(workout)
         let comparison = formatComparison(workout: workout, stats: stats)
         let statsContext = stats.formatForPrompt()
+        let profileContext = userProfile.formatForPrompt()
+        let currentTime = formatCurrentTime()
 
         logger.info("📋 Workout details: \(workoutDetails)")
         logger.info("📊 Stats context: \(statsContext)")
+        logger.info("👤 Profile: \(profileContext)")
+        logger.info("🕐 Time: \(currentTime)")
 
         let userPrompt = """
         Attitude: \(attitude.rawValue)
+
+        \(currentTime)
+
+        \(profileContext)
 
         Current Workout:
         \(workoutDetails)
@@ -192,6 +210,12 @@ final class ChatGPTService {
         }
 
         return details
+    }
+
+    private func formatCurrentTime() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d, yyyy 'at' h:mm a"
+        return "Current time: \(formatter.string(from: Date()))"
     }
 
     private func formatComparison(workout: HKWorkout, stats: WorkoutStats) -> String {

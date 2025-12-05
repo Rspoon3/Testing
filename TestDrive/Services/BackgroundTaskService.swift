@@ -71,10 +71,16 @@ final class BackgroundTaskService {
             let stats = try await healthKitService.fetchWorkoutStats()
             logger.info("📊 Stats: \(stats.today.totalWorkouts) today, \(stats.weekly.totalWorkouts) this week, \(stats.monthly.totalWorkouts) this month")
 
+            // Fetch user profile
+            logger.info("👤 Fetching user profile...")
+            let userProfile = await healthKitService.fetchUserProfile()
+            logger.info("👤 Profile: \(userProfile.formatForPrompt())")
+
             logger.info("🤖 Calling ChatGPT...")
             let message = try await chatGPTService.generateMessage(
                 for: workout,
                 stats: stats,
+                userProfile: userProfile,
                 attitude: attitude
             )
             logger.info("✅ Got message: \(message)")
