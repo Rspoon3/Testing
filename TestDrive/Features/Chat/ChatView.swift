@@ -55,6 +55,11 @@ struct ChatView: View {
 
                 Spacer()
             }
+
+            Text(workoutMessage.workoutID)
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .monospaced()
         }
         .padding()
         .background(Color(.secondarySystemGroupedBackground))

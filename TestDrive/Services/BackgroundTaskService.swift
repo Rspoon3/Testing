@@ -12,13 +12,33 @@ final class BackgroundTaskService {
     private let healthKitService = HealthKitService()
     private let chatGPTService = ChatGPTService()
     private let notificationService = NotificationService.shared
-    private let processedWorkoutsStore = ProcessedWorkoutsStore()
     private let messageStore = WorkoutMessageStore.shared
     private let userPreferences = UserPreferences.shared
 
     // MARK: - Initializer
 
     private init() {}
+
+    // MARK: - Public Helpers
+
+    /// Processes all recent workouts that haven't been processed yet.
+    /// - Parameter sendNotifications: Whether to send notifications for processed workouts.
+    func processAllRecentWorkouts(sendNotifications: Bool = false) async {
+        logger.info("📥 Fetching all recent workouts...")
+
+        do {
+            let workouts = try await healthKitService.fetchRecentWorkouts()
+            logger.info("📊 Found \(workouts.count) total workouts")
+
+            for workout in workouts {
+                await processWorkout(workout, sendNotification: sendNotifications)
+            }
+
+            logger.info("✅ Finished processing all workouts")
+        } catch {
+            logger.error("❌ Failed to fetch workouts: \(error.localizedDescription)")
+        }
+    }
 
     /// Registers the background task handler. Call in AppDelegate.
     func registerBackgroundTask() {
@@ -46,13 +66,15 @@ final class BackgroundTaskService {
     }
 
     /// Processes a new workout detected via observer query.
-    /// - Parameter workout: The detected workout.
-    func processWorkout(_ workout: HKWorkout) async {
+    /// - Parameters:
+    ///   - workout: The detected workout.
+    ///   - sendNotification: Whether to send a notification for this workout.
+    func processWorkout(_ workout: HKWorkout, sendNotification: Bool = true) async {
         let workoutID = workout.uuid.uuidString
         logger.info("🏃 Processing workout: \(workoutID)")
 
-        guard !processedWorkoutsStore.isProcessed(workoutID) else {
-            logger.info("⏭️ Workout already processed, skipping")
+        guard messageStore.message(forWorkoutID: workoutID) == nil else {
+            logger.info("⏭️ Workout already has a message, skipping")
             return
         }
 
@@ -76,11 +98,30 @@ final class BackgroundTaskService {
             let userProfile = await healthKitService.fetchUserProfile()
             logger.info("👤 Profile: \(userProfile.formatForPrompt())")
 
+            // Fetch previous workout date
+            logger.info("📅 Fetching previous workout...")
+            let previousWorkout = try? await healthKitService.fetchPreviousWorkout(before: workout)
+            let lastWorkoutDate = previousWorkout?.endDate
+            logger.info("📅 Previous workout: \(lastWorkoutDate?.description ?? "none")")
+
+            // Fetch heart rate data
+            logger.info("💓 Fetching heart rate...")
+            let heartRate = await healthKitService.fetchHeartRate(for: workout)
+            logger.info("💓 Heart rate: \(heartRate.formatForPrompt())")
+
+            // Fetch workout streak
+            logger.info("🔥 Fetching streak...")
+            let streak = await healthKitService.fetchWorkoutStreak()
+            logger.info("🔥 Streak: \(streak) days")
+
             logger.info("🤖 Calling ChatGPT...")
             let message = try await chatGPTService.generateMessage(
                 for: workout,
                 stats: stats,
                 userProfile: userProfile,
+                lastWorkoutDate: lastWorkoutDate,
+                heartRate: heartRate,
+                streak: streak,
                 attitude: attitude
             )
             logger.info("✅ Got message: \(message)")
@@ -100,16 +141,17 @@ final class BackgroundTaskService {
             messageStore.save(workoutMessage)
             logger.info("💾 Message saved")
 
-            logger.info("🔔 Scheduling notification...")
-            await notificationService.scheduleNotification(
-                title: "Workout Complete!",
-                body: message,
-                workoutID: workoutID
-            )
-            logger.info("✅ Notification scheduled")
-
-            processedWorkoutsStore.markAsProcessed(workoutID)
-            logger.info("✅ Workout marked as processed")
+            if sendNotification {
+                logger.info("🔔 Scheduling notification...")
+                await notificationService.scheduleNotification(
+                    title: "Workout Complete!",
+                    body: message,
+                    workoutID: workoutID
+                )
+                logger.info("✅ Notification scheduled")
+            } else {
+                logger.info("⏭️ Skipping notification (bulk processing)")
+            }
         } catch {
             logger.error("❌ ChatGPT API failed: \(error.localizedDescription)")
         }

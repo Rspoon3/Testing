@@ -4,16 +4,16 @@ import Foundation
 @Observable
 final class SettingsViewModel {
     var selectedAttitudes: Set<Attitude>
-    var processedWorkoutsCount: Int
+    var savedMessagesCount: Int
 
     private let userPreferences = UserPreferences.shared
-    private let processedWorkoutsStore = ProcessedWorkoutsStore()
+    private let messageStore = WorkoutMessageStore.shared
 
     // MARK: - Initializer
 
     init() {
         self.selectedAttitudes = userPreferences.selectedAttitudes
-        self.processedWorkoutsCount = ProcessedWorkoutsStore().count
+        self.savedMessagesCount = WorkoutMessageStore.shared.count
     }
 
     // MARK: - Public Helpers
@@ -44,9 +44,9 @@ final class SettingsViewModel {
         selectedAttitudes.contains(attitude)
     }
 
-    /// Clears all processed workout IDs. Use for testing.
-    func clearProcessedWorkouts() {
-        processedWorkoutsStore.clearAll()
-        processedWorkoutsCount = 0
+    /// Clears all saved messages. Use for testing.
+    func clearSavedMessages() {
+        messageStore.deleteAll()
+        savedMessagesCount = 0
     }
 }

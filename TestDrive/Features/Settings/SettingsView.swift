@@ -37,21 +37,21 @@ struct SettingsView: View {
 
                 Section {
                     HStack {
-                        Label("Processed Workouts", symbol: .checkmarkCircle)
+                        Label("Saved Messages", symbol: .bubbleLeftFill)
                         Spacer()
-                        Text("\(viewModel.processedWorkoutsCount)")
+                        Text("\(viewModel.savedMessagesCount)")
                             .foregroundStyle(.secondary)
                     }
 
                     Button(role: .destructive) {
-                        viewModel.clearProcessedWorkouts()
+                        viewModel.clearSavedMessages()
                     } label: {
-                        Label("Clear Processed Workouts", symbol: .trash)
+                        Label("Clear All Messages", symbol: .trash)
                     }
                 } header: {
                     Text("Debug")
                 } footer: {
-                    Text("Clear the processed workouts list to receive notifications for workouts again.")
+                    Text("Clear all saved messages to reprocess workouts and receive new notifications.")
                 }
             }
             .navigationTitle("Settings")

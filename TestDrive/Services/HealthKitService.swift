@@ -52,6 +52,11 @@ final class HealthKitService {
             typesToRead.insert(height)
         }
 
+        // Add heart rate for workout details
+        if let heartRate = HKObjectType.quantityType(forIdentifier: .heartRate) {
+            typesToRead.insert(heartRate)
+        }
+
         try await healthStore.requestAuthorization(toShare: [], read: typesToRead)
         isAuthorized = true
     }
@@ -123,9 +128,162 @@ final class HealthKitService {
         }
     }
 
+    /// Fetches the previous workout before a given workout.
+    /// - Parameter currentWorkout: The current workout to find the previous one before.
+    /// - Returns: The previous HKWorkout or nil if none exists.
+    func fetchPreviousWorkout(before currentWorkout: HKWorkout) async throws -> HKWorkout? {
+        let workoutType = HKObjectType.workoutType()
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: nil,
+            end: currentWorkout.startDate,
+            options: .strictEndDate
+        )
+
+        let sortDescriptor = NSSortDescriptor(
+            key: HKSampleSortIdentifierStartDate,
+            ascending: false
+        )
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: workoutType,
+                predicate: predicate,
+                limit: 1,
+                sortDescriptors: [sortDescriptor]
+            ) { _, samples, error in
+                if let error {
+                    continuation.resume(throwing: HealthKitError.queryFailed(error))
+                    return
+                }
+
+                let workout = samples?.first as? HKWorkout
+                continuation.resume(returning: workout)
+            }
+
+            healthStore.execute(query)
+        }
+    }
+
     /// Returns the underlying HKHealthStore for observer queries.
     var store: HKHealthStore {
         healthStore
+    }
+
+    /// Fetches heart rate data for a specific workout.
+    /// - Parameter workout: The workout to fetch heart rate data for.
+    /// - Returns: WorkoutHeartRate with avg, max, and min BPM.
+    func fetchHeartRate(for workout: HKWorkout) async -> WorkoutHeartRate {
+        guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) else {
+            return WorkoutHeartRate(averageBPM: nil, maxBPM: nil, minBPM: nil)
+        }
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: workout.startDate,
+            end: workout.endDate,
+            options: .strictStartDate
+        )
+
+        return await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: heartRateType,
+                predicate: predicate,
+                limit: HKObjectQueryNoLimit,
+                sortDescriptors: nil
+            ) { _, samples, _ in
+                guard let samples = samples as? [HKQuantitySample], !samples.isEmpty else {
+                    continuation.resume(returning: WorkoutHeartRate(averageBPM: nil, maxBPM: nil, minBPM: nil))
+                    return
+                }
+
+                let bpmUnit = HKUnit.count().unitDivided(by: .minute())
+                let values = samples.map { $0.quantity.doubleValue(for: bpmUnit) }
+
+                let avg = values.reduce(0, +) / Double(values.count)
+                let max = values.max() ?? 0
+                let min = values.min() ?? 0
+
+                continuation.resume(returning: WorkoutHeartRate(
+                    averageBPM: Int(avg),
+                    maxBPM: Int(max),
+                    minBPM: Int(min)
+                ))
+            }
+
+            healthStore.execute(query)
+        }
+    }
+
+    /// Calculates the current workout streak (consecutive days with workouts).
+    /// - Returns: The number of consecutive days with workouts ending today or yesterday.
+    func fetchWorkoutStreak() async -> Int {
+        let workoutType = HKObjectType.workoutType()
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Fetch last 60 days of workouts to calculate streak
+        let sixtyDaysAgo = calendar.date(byAdding: .day, value: -60, to: now)!
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: sixtyDaysAgo,
+            end: now,
+            options: .strictStartDate
+        )
+
+        let sortDescriptor = NSSortDescriptor(
+            key: HKSampleSortIdentifierStartDate,
+            ascending: false
+        )
+
+        return await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: workoutType,
+                predicate: predicate,
+                limit: HKObjectQueryNoLimit,
+                sortDescriptors: [sortDescriptor]
+            ) { _, samples, _ in
+                guard let workouts = samples as? [HKWorkout], !workouts.isEmpty else {
+                    continuation.resume(returning: 0)
+                    return
+                }
+
+                // Get unique workout days
+                var workoutDays = Set<Date>()
+                for workout in workouts {
+                    let day = calendar.startOfDay(for: workout.startDate)
+                    workoutDays.insert(day)
+                }
+
+                // Calculate streak starting from today or yesterday
+                let today = calendar.startOfDay(for: now)
+                let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+
+                var streakStart: Date
+                if workoutDays.contains(today) {
+                    streakStart = today
+                } else if workoutDays.contains(yesterday) {
+                    streakStart = yesterday
+                } else {
+                    continuation.resume(returning: 0)
+                    return
+                }
+
+                var streak = 0
+                var currentDay = streakStart
+
+                while workoutDays.contains(currentDay) {
+                    streak += 1
+                    guard let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDay) else {
+                        break
+                    }
+                    currentDay = previousDay
+                }
+
+                continuation.resume(returning: streak)
+            }
+
+            healthStore.execute(query)
+        }
     }
 
     /// Fetches the user's profile data from HealthKit.

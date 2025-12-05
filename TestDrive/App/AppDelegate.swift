@@ -37,6 +37,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                 try await workoutObserver?.enableBackgroundDelivery()
                 logger.info("✅ Background delivery enabled")
 
+                // Process all recent workouts on app launch
+                logger.info("📥 Processing all recent workouts...")
+                await BackgroundTaskService.shared.processAllRecentWorkouts()
+
                 workoutObserver?.startObserving()
                 logger.info("✅ Workout observer started")
 

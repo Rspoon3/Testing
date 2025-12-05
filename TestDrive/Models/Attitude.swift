@@ -8,6 +8,8 @@ enum Attitude: String, CaseIterable, Identifiable {
     case cute = "Cute"
     case encouraging = "Encouraging"
     case coaching = "Coaching"
+    case aggressive = "Aggressive"
+    case mean = "Mean"
 
     var id: String { rawValue }
 
@@ -23,6 +25,8 @@ enum Attitude: String, CaseIterable, Identifiable {
         case .cute: return .heartFill
         case .encouraging: return .handThumbsupFill
         case .coaching: return .clipboard
+        case .aggressive: return .flameFill
+        case .mean: return .boltFill
         }
     }
 
@@ -35,6 +39,8 @@ enum Attitude: String, CaseIterable, Identifiable {
         case .cute: return "Sweet and supportive"
         case .encouraging: return "Motivational and positive"
         case .coaching: return "Professional feedback"
+        case .aggressive: return "Drill sergeant energy"
+        case .mean: return "Brutally honest roasts"
         }
     }
 }

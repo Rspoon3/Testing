@@ -68,6 +68,9 @@ final class ChatGPTService {
     ///   - workout: The completed workout.
     ///   - stats: The user's workout statistics for today, weekly, and monthly.
     ///   - userProfile: The user's profile data from HealthKit.
+    ///   - lastWorkoutDate: The date of the previous workout, if any.
+    ///   - heartRate: Heart rate data for the workout.
+    ///   - streak: Current consecutive workout day streak.
     ///   - attitude: The user's selected attitude tone.
     /// - Returns: A personalized message string.
     /// - Throws: ChatGPTError if the API call fails.
@@ -75,9 +78,20 @@ final class ChatGPTService {
         for workout: HKWorkout,
         stats: WorkoutStats,
         userProfile: UserProfile,
+        lastWorkoutDate: Date?,
+        heartRate: WorkoutHeartRate,
+        streak: Int,
         attitude: Attitude
     ) async throws -> String {
-        try await fetchFromAPI(workout: workout, stats: stats, userProfile: userProfile, attitude: attitude)
+        try await fetchFromAPI(
+            workout: workout,
+            stats: stats,
+            userProfile: userProfile,
+            lastWorkoutDate: lastWorkoutDate,
+            heartRate: heartRate,
+            streak: streak,
+            attitude: attitude
+        )
     }
 
     // MARK: - Private Helpers
@@ -86,6 +100,9 @@ final class ChatGPTService {
         workout: HKWorkout,
         stats: WorkoutStats,
         userProfile: UserProfile,
+        lastWorkoutDate: Date?,
+        heartRate: WorkoutHeartRate,
+        streak: Int,
         attitude: Attitude
     ) async throws -> String {
         let systemPrompt = """
@@ -98,18 +115,27 @@ final class ChatGPTService {
         - cute: Sweet, encouraging with enthusiasm
         - encouraging: Motivational, supportive
         - coaching: Professional trainer vibe, constructive feedback
+        - aggressive: Intense drill sergeant energy, push them harder, no excuses
+        - mean: Brutally honest, roast them, tough love with bite
 
         You will receive:
         - Current time (use for time-appropriate greetings like "early bird!" or "late night workout!")
         - User profile (age, sex, height, weight - use to personalize if relevant)
-        - Current workout details
+        - Last workout date (when they last exercised before this workout)
+        - Current workout details (type, duration, start/end times, calories, distance)
+        - Heart rate data (average, max, min BPM during workout)
+        - Current workout streak (consecutive days with workouts)
         - Today's, weekly, and monthly statistics (with min/max/avg)
 
         Use this data to provide context:
         - Consider the time of day (early morning, late night, lunch break, etc.)
+        - Reference how long it's been since their last workout (e.g., "back at it after 3 days!" or "two days in a row!")
+        - If it's been more than a few days, welcome them back; if it's consecutive days, celebrate their streak
+        - Comment on their heart rate if notable (high intensity, staying in zone, etc.)
+        - If they have a streak going, acknowledge it appropriately for the attitude
         - If they've done multiple workouts today, acknowledge their dedication or hustle
         - If this workout's metrics are near their personal best (max), celebrate it
-        - If this workout is significantly below their average or near their minimum, gently mention it (adjust tone based on attitude)
+        - If this workout is significantly below their average or near their minimum, mention it (adjust tone based on attitude)
         - Reference their monthly totals to show progress awareness
 
         Keep responses under 2-5 sentences. Be conversational and natural. Don't list statistics back - weave insights naturally into your message.
@@ -120,11 +146,17 @@ final class ChatGPTService {
         let statsContext = stats.formatForPrompt()
         let profileContext = userProfile.formatForPrompt()
         let currentTime = formatCurrentTime()
+        let lastWorkoutContext = formatLastWorkoutDate(lastWorkoutDate)
+        let heartRateContext = heartRate.formatForPrompt()
+        let streakContext = formatStreak(streak)
 
         logger.info("📋 Workout details: \(workoutDetails)")
         logger.info("📊 Stats context: \(statsContext)")
         logger.info("👤 Profile: \(profileContext)")
         logger.info("🕐 Time: \(currentTime)")
+        logger.info("📅 Last workout: \(lastWorkoutContext)")
+        logger.info("💓 Heart rate: \(heartRateContext)")
+        logger.info("🔥 Streak: \(streakContext)")
 
         let userPrompt = """
         Attitude: \(attitude.rawValue)
@@ -133,8 +165,14 @@ final class ChatGPTService {
 
         \(profileContext)
 
+        \(lastWorkoutContext)
+
+        \(streakContext)
+
         Current Workout:
         \(workoutDetails)
+
+        \(heartRateContext)
 
         \(statsContext)
 
@@ -199,7 +237,12 @@ final class ChatGPTService {
         let calories = workout.totalEnergyBurned?.doubleValue(for: .kilocalorie()) ?? 0
         let distance = workout.totalDistance?.doubleValue(for: .mile()) ?? 0
 
-        var details = "\(activityName) for \(duration) minutes"
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "h:mm a"
+        let startTime = timeFormatter.string(from: workout.startDate)
+        let endTime = timeFormatter.string(from: workout.endDate)
+
+        var details = "\(activityName) for \(duration) minutes (started \(startTime), ended \(endTime))"
 
         if calories > 0 {
             details += ", burned \(Int(calories)) calories"
@@ -212,10 +255,30 @@ final class ChatGPTService {
         return details
     }
 
+    private func formatStreak(_ streak: Int) -> String {
+        if streak == 0 {
+            return "Workout streak: Starting fresh (no consecutive days yet)"
+        } else if streak == 1 {
+            return "Workout streak: 1 day"
+        } else {
+            return "Workout streak: \(streak) consecutive days"
+        }
+    }
+
     private func formatCurrentTime() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMMM d, yyyy 'at' h:mm a"
         return "Current time: \(formatter.string(from: Date()))"
+    }
+
+    private func formatLastWorkoutDate(_ lastWorkoutDate: Date?) -> String {
+        guard let lastDate = lastWorkoutDate else {
+            return "Last workout: This is their first recorded workout!"
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d, yyyy 'at' h:mm a"
+        return "Last workout: \(formatter.string(from: lastDate))"
     }
 
     private func formatComparison(workout: HKWorkout, stats: WorkoutStats) -> String {
