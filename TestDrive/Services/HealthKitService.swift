@@ -23,7 +23,8 @@ final class HealthKitService {
         .traditionalStrengthTraining,
         .functionalStrengthTraining,
         .highIntensityIntervalTraining,
-        .yoga
+        .yoga,
+        .elliptical
     ]
 
     /// Authorization status for HealthKit.
