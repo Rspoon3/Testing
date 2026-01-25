@@ -6,7 +6,7 @@
 let package = Package(
     name: "TestDriveCore",
     platforms: [
-        .iOS(.v18),
+        .iOS(.v26),
         .macOS(.v15)
     ],
     products: [
