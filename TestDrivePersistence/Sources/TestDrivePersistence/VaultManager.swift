@@ -7,6 +7,7 @@ import TestDriveCore
 ///
 /// This manager orchestrates vault lifecycle operations and implements the
 /// end-to-end encrypted sharing flow with X25519 key agreement.
+@MainActor
 @Observable
 public final class VaultManager {
 

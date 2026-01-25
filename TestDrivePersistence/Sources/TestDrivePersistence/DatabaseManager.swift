@@ -9,6 +9,7 @@ import TestDriveCore
 /// This manager configures and maintains the SQLiteData database connection,
 /// sets up CloudKit sync for end-to-end encrypted vault sharing, and provides
 /// a clean interface for database operations.
+@MainActor
 @Observable
 public final class DatabaseManager {
 
