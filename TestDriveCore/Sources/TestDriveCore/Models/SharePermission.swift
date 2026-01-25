@@ -17,8 +17,9 @@ public enum SharePermission: String, Codable, Sendable {
 
 // MARK: - QueryRepresentable Conformance
 
-extension SharePermission: QueryRepresentable {
+extension SharePermission: QueryRepresentable, QueryBindable, QueryExpression {
     public typealias QueryOutput = Self
+    public typealias QueryValue = Self
 
     public static var _columnWidth: Int { 1 }
 

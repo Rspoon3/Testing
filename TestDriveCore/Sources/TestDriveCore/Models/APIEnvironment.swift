@@ -24,8 +24,9 @@ public enum APIEnvironment: String, Codable, CaseIterable, Sendable {
 
 // MARK: - QueryRepresentable Conformance
 
-extension APIEnvironment: QueryRepresentable {
+extension APIEnvironment: QueryRepresentable, QueryBindable, QueryExpression {
     public typealias QueryOutput = Self
+    public typealias QueryValue = Self
 
     public static var _columnWidth: Int { 1 }
 

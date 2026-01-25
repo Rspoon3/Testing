@@ -18,8 +18,9 @@ public enum AcceptanceStatus: String, Codable, Sendable {
 
 // MARK: - QueryRepresentable Conformance
 
-extension AcceptanceStatus: QueryRepresentable {
+extension AcceptanceStatus: QueryRepresentable, QueryBindable, QueryExpression {
     public typealias QueryOutput = Self
+    public typealias QueryValue = Self
 
     public static var _columnWidth: Int { 1 }
 
