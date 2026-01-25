@@ -31,8 +31,16 @@ public final class EditKeyViewModel {
 
     /// Indicates if the form is valid and can be saved.
     public var isValid: Bool {
-        !label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !secret.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let hasLabel = !label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+        if existingKey != nil {
+            // When editing, only require label (can't edit secret)
+            return hasLabel
+        } else {
+            // When creating, require both label and secret
+            let hasSecret = !secret.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            return hasLabel && hasSecret
+        }
     }
 
     // MARK: - Initializer
