@@ -13,12 +13,21 @@ public final class KeyListViewModel {
     @ObservationIgnored @FetchAll(APIKey.none)
     public var keys: [APIKey]
 
+    @ObservationIgnored @FetchAll(Vault.none)
+    private var vaults: [Vault]
+
     public var searchText = ""
     public var errorMessage: String?
     public var isLoading = false
     public var vaultForm: Vault.Draft?
 
-    public let vault: Vault
+    /// The vault being displayed. Automatically updates when vault is edited.
+    public var vault: Vault {
+        vaults.first ?? initialVault
+    }
+
+    private let initialVault: Vault
+    private let vaultID: UUID
     public let apiKeyManager: APIKeyManager
     public let clipboardManager: ClipboardManager
     public let vaultManager: VaultManager
@@ -53,7 +62,8 @@ public final class KeyListViewModel {
         clipboardManager: ClipboardManager,
         vaultManager: VaultManager
     ) {
-        self.vault = vault
+        self.initialVault = vault
+        self.vaultID = vault.id
         self.apiKeyManager = apiKeyManager
         self.clipboardManager = clipboardManager
         self.vaultManager = vaultManager
@@ -67,9 +77,12 @@ public final class KeyListViewModel {
         errorMessage = nil
 
         do {
-            try await $keys.load(APIKey.where { $0.vaultID.eq(vault.id) }, animation: .default)
+            async let keysTask = $keys.load(APIKey.where { $0.vaultID.eq(vaultID) }, animation: .default)
+            async let vaultTask = $vaults.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
+
+            _ = try await (keysTask.task, vaultTask.task)
         } catch {
-            errorMessage = "Failed to load keys: \(error.localizedDescription)"
+            errorMessage = "Failed to load data: \(error.localizedDescription)"
         }
 
         isLoading = false
