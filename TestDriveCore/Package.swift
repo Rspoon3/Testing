@@ -6,7 +6,8 @@
 let package = Package(
     name: "TestDriveCore",
     platforms: [
-        .iOS(.v18)
+        .iOS(.v18),
+        .macOS(.v15)
     ],
     products: [
         .library(for: .testDriveCore)
@@ -65,7 +66,6 @@ extension Target {
         name: "TestDriveCore",
         dependencies: [
             .sqliteData,
-            .structuredQueriesCore,
             .sfSymbols,
             .swiftTools
         ]
@@ -92,11 +92,6 @@ extension Target.Dependency {
 
     static let sqliteData: Target.Dependency = .product(
         name: "SQLiteData",
-        package: "sqlite-data"
-    )
-
-    static let structuredQueriesCore: Target.Dependency = .product(
-        name: "StructuredQueriesCore",
         package: "sqlite-data"
     )
 
