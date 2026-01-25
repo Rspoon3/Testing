@@ -46,12 +46,22 @@ public struct KeyListView: View {
                     Image(systemName: "plus")
                 }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    viewModel.showVaultConfiguration()
+                } label: {
+                    Image(systemName: "info.circle")
+                }
+            }
         }
         .task {
             await viewModel.loadKeys()
         }
         .refreshable {
             await viewModel.loadKeys()
+        }
+        .sheet(item: $viewModel.vaultForm) { draft in
+            VaultConfigurationView(vault: draft, vaultManager: viewModel.vaultManager)
         }
     }
 
@@ -139,7 +149,8 @@ public struct KeyListView: View {
                     ownerPublicKey: Data()
                 ),
                 apiKeyManager: akm,
-                clipboardManager: ClipboardManager()
+                clipboardManager: ClipboardManager(),
+                vaultManager: vm
             )
         )
     }

@@ -32,7 +32,8 @@ public struct VaultListView: View {
                                     viewModel: KeyListViewModel(
                                         vault: vault,
                                         apiKeyManager: viewModel.getAPIKeyManager(),
-                                        clipboardManager: ClipboardManager()
+                                        clipboardManager: ClipboardManager(),
+                                        vaultManager: viewModel.getVaultManager()
                                     )
                                 )
                             } label: {
@@ -71,7 +72,8 @@ public struct VaultListView: View {
                                 viewModel: KeyListViewModel(
                                     vault: vault,
                                     apiKeyManager: viewModel.getAPIKeyManager(),
-                                    clipboardManager: ClipboardManager()
+                                    clipboardManager: ClipboardManager(),
+                                    vaultManager: viewModel.getVaultManager()
                                 )
                             )
                         } label: {

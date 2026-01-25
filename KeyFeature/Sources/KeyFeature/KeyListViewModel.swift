@@ -16,10 +16,12 @@ public final class KeyListViewModel {
     public var searchText = ""
     public var errorMessage: String?
     public var isLoading = false
+    public var vaultForm: Vault.Draft?
 
     public let vault: Vault
     public let apiKeyManager: APIKeyManager
     public let clipboardManager: ClipboardManager
+    public let vaultManager: VaultManager
 
     /// Filtered keys based on search text.
     public var filteredKeys: [APIKey] {
@@ -44,14 +46,17 @@ public final class KeyListViewModel {
     ///   - vault: The vault to display keys from.
     ///   - apiKeyManager: The API key manager.
     ///   - clipboardManager: The clipboard manager.
+    ///   - vaultManager: The vault manager.
     public init(
         vault: Vault,
         apiKeyManager: APIKeyManager,
-        clipboardManager: ClipboardManager
+        clipboardManager: ClipboardManager,
+        vaultManager: VaultManager
     ) {
         self.vault = vault
         self.apiKeyManager = apiKeyManager
         self.clipboardManager = clipboardManager
+        self.vaultManager = vaultManager
     }
 
     // MARK: - Public Helpers
@@ -88,5 +93,10 @@ public final class KeyListViewModel {
         // Mark key as used
         try await apiKeyManager.markAsUsed(key)
         // @FetchAll automatically updates keys array
+    }
+
+    /// Shows the vault configuration screen.
+    public func showVaultConfiguration() {
+        vaultForm = Vault.Draft(vault)
     }
 }

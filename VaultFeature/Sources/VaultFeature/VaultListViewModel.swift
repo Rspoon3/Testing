@@ -120,4 +120,9 @@ public final class VaultListViewModel {
     public func getAPIKeyManager() -> APIKeyManager {
         apiKeyManager
     }
+
+    /// Returns the vault manager for navigation.
+    public func getVaultManager() -> VaultManager {
+        vaultManager
+    }
 }
