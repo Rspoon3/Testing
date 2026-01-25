@@ -23,8 +23,8 @@ public struct APIKey: Identifiable, Sendable {
     /// Environment type for the API key.
     public var environment: APIEnvironment
 
-    /// Tags for categorizing and searching API keys.
-    public var tags: [String]
+    /// Tags for categorizing and searching API keys (stored as comma-separated string).
+    private var tagsString: String
 
     /// Date when the API key was created.
     public var createdAt: Date
@@ -54,6 +54,18 @@ public struct APIKey: Identifiable, Sendable {
     ///
     /// Managed by SQLiteData sync engine.
     public var ckRecordID: String?
+
+    // MARK: - Computed Properties
+
+    /// Tags for categorizing and searching API keys.
+    public var tags: [String] {
+        get {
+            tagsString.isEmpty ? [] : tagsString.split(separator: ",").map(String.init)
+        }
+        set {
+            tagsString = newValue.joined(separator: ",")
+        }
+    }
 
     // MARK: - Initializer
 
@@ -95,7 +107,7 @@ public struct APIKey: Identifiable, Sendable {
         self.websiteDomain = websiteDomain
         self.company = company
         self.environment = environment
-        self.tags = tags
+        self.tagsString = tags.joined(separator: ",")
         self.createdAt = createdAt
         self.rotateAt = rotateAt
         self.lastUsedAt = lastUsedAt
