@@ -129,10 +129,19 @@ public final class VaultListViewModel {
     /// Shows the create vault form.
     public func showCreateVault() {
         vaultForm = Vault.Draft(
+            id: nil,
             name: "",
             iconName: "lock.fill",
             colorHex: "#007AFF",
-            ownerPublicKey: Data()
+            sortOrder: 0,
+            isDefault: false,
+            createdAt: Date(),
+            updatedAt: Date(),
+            ownerPublicKey: Data(),
+            ckRecordID: nil,
+            ckShareID: nil,
+            isShared: false,
+            ownerUserID: nil
         )
     }
 }

@@ -185,37 +185,37 @@ public struct VaultFormView: View {
     ]
 }
 
-#Preview("Create") {
-    setupPreviewDependencies()
-
-    let enc = EncryptionService()
-    let key = KeychainService()
-    let vm = VaultManager(encryption: enc, keychain: key)
-
-    return VaultFormView(
-        vault: Vault.Draft(
-            name: "",
-            iconName: "lock.fill",
-            colorHex: "#007AFF",
-            ownerPublicKey: Data()
-        ),
-        vaultManager: vm
-    )
-}
-
-#Preview("Edit") {
-    setupPreviewDependencies()
-
-    let enc = EncryptionService()
-    let key = KeychainService()
-    let vm = VaultManager(encryption: enc, keychain: key)
-
-    let vault = Vault(
-        name: "Work Keys",
-        iconName: "briefcase.fill",
-        colorHex: "#007AFF",
-        ownerPublicKey: Data()
-    )
-
-    return VaultFormView(vault: Vault.Draft(vault), vaultManager: vm)
-}
+//#Preview("Create") {
+//    setupPreviewDependencies()
+//
+//    let enc = EncryptionService()
+//    let key = KeychainService()
+//    let vm = VaultManager(encryption: enc, keychain: key)
+//
+//    return VaultFormView(
+//        vault: Vault.Draft(
+//            name: "",
+//            iconName: "lock.fill",
+//            colorHex: "#007AFF",
+//            ownerPublicKey: Data()
+//        ),
+//        vaultManager: vm
+//    )
+//}
+//
+//#Preview("Edit") {
+//    setupPreviewDependencies()
+//
+//    let enc = EncryptionService()
+//    let key = KeychainService()
+//    let vm = VaultManager(encryption: enc, keychain: key)
+//
+//    let vault = Vault(
+//        name: "Work Keys",
+//        iconName: "briefcase.fill",
+//        colorHex: "#007AFF",
+//        ownerPublicKey: Data()
+//    )
+//
+//    return VaultFormView(vault: Vault.Draft(vault), vaultManager: vm)
+//}
