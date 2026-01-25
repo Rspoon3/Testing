@@ -26,7 +26,6 @@
 		947B46992F25AFB400BC64FF /* VaultFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = VaultFeature; sourceTree = "<group>"; };
 		947B46A32F25BA0F00BC64FF /* TestDriveCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveCore; sourceTree = "<group>"; };
 		947B46AD2F25BA2100BC64FF /* SettingsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SettingsFeature; sourceTree = "<group>"; };
-		947B46B72F25BA3400BC64FF /* KeyFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = KeyFeature; sourceTree = "<group>"; };
 		9483720E2EAE6B2E0094674D /* TestDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9483721B2EAE6B2F0094674D /* TestDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		94A574492F25AC1B00238D9B /* TestDriveHome */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveHome; sourceTree = "<group>"; };
@@ -90,7 +89,6 @@
 		948372052EAE6B2E0094674D = {
 			isa = PBXGroup;
 			children = (
-				947B46B72F25BA3400BC64FF /* KeyFeature */,
 				947B46AD2F25BA2100BC64FF /* SettingsFeature */,
 				947B46A32F25BA0F00BC64FF /* TestDriveCore */,
 				947B46992F25AFB400BC64FF /* VaultFeature */,
