@@ -113,16 +113,7 @@ public final class VaultDetailsViewModel {
 
         await withErrorReporting {
             try await $keyRows.load(
-                APIKey
-                    .where { $0.vaultID.eq(vaultID) }
-                    .order { $0.createdAt.desc() }
-                    .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
-                    .select {
-                        APIKeyRow.Columns(
-                            apiKey: $0,
-                            preference: $1
-                        )
-                    },
+                APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) },
                 animation: .default
             )
         }
@@ -138,16 +129,7 @@ public final class VaultDetailsViewModel {
         searchTask = Task {
             await withErrorReporting {
                 try await $keyRows.load(
-                    APIKey
-                        .where { $0.vaultID.eq(vaultID) }
-                        .order { $0.createdAt.desc() }
-                        .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
-                        .select {
-                            APIKeyRow.Columns(
-                                apiKey: $0,
-                                preference: $1
-                            )
-                        },
+                    APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) },
                     animation: .default
                 )
             }

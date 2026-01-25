@@ -31,6 +31,20 @@ public func appDatabase() throws -> any DatabaseWriter {
                 }
         )
         .execute(db)
+
+        // Create temporary view combining APIKey with APIKeyPreference
+        try APIKeyRow.createTemporaryView(
+            as: APIKey
+                .order(by: \.createdAt)
+                .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
+                .select {
+                    APIKeyRow.Columns(
+                        apiKey: $0,
+                        preference: $1
+                    )
+                }
+        )
+        .execute(db)
     }
 
     // Use document directory for persistent storage
