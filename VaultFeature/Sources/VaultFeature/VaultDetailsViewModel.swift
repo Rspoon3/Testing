@@ -115,8 +115,8 @@ public final class VaultDetailsViewModel {
             try await $keyRows.load(
                 APIKey
                     .where { $0.vaultID.eq(vaultID) }
-                    .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
                     .order { $0.createdAt.desc() }
+                    .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
                     .select {
                         APIKeyRow.Columns(
                             apiKey: $0,
@@ -140,8 +140,8 @@ public final class VaultDetailsViewModel {
                 try await $keyRows.load(
                     APIKey
                         .where { $0.vaultID.eq(vaultID) }
-                        .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
                         .order { $0.createdAt.desc() }
+                        .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
                         .select {
                             APIKeyRow.Columns(
                                 apiKey: $0,
