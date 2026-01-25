@@ -41,11 +41,6 @@ public final class DatabaseManager {
                 tables: APIKey.self, Vault.self, VaultParticipant.self, WrappedVaultKey.self,
                 containerIdentifier: containerIdentifier
             )
-
-            // Start observing sync state
-            Task { @MainActor in
-                await startObservingSyncState()
-            }
         } else {
             self.syncEngine = nil
         }
