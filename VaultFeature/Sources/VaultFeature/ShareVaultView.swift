@@ -1,6 +1,7 @@
 import SwiftUI
 import CloudKit
 import TestDriveCore
+import TestDrivePersistence
 
 /// View for managing vault sharing and participants.
 public struct ShareVaultView: View {

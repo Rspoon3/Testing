@@ -6,6 +6,7 @@ import TestDrivePersistence
 /// View model for sharing a vault with other users.
 ///
 /// Manages CloudKit sharing, participant list, and key wrapping operations.
+@MainActor
 @Observable
 public final class ShareVaultViewModel {
 
@@ -145,11 +146,11 @@ public final class ShareVaultViewModel {
 
         for participant in needsWrapping {
             // Check if wrapped key already exists
-            let hasWrappedKey = try? await database.read { _ -> Bool in
+            let hasWrappedKey = (try? await database.read { _ -> Bool in
                 // Query WrappedVaultKey for this participant
                 // SQLiteData API would check: vaultID == vault.id && recipientUserID == participant.userID
                 return false // Placeholder
-            } ?? false
+            }) ?? false
 
             if !hasWrappedKey {
                 // Wrap key for this participant

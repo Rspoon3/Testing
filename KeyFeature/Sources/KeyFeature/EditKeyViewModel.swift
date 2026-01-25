@@ -5,6 +5,7 @@ import TestDrivePersistence
 /// View model for creating or editing an API key.
 ///
 /// Manages form state, validation, and save operations.
+@MainActor
 @Observable
 public final class EditKeyViewModel {
 

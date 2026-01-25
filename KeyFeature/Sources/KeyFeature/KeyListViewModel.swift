@@ -5,6 +5,7 @@ import TestDrivePersistence
 /// View model for the key list screen.
 ///
 /// Manages API key loading, searching, and deletion within a vault.
+@MainActor
 @Observable
 public final class KeyListViewModel {
 

@@ -1,5 +1,6 @@
 import SwiftUI
 import TestDriveCore
+import TestDrivePersistence
 
 /// Sheet for creating or editing an API key.
 public struct EditKeyView: View {
@@ -73,7 +74,7 @@ public struct EditKeyView: View {
     }
 
     private var secretSection: some View {
-        Section("Secret") {
+        Section {
             SecureTextFieldView(
                 text: $viewModel.secret,
                 isVisible: $viewModel.isSecretVisible,
@@ -85,6 +86,8 @@ public struct EditKeyView: View {
             } label: {
                 Label("Generate Random Key", systemImage: "wand.and.stars")
             }
+        } header: {
+            Text("Secret")
         } footer: {
             Text("The secret will be encrypted and stored securely.")
         }

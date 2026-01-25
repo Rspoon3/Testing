@@ -16,7 +16,7 @@ public final class KeyDetailViewModel {
     public var errorMessage: String?
     public var showingCopyConfirmation = false
 
-    private let apiKeyManager: APIKeyManager
+    let apiKeyManager: APIKeyManager
     private let clipboardManager: ClipboardManager
     private let haptics: HapticFeedbackManager
 

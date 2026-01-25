@@ -7,7 +7,7 @@ import SQLiteData
 /// using AES-256-GCM with the vault's encryption key. Metadata (label, domain,
 /// tags, etc.) is stored unencrypted for searchability.
 @Table
-public struct APIKey: Identifiable, Sendable {
+public struct APIKey: Identifiable, Sendable, Hashable {
     /// Unique identifier for the API key.
     public let id: UUID
 

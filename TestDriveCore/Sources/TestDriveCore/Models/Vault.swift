@@ -7,7 +7,7 @@ import SQLiteData
 /// Each vault has its own encryption key and can be shared with other users
 /// via CloudKit sharing with end-to-end encryption.
 @Table
-public struct Vault: Identifiable, Sendable {
+public struct Vault: Identifiable, Sendable, Equatable {
     /// Unique identifier for the vault.
     public let id: UUID
 

@@ -6,6 +6,7 @@ import TestDrivePersistence
 ///
 /// Manages detection and tracking of security concerns including expired keys,
 /// rotation reminders, and recent clipboard activity.
+@MainActor
 @Observable
 public final class SecurityWarningsViewModel {
 

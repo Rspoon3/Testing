@@ -5,6 +5,7 @@ import TestDrivePersistence
 /// View model for the vault list screen.
 ///
 /// Manages vault loading, creation, and deletion operations.
+@MainActor
 @Observable
 public final class VaultListViewModel {
 
