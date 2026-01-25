@@ -16,7 +16,6 @@ let package = Package(
         .testDriveCore,
         .testDrivePersistence,
         .vaultFeature,
-        .keyFeature,
         .settingsFeature
     ],
     targets: [
@@ -59,7 +58,6 @@ extension Target {
             .testDriveCore,
             .testDrivePersistence,
             .vaultFeature,
-            .keyFeature,
             .settingsFeature
         ]
     )
@@ -101,11 +99,6 @@ extension Target.Dependency {
         package: "VaultFeature"
     )
 
-    static let keyFeature: Target.Dependency = .product(
-        name: "KeyFeature",
-        package: "KeyFeature"
-    )
-
     static let settingsFeature: Target.Dependency = .product(
         name: "SettingsFeature",
         package: "SettingsFeature"
@@ -129,10 +122,6 @@ extension Package.Dependency {
 
     static let vaultFeature: Package.Dependency = .package(
         path: "../VaultFeature"
-    )
-
-    static let keyFeature: Package.Dependency = .package(
-        path: "../KeyFeature"
     )
 
     static let settingsFeature: Package.Dependency = .package(
