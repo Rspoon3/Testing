@@ -47,7 +47,7 @@ public final class VaultListViewModel {
             await loadKeyCounts()
 
             // Trigger sync with CloudKit
-            try? await database.sync()
+            try? await database.startSync()
         } catch {
             errorMessage = "Failed to load vaults: \(error.localizedDescription)"
         }
