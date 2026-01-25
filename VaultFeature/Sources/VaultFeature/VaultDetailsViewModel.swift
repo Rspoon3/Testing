@@ -10,8 +10,8 @@ import TestDrivePersistence
 @Observable
 public final class VaultDetailsViewModel {
 
-    @ObservationIgnored @FetchAll((apiKey: APIKey, preference: APIKeyPreference?).none)
-    private var keyRows: [(apiKey: APIKey, preference: APIKeyPreference?)]
+    @ObservationIgnored @FetchAll(APIKeyRow.none)
+    private var keyRows: [APIKeyRow]
 
     @ObservationIgnored @FetchOne(Vault.none)
     private var observedVault: Vault?
@@ -40,12 +40,12 @@ public final class VaultDetailsViewModel {
 
     /// Pinned keys filtered by search text.
     public var pinnedKeys: [APIKey] {
-        filterKeys(keyRows.filter { $0.preference?.isPinned == true }.map(\.apiKey))
+        filterKeys(keyRows.filter(\.isPinned).map(\.apiKey))
     }
 
     /// Unpinned keys filtered by search text.
     public var unpinnedKeys: [APIKey] {
-        filterKeys(keyRows.filter { $0.preference?.isPinned != true }.map(\.apiKey))
+        filterKeys(keyRows.filter { !$0.isPinned }.map(\.apiKey))
     }
 
     private let initialVault: Vault
@@ -116,7 +116,13 @@ public final class VaultDetailsViewModel {
                 APIKey
                     .where { $0.vaultID.eq(vaultID) }
                     .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
-                    .order { $0.createdAt.desc() },
+                    .order { $0.createdAt.desc() }
+                    .select {
+                        APIKeyRow.Columns(
+                            apiKey: $0,
+                            preference: $1
+                        )
+                    },
                 animation: .default
             )
         }
@@ -131,23 +137,19 @@ public final class VaultDetailsViewModel {
         searchTask?.cancel()
         searchTask = Task {
             await withErrorReporting {
-                if searchText.isEmpty {
-                    try await $keyRows.load(
-                        APIKey
-                            .where { $0.vaultID.eq(vaultID) }
-                            .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
-                            .order { $0.createdAt.desc() },
-                        animation: .default
-                    )
-                } else {
-                    try await $keyRows.load(
-                        APIKey
-                            .where { $0.vaultID.eq(vaultID) }
-                            .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
-                            .order { $0.createdAt.desc() },
-                        animation: .default
-                    )
-                }
+                try await $keyRows.load(
+                    APIKey
+                        .where { $0.vaultID.eq(vaultID) }
+                        .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
+                        .order { $0.createdAt.desc() }
+                        .select {
+                            APIKeyRow.Columns(
+                                apiKey: $0,
+                                preference: $1
+                            )
+                        },
+                    animation: .default
+                )
             }
         }
     }
