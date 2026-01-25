@@ -1,4 +1,7 @@
+import Dependencies
 import Foundation
+import GRDB
+import SQLiteData
 import Testing
 @testable import TestDrivePersistence
 @testable import TestDriveCore
@@ -6,26 +9,24 @@ import Testing
 /// Tests for the APIKeyManager.
 @Suite struct APIKeyManagerTests {
 
-    let database: DatabaseManager
     let encryption: EncryptionService
     let keychain: KeychainService
     let vaultManager: VaultManager
     let apiKeyManager: APIKeyManager
 
     init() throws {
-        self.database = try DatabaseManager(
-            containerIdentifier: "iCloud.com.rspoon3.TestDrive.Test",
-            enableSync: false
-        )
+        // Set up in-memory database for testing
+        let _ = prepareDependencies {
+            $0.defaultDatabase = try! appDatabase()
+        }
+
         self.encryption = EncryptionService()
         self.keychain = KeychainService()
         self.vaultManager = VaultManager(
-            database: database,
             encryption: encryption,
             keychain: keychain
         )
         self.apiKeyManager = APIKeyManager(
-            database: database,
             encryption: encryption,
             vaultManager: vaultManager
         )

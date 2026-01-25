@@ -107,18 +107,18 @@ struct WarningRowView: View {
 }
 
 #Preview {
-    let db = try! DatabaseManager(enableSync: false)
+    setupPreviewDependencies()
+
     let enc = EncryptionService()
     let key = KeychainService()
-    let vm = VaultManager(database: db, encryption: enc, keychain: key)
-    let akm = APIKeyManager(database: db, encryption: enc, vaultManager: vm)
+    let vm = VaultManager(encryption: enc, keychain: key)
+    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
     let clip = ClipboardManager()
 
     return SecurityWarningsView(
         viewModel: SecurityWarningsViewModel(
             apiKeyManager: akm,
-            clipboardManager: clip,
-            database: db
+            clipboardManager: clip
         )
     )
 }

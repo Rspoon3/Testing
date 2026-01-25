@@ -200,15 +200,15 @@ struct ShareSheet: UIViewControllerRepresentable {
 }
 
 #Preview {
-    let db = try! DatabaseManager(enableSync: false)
+    setupPreviewDependencies()
+
     let enc = EncryptionService()
     let key = KeychainService()
-    let vm = VaultManager(database: db, encryption: enc, keychain: key)
+    let vm = VaultManager(encryption: enc, keychain: key)
     let clip = ClipboardManager()
 
     return SettingsView(
         viewModel: SettingsViewModel(
-            database: db,
             vaultManager: vm,
             clipboardManager: clip
         )

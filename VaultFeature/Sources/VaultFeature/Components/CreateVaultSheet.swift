@@ -1,4 +1,5 @@
 import SwiftUI
+import IssueReporting
 import TestDrivePersistence
 
 /// Sheet for creating a new vault.
@@ -11,7 +12,7 @@ struct CreateVaultSheet: View {
     @State private var isCreating = false
     @State private var errorMessage: String?
 
-    let viewModel: VaultListViewModel
+    let vaultManager: VaultManager
 
     // MARK: - Body
 
@@ -108,17 +109,19 @@ struct CreateVaultSheet: View {
         errorMessage = nil
 
         Task {
-            do {
-                try await viewModel.createVault(
+            let result = await withErrorReporting {
+                try await vaultManager.createVault(
                     name: name,
                     iconName: selectedIcon,
                     colorHex: selectedColor
                 )
-                dismiss()
-            } catch {
-                errorMessage = error.localizedDescription
             }
             isCreating = false
+            if result != nil {
+                dismiss()
+            } else {
+                errorMessage = "Failed to create vault"
+            }
         }
     }
 
@@ -151,23 +154,11 @@ struct CreateVaultSheet: View {
 }
 
 #Preview {
-    CreateVaultSheet(
-        viewModel: VaultListViewModel(
-            vaultManager: VaultManager(
-                database: try! DatabaseManager(enableSync: false),
-                encryption: EncryptionService(),
-                keychain: KeychainService()
-            ),
-            apiKeyManager: APIKeyManager(
-                database: try! DatabaseManager(enableSync: false),
-                encryption: EncryptionService(),
-                vaultManager: VaultManager(
-                    database: try! DatabaseManager(enableSync: false),
-                    encryption: EncryptionService(),
-                    keychain: KeychainService()
-                )
-            ),
-            database: try! DatabaseManager(enableSync: false)
-        )
-    )
+    setupPreviewDependencies()
+
+    let enc = EncryptionService()
+    let key = KeychainService()
+    let vm = VaultManager(encryption: enc, keychain: key)
+
+    return CreateVaultSheet(vaultManager: vm)
 }

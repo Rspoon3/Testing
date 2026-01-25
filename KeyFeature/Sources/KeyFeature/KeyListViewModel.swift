@@ -62,7 +62,7 @@ public final class KeyListViewModel {
         errorMessage = nil
 
         do {
-            try await $keys.load(APIKey.where { $0.vaultID == vault.id })
+            try await $keys.load(APIKey.where { $0.vaultID.eq(vault.id) }, animation: .default)
         } catch {
             errorMessage = "Failed to load keys: \(error.localizedDescription)"
         }

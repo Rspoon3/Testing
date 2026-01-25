@@ -1,7 +1,9 @@
 import CloudKit
 import CryptoKit
+import Dependencies
 import Foundation
 import GRDB
+import SQLiteData
 import TestDriveCore
 
 /// Manages vault operations including creation, sharing, and key wrapping.
@@ -12,7 +14,7 @@ import TestDriveCore
 @Observable
 public final class VaultManager {
 
-    private let database: DatabaseManager
+    @ObservationIgnored @Dependency(\.defaultDatabase) private var database
     private let encryption: EncryptionService
     private let keychain: KeychainService
 
@@ -21,15 +23,12 @@ public final class VaultManager {
     /// Creates a new vault manager.
     ///
     /// - Parameters:
-    ///   - database: The database manager.
     ///   - encryption: The encryption service.
     ///   - keychain: The keychain service.
     public init(
-        database: DatabaseManager,
         encryption: EncryptionService,
         keychain: KeychainService
     ) {
-        self.database = database
         self.encryption = encryption
         self.keychain = keychain
     }
@@ -90,6 +89,15 @@ public final class VaultManager {
         try await database.write { db in
             try Vault.insert { vault }.execute(db)
         }
+
+        #if DEBUG
+        // Verify vault was inserted
+        let inserted = try await database.read { db in
+            try Vault.find(vault.id).fetchOne(db)
+        }
+        print("✅ Vault created: \(vault.name) (ID: \(vault.id))")
+        print("✅ Verification read: \(inserted != nil ? "SUCCESS" : "FAILED")")
+        #endif
 
         return vault
     }

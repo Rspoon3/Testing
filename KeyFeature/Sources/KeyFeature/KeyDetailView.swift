@@ -174,7 +174,14 @@ public struct KeyDetailView: View {
 }
 
 #Preview {
-    NavigationStack {
+    setupPreviewDependencies()
+
+    let enc = EncryptionService()
+    let key = KeychainService()
+    let vm = VaultManager(encryption: enc, keychain: key)
+    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+
+    return NavigationStack {
         KeyDetailView(
             viewModel: KeyDetailViewModel(
                 key: APIKey(
@@ -188,15 +195,7 @@ public struct KeyDetailView: View {
                     encryptedSecret: Data(),
                     nonce: Data()
                 ),
-                apiKeyManager: APIKeyManager(
-                    database: try! DatabaseManager(enableSync: false),
-                    encryption: EncryptionService(),
-                    vaultManager: VaultManager(
-                        database: try! DatabaseManager(enableSync: false),
-                        encryption: EncryptionService(),
-                        keychain: KeychainService()
-                    )
-                ),
+                apiKeyManager: akm,
                 clipboardManager: ClipboardManager()
             )
         )

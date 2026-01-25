@@ -122,7 +122,14 @@ public struct KeyListView: View {
 }
 
 #Preview {
-    NavigationStack {
+    setupPreviewDependencies()
+
+    let enc = EncryptionService()
+    let key = KeychainService()
+    let vm = VaultManager(encryption: enc, keychain: key)
+    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+
+    return NavigationStack {
         KeyListView(
             viewModel: KeyListViewModel(
                 vault: Vault(
@@ -131,15 +138,7 @@ public struct KeyListView: View {
                     colorHex: "#007AFF",
                     ownerPublicKey: Data()
                 ),
-                apiKeyManager: APIKeyManager(
-                    database: try! DatabaseManager(enableSync: false),
-                    encryption: EncryptionService(),
-                    vaultManager: VaultManager(
-                        database: try! DatabaseManager(enableSync: false),
-                        encryption: EncryptionService(),
-                        keychain: KeychainService()
-                    )
-                ),
+                apiKeyManager: akm,
                 clipboardManager: ClipboardManager()
             )
         )

@@ -1,4 +1,7 @@
+import Dependencies
 import Foundation
+import GRDB
+import SQLiteData
 import TestDriveCore
 import TestDrivePersistence
 
@@ -14,9 +17,9 @@ public final class SecurityWarningsViewModel {
     public var isLoading = false
     public var errorMessage: String?
 
+    @ObservationIgnored @Dependency(\.defaultDatabase) private var database
     private let apiKeyManager: APIKeyManager
     private let clipboardManager: ClipboardManager
-    private let database: DatabaseManager
 
     // MARK: - Initializer
 
@@ -25,15 +28,12 @@ public final class SecurityWarningsViewModel {
     /// - Parameters:
     ///   - apiKeyManager: The API key manager for key operations.
     ///   - clipboardManager: The clipboard manager for activity tracking.
-    ///   - database: The database manager for queries.
     public init(
         apiKeyManager: APIKeyManager,
-        clipboardManager: ClipboardManager,
-        database: DatabaseManager
+        clipboardManager: ClipboardManager
     ) {
         self.apiKeyManager = apiKeyManager
         self.clipboardManager = clipboardManager
-        self.database = database
     }
 
     // MARK: - Public Helpers

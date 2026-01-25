@@ -1,4 +1,7 @@
+import Dependencies
 import Foundation
+import GRDB
+import SQLiteData
 import TestDriveCore
 
 /// Manages API key operations including creation, encryption, and search.
@@ -9,7 +12,7 @@ import TestDriveCore
 @Observable
 public final class APIKeyManager {
 
-    private let database: DatabaseManager
+    @ObservationIgnored @Dependency(\.defaultDatabase) private var database
     private let encryption: EncryptionService
     private let vaultManager: VaultManager
 
@@ -18,15 +21,12 @@ public final class APIKeyManager {
     /// Creates a new API key manager.
     ///
     /// - Parameters:
-    ///   - database: The database manager.
     ///   - encryption: The encryption service.
     ///   - vaultManager: The vault manager for key access.
     public init(
-        database: DatabaseManager,
         encryption: EncryptionService,
         vaultManager: VaultManager
     ) {
-        self.database = database
         self.encryption = encryption
         self.vaultManager = vaultManager
     }

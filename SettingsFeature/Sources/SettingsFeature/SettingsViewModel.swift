@@ -1,4 +1,7 @@
+import Dependencies
 import Foundation
+import GRDB
+import SQLiteData
 import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
@@ -39,7 +42,7 @@ public final class SettingsViewModel {
     public var showingClearConfirmation = false
     public var exportURL: URL?
 
-    private let database: DatabaseManager
+    @ObservationIgnored @Dependency(\.defaultDatabase) private var database
     private let vaultManager: VaultManager
     private let clipboardManager: ClipboardManager
 
@@ -48,15 +51,12 @@ public final class SettingsViewModel {
     /// Creates a new settings view model.
     ///
     /// - Parameters:
-    ///   - database: The database manager for data operations.
     ///   - vaultManager: The vault manager for vault operations.
     ///   - clipboardManager: The clipboard manager for configuration.
     public init(
-        database: DatabaseManager,
         vaultManager: VaultManager,
         clipboardManager: ClipboardManager
     ) {
-        self.database = database
         self.vaultManager = vaultManager
         self.clipboardManager = clipboardManager
 

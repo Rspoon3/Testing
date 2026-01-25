@@ -1,25 +1,26 @@
+import Dependencies
 import Foundation
+import GRDB
+import SQLiteData
 import Testing
 @testable import TestDrivePersistence
 
 /// Tests for the VaultManager.
 @Suite struct VaultManagerTests {
 
-    let database: DatabaseManager
     let encryption: EncryptionService
     let keychain: KeychainService
     let vaultManager: VaultManager
 
     init() throws {
-        // Use in-memory database for testing
-        self.database = try DatabaseManager(
-            containerIdentifier: "iCloud.com.rspoon3.TestDrive.Test",
-            enableSync: false
-        )
+        // Set up in-memory database for testing
+        let _ = prepareDependencies {
+            $0.defaultDatabase = try! appDatabase()
+        }
+
         self.encryption = EncryptionService()
         self.keychain = KeychainService()
         self.vaultManager = VaultManager(
-            database: database,
             encryption: encryption,
             keychain: keychain
         )
@@ -161,11 +162,12 @@ import Testing
         try await vaultManager.wrapKeyForRecipient(vault: vault, participant: participant)
 
         // Get wrapped key from database
+        @Dependency(\.defaultDatabase) var database
         let wrappedKeys = try await database.read { db in
-            try db.query(WrappedVaultKey.self)
-                .filter(\.vaultID == vault.id)
-                .filter(\.recipientUserID == recipientUserID)
-                .fetchAll()
+            try WrappedVaultKey
+                .where { $0.vaultID.eq(vault.id) }
+                .filter { $0.recipientUserID == recipientUserID }
+                .fetchAll(db)
         }
 
         #expect(wrappedKeys.count == 1)

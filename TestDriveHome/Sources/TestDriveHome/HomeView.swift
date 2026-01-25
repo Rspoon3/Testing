@@ -6,7 +6,6 @@ import TestDrivePersistence
 /// Root view coordinating the main tab navigation.
 public struct HomeView: View {
 
-    @State private var database: DatabaseManager
     @State private var encryption: EncryptionService
     @State private var keychain: KeychainService
     @State private var vaultManager: VaultManager
@@ -17,23 +16,17 @@ public struct HomeView: View {
 
     /// Creates a new home view.
     public init() {
-        do {
-            let db = try DatabaseManager()
-            let enc = EncryptionService()
-            let key = KeychainService()
-            let vm = VaultManager(database: db, encryption: enc, keychain: key)
-            let akm = APIKeyManager(database: db, encryption: enc, vaultManager: vm)
-            let cm = ClipboardManager()
+        let enc = EncryptionService()
+        let key = KeychainService()
+        let vm = VaultManager(encryption: enc, keychain: key)
+        let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+        let cm = ClipboardManager()
 
-            self.database = db
-            self.encryption = enc
-            self.keychain = key
-            self.vaultManager = vm
-            self.apiKeyManager = akm
-            self.clipboardManager = cm
-        } catch {
-            fatalError("Failed to initialize services: \(error)")
-        }
+        self.encryption = enc
+        self.keychain = key
+        self.vaultManager = vm
+        self.apiKeyManager = akm
+        self.clipboardManager = cm
     }
 
     // MARK: - Body
@@ -52,8 +45,7 @@ public struct HomeView: View {
         VaultListView(
             viewModel: VaultListViewModel(
                 vaultManager: vaultManager,
-                apiKeyManager: apiKeyManager,
-                database: database
+                apiKeyManager: apiKeyManager
             )
         )
         .tabItem {
@@ -65,8 +57,7 @@ public struct HomeView: View {
         SecurityWarningsView(
             viewModel: SecurityWarningsViewModel(
                 apiKeyManager: apiKeyManager,
-                clipboardManager: clipboardManager,
-                database: database
+                clipboardManager: clipboardManager
             )
         )
         .tabItem {
@@ -77,7 +68,6 @@ public struct HomeView: View {
     private var settingsTab: some View {
         SettingsView(
             viewModel: SettingsViewModel(
-                database: database,
                 vaultManager: vaultManager,
                 clipboardManager: clipboardManager
             )

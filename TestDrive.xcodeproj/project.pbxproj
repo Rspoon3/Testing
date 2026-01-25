@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		946E0DF72F25ACF1009F64B2 /* TestDriveHome in Frameworks */ = {isa = PBXBuildFile; productRef = 946E0DF62F25ACF1009F64B2 /* TestDriveHome */; };
 		946E0DF92F25ACF1009F64B2 /* TestDrivePersistence in Frameworks */ = {isa = PBXBuildFile; productRef = 946E0DF82F25ACF1009F64B2 /* TestDrivePersistence */; };
+		947B479B2F25D95D00BC64FF /* TestDriveCore in Frameworks */ = {isa = PBXBuildFile; productRef = 947B479A2F25D95D00BC64FF /* TestDriveCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +66,7 @@
 			files = (
 				946E0DF72F25ACF1009F64B2 /* TestDriveHome in Frameworks */,
 				946E0DF92F25ACF1009F64B2 /* TestDrivePersistence in Frameworks */,
+				947B479B2F25D95D00BC64FF /* TestDriveCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,6 +134,7 @@
 			packageProductDependencies = (
 				946E0DF62F25ACF1009F64B2 /* TestDriveHome */,
 				946E0DF82F25ACF1009F64B2 /* TestDrivePersistence */,
+				947B479A2F25D95D00BC64FF /* TestDriveCore */,
 			);
 			productName = TestDrive;
 			productReference = 9483720E2EAE6B2E0094674D /* TestDrive.app */;
@@ -521,6 +524,10 @@
 		946E0DF82F25ACF1009F64B2 /* TestDrivePersistence */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TestDrivePersistence;
+		};
+		947B479A2F25D95D00BC64FF /* TestDriveCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TestDriveCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

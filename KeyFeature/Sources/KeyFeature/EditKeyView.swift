@@ -144,18 +144,17 @@ public struct EditKeyView: View {
 }
 
 #Preview {
-    EditKeyView(
+    setupPreviewDependencies()
+
+    let enc = EncryptionService()
+    let key = KeychainService()
+    let vm = VaultManager(encryption: enc, keychain: key)
+    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+
+    return EditKeyView(
         viewModel: EditKeyViewModel(
             vaultID: UUID(),
-            apiKeyManager: APIKeyManager(
-                database: try! DatabaseManager(enableSync: false),
-                encryption: EncryptionService(),
-                vaultManager: VaultManager(
-                    database: try! DatabaseManager(enableSync: false),
-                    encryption: EncryptionService(),
-                    keychain: KeychainService()
-                )
-            )
+            apiKeyManager: akm
         )
     )
 }
