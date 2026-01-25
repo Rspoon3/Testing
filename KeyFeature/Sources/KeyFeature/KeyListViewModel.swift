@@ -13,14 +13,20 @@ public final class KeyListViewModel {
     @ObservationIgnored @FetchAll(APIKey.none)
     public var keys: [APIKey]
 
-    @ObservationIgnored @FetchOne
-    public var vault: Vault
+    @ObservationIgnored @FetchOne(Vault.none)
+    private var observedVault: Vault?
 
     public var searchText = ""
     public var errorMessage: String?
     public var isLoading = false
     public var vaultForm: Vault.Draft?
 
+    /// The vault being displayed. Returns observed vault if loaded, otherwise initial vault.
+    public var vault: Vault {
+        observedVault ?? initialVault
+    }
+
+    private let initialVault: Vault
     public let vaultID: UUID
     public let apiKeyManager: APIKeyManager
     public let clipboardManager: ClipboardManager
@@ -56,7 +62,7 @@ public final class KeyListViewModel {
         clipboardManager: ClipboardManager,
         vaultManager: VaultManager
     ) {
-        self.vault = vault
+        self.initialVault = vault
         self.vaultID = vault.id
         self.apiKeyManager = apiKeyManager
         self.clipboardManager = clipboardManager
@@ -74,7 +80,7 @@ public final class KeyListViewModel {
     /// Loads the vault from database to observe changes.
     private func loadVault() async {
         await withErrorReporting {
-            try await $vault.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
+            try await $observedVault.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
         }
     }
 
