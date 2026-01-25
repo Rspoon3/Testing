@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		94D001012F25800000000001 /* SFSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 94D001002F25800000000001 /* SFSymbols */; };
+		94D001032F25800000000002 /* SwiftTools in Frameworks */ = {isa = PBXBuildFile; productRef = 94D001022F25800000000002 /* SwiftTools */; };
+		94D001052F25800000000003 /* SwiftPurchase in Frameworks */ = {isa = PBXBuildFile; productRef = 94D001042F25800000000003 /* SwiftPurchase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9483721C2EAE6B2F0094674D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -17,6 +23,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9458BC132F25850A00F69095 /* TestDriveAPI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveAPI; sourceTree = "<group>"; };
+		9458BC142F25850A00F69095 /* TestDriveApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveApp; sourceTree = "<group>"; };
+		9458BC9F2F25850A00F69095 /* TestDriveHome */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveHome; sourceTree = "<group>"; };
+		9458BCA02F25850A00F69095 /* TestDrivePersistence */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDrivePersistence; sourceTree = "<group>"; };
 		9483720E2EAE6B2E0094674D /* TestDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9483721B2EAE6B2F0094674D /* TestDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -32,6 +42,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		9458BC9E2F25850A00F69095 /* TestDriveCore */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TestDriveCore;
+			sourceTree = "<group>";
+		};
 		948372102EAE6B2E0094674D /* TestDrive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -52,6 +67,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94D001012F25800000000001 /* SFSymbols in Frameworks */,
+				94D001032F25800000000002 /* SwiftTools in Frameworks */,
+				94D001052F25800000000003 /* SwiftPurchase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,6 +86,11 @@
 		948372052EAE6B2E0094674D = {
 			isa = PBXGroup;
 			children = (
+				9458BC132F25850A00F69095 /* TestDriveAPI */,
+				9458BC142F25850A00F69095 /* TestDriveApp */,
+				9458BC9E2F25850A00F69095 /* TestDriveCore */,
+				9458BC9F2F25850A00F69095 /* TestDriveHome */,
+				9458BCA02F25850A00F69095 /* TestDrivePersistence */,
 				948372102EAE6B2E0094674D /* TestDrive */,
 				9483721E2EAE6B2F0094674D /* TestDriveTests */,
 				9483720F2EAE6B2E0094674D /* Products */,
@@ -99,10 +122,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				9458BC9E2F25850A00F69095 /* TestDriveCore */,
 				948372102EAE6B2E0094674D /* TestDrive */,
 			);
 			name = TestDrive;
 			packageProductDependencies = (
+				94D001002F25800000000001 /* SFSymbols */,
+				94D001022F25800000000002 /* SwiftTools */,
+				94D001042F25800000000003 /* SwiftPurchase */,
 			);
 			productName = TestDrive;
 			productReference = 9483720E2EAE6B2E0094674D /* TestDrive.app */;
@@ -159,6 +186,11 @@
 			);
 			mainGroup = 948372052EAE6B2E0094674D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				94D000FF2F25800000000000 /* XCRemoteSwiftPackageReference "SFSymbols" */,
+				94D001012F25800000000004 /* XCRemoteSwiftPackageReference "SwiftTools" */,
+				94D001032F25800000000005 /* XCRemoteSwiftPackageReference "SwiftPurchase" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9483720F2EAE6B2E0094674D /* Products */;
 			projectDirPath = "";
@@ -481,6 +513,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		94D000FF2F25800000000000 /* XCRemoteSwiftPackageReference "SFSymbols" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Rspoon3/SFSymbols";
+			requirement = {
+				kind = exactVersion;
+				version = 2.8.1;
+			};
+		};
+		94D001012F25800000000004 /* XCRemoteSwiftPackageReference "SwiftTools" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Rspoon3/SwiftTools";
+			requirement = {
+				kind = exactVersion;
+				version = 2.2.5;
+			};
+		};
+		94D001032F25800000000005 /* XCRemoteSwiftPackageReference "SwiftPurchase" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Rspoon3/SwiftPurchase";
+			requirement = {
+				kind = exactVersion;
+				version = 1.0.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		94D001002F25800000000001 /* SFSymbols */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94D000FF2F25800000000000 /* XCRemoteSwiftPackageReference "SFSymbols" */;
+			productName = SFSymbols;
+		};
+		94D001022F25800000000002 /* SwiftTools */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94D001012F25800000000004 /* XCRemoteSwiftPackageReference "SwiftTools" */;
+			productName = SwiftTools;
+		};
+		94D001042F25800000000003 /* SwiftPurchase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94D001032F25800000000005 /* XCRemoteSwiftPackageReference "SwiftPurchase" */;
+			productName = SwiftPurchase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 948372062EAE6B2E0094674D /* Project object */;
 }

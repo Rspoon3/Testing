@@ -1,0 +1,111 @@
+// swift-tools-version: 6.2
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
+@preconcurrency import PackageDescription
+
+let package = Package(
+    name: "TestDrivePersistence",
+    platforms: [
+        .iOS(.v18)
+    ],
+    products: [
+        .library(for: .testDrivePersistence)
+    ],
+    dependencies: [
+        .sqliteData,
+        .testDriveCore
+    ],
+    targets: [
+        .testDrivePersistence,
+        .unitTests(for: .testDrivePersistence)
+    ]
+)
+
+// MARK: - Products
+
+extension Product {
+
+    /// Returns a library product for the specified target.
+    ///
+    /// - Parameters:
+    ///   - target: The target.
+    ///   - type: The optional type of the library that's used to determine how
+    ///     to link to the library. Omit this parameter so Swift Package Manager
+    ///     can choose between static or dynamic linking (recommended).
+    /// - Returns: A library product for the specified target.
+    static func library(
+        for target: Target,
+        type: Library.LibraryType? = nil
+    ) -> Product {
+        .library(
+            name: target.name,
+            type: type,
+            targets: [target.name]
+        )
+    }
+}
+
+// MARK: - Targets
+
+extension Target.Dependency {
+
+    /// Returns a target dependency.
+    ///
+    /// - Parameter target: The target.
+    /// - Returns: A target dependency.
+    static func target(_ target: Target) -> Target.Dependency {
+        .target(name: target.name)
+    }
+}
+
+extension Target {
+
+    static let testDrivePersistence: Target = .target(
+        name: "TestDrivePersistence",
+        dependencies: [
+            .sqliteData,
+            .testDriveCore
+        ]
+    )
+
+    // MARK: Unit Tests
+
+    static func unitTests(
+        for target: Target,
+        additionalDependencies: [Target.Dependency] = [],
+        resources: [Resource] = []
+    ) -> Target {
+        .testTarget(
+            name: "\(target.name)Tests",
+            dependencies: [.target(target)] + additionalDependencies,
+            resources: resources
+        )
+    }
+}
+
+// MARK: - Dependencies
+
+extension Target.Dependency {
+
+    static let sqliteData: Target.Dependency = .product(
+        name: "SQLiteData",
+        package: "sqlite-data"
+    )
+
+    static let testDriveCore: Target.Dependency = .product(
+        name: "TestDriveCore",
+        package: "TestDriveCore"
+    )
+}
+
+extension Package.Dependency {
+
+    static let sqliteData: Package.Dependency = .package(
+        url: "https://github.com/pointfreeco/sqlite-data",
+        exact: "1.2.0"
+    )
+
+    static let testDriveCore: Package.Dependency = .package(
+        path: "../TestDriveCore"
+    )
+}
