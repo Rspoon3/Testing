@@ -65,6 +65,7 @@ extension Target {
         name: "TestDriveCore",
         dependencies: [
             .sqliteData,
+            .structuredQueriesCore,
             .sfSymbols,
             .swiftTools
         ]
@@ -91,6 +92,11 @@ extension Target.Dependency {
 
     static let sqliteData: Target.Dependency = .product(
         name: "SQLiteData",
+        package: "sqlite-data"
+    )
+
+    static let structuredQueriesCore: Target.Dependency = .product(
+        name: "StructuredQueriesCore",
         package: "sqlite-data"
     )
 

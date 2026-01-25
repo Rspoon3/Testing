@@ -23,8 +23,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9458BC132F25850A00F69095 /* TestDriveAPI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveAPI; sourceTree = "<group>"; };
-		9458BC142F25850A00F69095 /* TestDriveApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveApp; sourceTree = "<group>"; };
 		9458BC9F2F25850A00F69095 /* TestDriveHome */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveHome; sourceTree = "<group>"; };
 		9458BCA02F25850A00F69095 /* TestDrivePersistence */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDrivePersistence; sourceTree = "<group>"; };
 		9483720E2EAE6B2E0094674D /* TestDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,8 +84,6 @@
 		948372052EAE6B2E0094674D = {
 			isa = PBXGroup;
 			children = (
-				9458BC132F25850A00F69095 /* TestDriveAPI */,
-				9458BC142F25850A00F69095 /* TestDriveApp */,
 				9458BC9E2F25850A00F69095 /* TestDriveCore */,
 				9458BC9F2F25850A00F69095 /* TestDriveHome */,
 				9458BCA02F25850A00F69095 /* TestDrivePersistence */,
