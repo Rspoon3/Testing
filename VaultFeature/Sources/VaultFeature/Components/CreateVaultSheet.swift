@@ -1,4 +1,5 @@
 import SwiftUI
+import TestDrivePersistence
 
 /// Sheet for creating a new vault.
 struct CreateVaultSheet: View {
@@ -165,7 +166,8 @@ struct CreateVaultSheet: View {
                     encryption: EncryptionService(),
                     keychain: KeychainService()
                 )
-            )
+            ),
+            database: try! DatabaseManager(enableSync: false)
         )
     )
 }
