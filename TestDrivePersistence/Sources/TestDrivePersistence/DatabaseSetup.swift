@@ -24,7 +24,7 @@ public func appDatabase() throws -> any DatabaseWriter {
                 .order(by: \.createdAt)
                 .leftJoin(VaultPreference.all) { $0.id.eq($1.vaultID) }
                 .leftJoin(APIKey.all) { $0.id.eq($2.vaultID) }
-                .group(by: \.id)
+                .group { vault, _, _ in vault.id }
                 .select {
                     VaultRow.Columns(
                         vault: $0,
