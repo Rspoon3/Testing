@@ -5,6 +5,7 @@ import TestDriveCore
 ///
 /// This manager handles the full lifecycle of API keys, coordinating with
 /// the VaultManager for encryption key access.
+@MainActor
 @Observable
 public final class APIKeyManager {
 
