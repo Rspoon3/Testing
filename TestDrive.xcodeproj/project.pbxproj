@@ -17,10 +17,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9458BC9F2F25850A00F69095 /* TestDriveHome */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveHome; sourceTree = "<group>"; };
-		9458BCA02F25850A00F69095 /* TestDrivePersistence */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDrivePersistence; sourceTree = "<group>"; };
 		9483720E2EAE6B2E0094674D /* TestDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9483721B2EAE6B2F0094674D /* TestDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		94A574492F25AC1B00238D9B /* TestDriveHome */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDriveHome; sourceTree = "<group>"; };
+		94A5744A2F25AC1B00238D9B /* TestDrivePersistence */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestDrivePersistence; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -34,11 +34,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		9458BC9E2F25850A00F69095 /* TestDriveCore */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TestDriveCore;
-			sourceTree = "<group>";
-		};
 		948372102EAE6B2E0094674D /* TestDrive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -50,6 +45,26 @@
 		9483721E2EAE6B2F0094674D /* TestDriveTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = TestDriveTests;
+			sourceTree = "<group>";
+		};
+		94A573982F25AC1B00238D9B /* KeyFeature */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KeyFeature;
+			sourceTree = "<group>";
+		};
+		94A5742A2F25AC1B00238D9B /* SettingsFeature */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SettingsFeature;
+			sourceTree = "<group>";
+		};
+		94A574482F25AC1B00238D9B /* TestDriveCore */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TestDriveCore;
+			sourceTree = "<group>";
+		};
+		94A574E22F25AC1B00238D9B /* VaultFeature */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = VaultFeature;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,9 +90,12 @@
 		948372052EAE6B2E0094674D = {
 			isa = PBXGroup;
 			children = (
-				9458BC9E2F25850A00F69095 /* TestDriveCore */,
-				9458BC9F2F25850A00F69095 /* TestDriveHome */,
-				9458BCA02F25850A00F69095 /* TestDrivePersistence */,
+				94A573982F25AC1B00238D9B /* KeyFeature */,
+				94A5742A2F25AC1B00238D9B /* SettingsFeature */,
+				94A574482F25AC1B00238D9B /* TestDriveCore */,
+				94A574492F25AC1B00238D9B /* TestDriveHome */,
+				94A5744A2F25AC1B00238D9B /* TestDrivePersistence */,
+				94A574E22F25AC1B00238D9B /* VaultFeature */,
 				948372102EAE6B2E0094674D /* TestDrive */,
 				9483721E2EAE6B2F0094674D /* TestDriveTests */,
 				9483720F2EAE6B2E0094674D /* Products */,
@@ -109,8 +127,11 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				9458BC9E2F25850A00F69095 /* TestDriveCore */,
 				948372102EAE6B2E0094674D /* TestDrive */,
+				94A573982F25AC1B00238D9B /* KeyFeature */,
+				94A5742A2F25AC1B00238D9B /* SettingsFeature */,
+				94A574482F25AC1B00238D9B /* TestDriveCore */,
+				94A574E22F25AC1B00238D9B /* VaultFeature */,
 			);
 			name = TestDrive;
 			packageProductDependencies = (

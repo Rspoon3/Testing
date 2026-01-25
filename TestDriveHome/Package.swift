@@ -116,7 +116,7 @@ extension Package.Dependency {
 
     static let sfSymbols: Package.Dependency = .package(
         url: "https://github.com/Rspoon3/SFSymbols",
-        exact: "2.8.1"
+        exact: "3.0.0"
     )
 
     static let testDriveCore: Package.Dependency = .package(
