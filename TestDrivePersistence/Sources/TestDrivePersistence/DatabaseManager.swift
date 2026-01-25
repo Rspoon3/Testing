@@ -13,7 +13,7 @@ import TestDriveCore
 @Observable
 public final class DatabaseManager {
 
-    private let database: DatabaseQueue
+    private let database: any DatabaseWriter
     private var syncEngine: SyncEngine?
 
     public var isSyncing = false
@@ -32,14 +32,12 @@ public final class DatabaseManager {
         containerIdentifier: String = "iCloud.com.rspoon3.TestDrive",
         enableSync: Bool = true
     ) throws {
-        let fileURL = try Self.databaseURL()
-
         // Use SQLiteData's defaultDatabase to enable @FetchAll observation
         var configuration = GRDB.Configuration()
         configuration.prepareDatabase { db in
             try db.attachMetadatabase()
         }
-        self.database = try SQLiteData.defaultDatabase(at: fileURL.path, configuration: configuration)
+        self.database = try SQLiteData.defaultDatabase(configuration: configuration)
         self.syncEngine = nil
 
         // Create database schema BEFORE initializing SyncEngine
