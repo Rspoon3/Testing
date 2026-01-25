@@ -80,8 +80,8 @@ public final class APIKeyManager {
         )
 
         // Save to database
-        try await database.write { _ in
-            // db.insert(apiKey) - SQLiteData API
+        try await database.write { db in
+            try APIKey.insert { apiKey }.execute(db)
         }
 
         return apiKey
@@ -113,8 +113,8 @@ public final class APIKeyManager {
     /// - Parameter key: The API key with updated metadata.
     /// - Throws: Database error if update fails.
     public func updateKey(_ key: APIKey) async throws {
-        try await database.write { _ in
-            // db.update(key) - SQLiteData API
+        try await database.write { db in
+            try APIKey.update(key).execute(db)
         }
     }
 
@@ -123,8 +123,8 @@ public final class APIKeyManager {
     /// - Parameter key: The API key to delete.
     /// - Throws: Database error if deletion fails.
     public func deleteKey(_ key: APIKey) async throws {
-        try await database.write { _ in
-            // db.delete(key) - SQLiteData API
+        try await database.write { db in
+            try APIKey.delete(key).execute(db)
         }
     }
 
@@ -149,9 +149,11 @@ public final class APIKeyManager {
     /// - Returns: Array of API keys sorted by creation date (newest first).
     /// - Throws: Database error if fetch fails.
     public func fetchKeys(in vaultID: UUID) async throws -> [APIKey] {
-        try await database.read { _ in
-            // db.query(APIKey.self).filter(\.vaultID == vaultID).sorted...
-            []
+        try await database.read { db in
+            try APIKey
+                .where { $0.vaultID.eq(vaultID) }
+                .order { $0.createdAt.desc() }
+                .fetchAll(db)
         }
     }
 
@@ -160,9 +162,10 @@ public final class APIKeyManager {
     /// - Returns: Array of all API keys sorted by creation date.
     /// - Throws: Database error if fetch fails.
     public func fetchAllKeys() async throws -> [APIKey] {
-        try await database.read { _ in
-            // db.query(APIKey.self).sorted(by: \.createdAt, order: .descending).fetchAll()
-            []
+        try await database.read { db in
+            try APIKey
+                .order { $0.createdAt.desc() }
+                .fetchAll(db)
         }
     }
 
@@ -178,10 +181,18 @@ public final class APIKeyManager {
     public func searchKeys(query: String, in vaultID: UUID? = nil) async throws -> [APIKey] {
         let lowercaseQuery = query.lowercased()
 
-        return try await database.read { _ in
-            // SQLiteData query with filtering
-            // Placeholder implementation
-            let allKeys: [APIKey] = []
+        return try await database.read { db in
+            let allKeys: [APIKey]
+
+            if let vaultID {
+                allKeys = try APIKey
+                    .where { $0.vaultID.eq(vaultID) }
+                    .fetchAll(db)
+            } else {
+                allKeys = try APIKey.fetchAll(db)
+            }
+
+            // Client-side filtering for text search (SQLiteData doesn't support LIKE easily)
             return allKeys.filter { key in
                 key.label.lowercased().contains(lowercaseQuery) ||
                 key.websiteDomain?.lowercased().contains(lowercaseQuery) == true ||
@@ -200,9 +211,12 @@ public final class APIKeyManager {
     public func fetchKeysNeedingRotation() async throws -> [APIKey] {
         let warningDate = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
 
-        return try await database.read { _ in
-            // db.query(APIKey.self).fetchAll() - SQLiteData API
-            let allKeys: [APIKey] = []
+        return try await database.read { db in
+            let allKeys = try APIKey
+                .order { $0.createdAt.desc() }
+                .fetchAll(db)
+
+            // Client-side filtering for optional date comparison
             return allKeys.filter { key in
                 guard let rotateAt = key.rotateAt else { return false }
                 return rotateAt <= warningDate
@@ -222,9 +236,20 @@ public final class APIKeyManager {
         environment: APIEnvironment,
         in vaultID: UUID? = nil
     ) async throws -> [APIKey] {
-        try await database.read { _ in
-            // db.query(APIKey.self).filter... - SQLiteData API
-            []
+        try await database.read { db in
+            if let vaultID {
+                // Fetch by environment then filter by vaultID
+                return try APIKey
+                    .where { $0.environment.eq(environment) }
+                    .order { $0.createdAt.desc() }
+                    .fetchAll(db)
+                    .filter { $0.vaultID == vaultID }
+            } else {
+                return try APIKey
+                    .where { $0.environment.eq(environment) }
+                    .order { $0.createdAt.desc() }
+                    .fetchAll(db)
+            }
         }
     }
 
@@ -239,9 +264,18 @@ public final class APIKeyManager {
         withTags tags: [String],
         in vaultID: UUID? = nil
     ) async throws -> [APIKey] {
-        try await database.read { _ in
-            // db.query(APIKey.self).filter... - SQLiteData API
-            let allKeys: [APIKey] = []
+        try await database.read { db in
+            let allKeys: [APIKey]
+
+            if let vaultID {
+                allKeys = try APIKey
+                    .where { $0.vaultID.eq(vaultID) }
+                    .fetchAll(db)
+            } else {
+                allKeys = try APIKey.fetchAll(db)
+            }
+
+            // Client-side filtering for tag matching
             return allKeys.filter { key in
                 !Set(key.tags).isDisjoint(with: Set(tags))
             }
@@ -256,9 +290,10 @@ public final class APIKeyManager {
     /// - Returns: The number of keys.
     /// - Throws: Database error if count fails.
     public func keyCount(in vaultID: UUID) async throws -> Int {
-        try await database.read { _ in
-            // db.query(APIKey.self).filter(\.vaultID == vaultID).count()
-            0
+        try await database.read { db in
+            try APIKey
+                .where { $0.vaultID.eq(vaultID) }
+                .fetchCount(db)
         }
     }
 

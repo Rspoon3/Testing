@@ -109,7 +109,7 @@ extension Package.Dependency {
 
     static let sqliteData: Package.Dependency = .package(
         url: "https://github.com/pointfreeco/sqlite-data",
-        exact: "1.2.0"
+        exact: "1.5.0"
     )
 
     static let grdb: Package.Dependency = .package(

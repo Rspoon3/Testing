@@ -14,7 +14,8 @@ let package = Package(
     dependencies: [
         .sfSymbols,
         .testDriveCore,
-        .testDrivePersistence
+        .testDrivePersistence,
+        .sqliteData
     ],
     targets: [
         .keyFeature,
@@ -54,7 +55,8 @@ extension Target {
         dependencies: [
             .sfSymbols,
             .testDriveCore,
-            .testDrivePersistence
+            .testDrivePersistence,
+            .sqliteData
         ]
     )
 
@@ -89,6 +91,11 @@ extension Target.Dependency {
         name: "TestDrivePersistence",
         package: "TestDrivePersistence"
     )
+
+    static let sqliteData: Target.Dependency = .product(
+        name: "SQLiteData",
+        package: "sqlite-data"
+    )
 }
 
 extension Package.Dependency {
@@ -104,5 +111,10 @@ extension Package.Dependency {
 
     static let testDrivePersistence: Package.Dependency = .package(
         path: "../TestDrivePersistence"
+    )
+
+    static let sqliteData: Package.Dependency = .package(
+        url: "https://github.com/pointfreeco/sqlite-data",
+        exact: "1.5.0"
     )
 }

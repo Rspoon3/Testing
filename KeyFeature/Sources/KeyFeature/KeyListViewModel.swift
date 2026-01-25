@@ -1,4 +1,5 @@
 import Foundation
+import SQLiteData
 import TestDriveCore
 import TestDrivePersistence
 
@@ -9,10 +10,12 @@ import TestDrivePersistence
 @Observable
 public final class KeyListViewModel {
 
-    public var keys: [APIKey] = []
+    @ObservationIgnored @FetchAll(APIKey.none)
+    public var keys: [APIKey]
+
     public var searchText = ""
-    public var isLoading = false
     public var errorMessage: String?
+    public var isLoading = false
 
     public let vault: Vault
     public let apiKeyManager: APIKeyManager
@@ -59,7 +62,7 @@ public final class KeyListViewModel {
         errorMessage = nil
 
         do {
-            keys = try await apiKeyManager.fetchKeys(in: vault.id)
+            try await $keys.load(APIKey.where { $0.vaultID == vault.id })
         } catch {
             errorMessage = "Failed to load keys: \(error.localizedDescription)"
         }
@@ -72,7 +75,7 @@ public final class KeyListViewModel {
     /// - Parameter key: The key to delete.
     public func deleteKey(_ key: APIKey) async throws {
         try await apiKeyManager.deleteKey(key)
-        keys.removeAll { $0.id == key.id }
+        // @FetchAll automatically updates keys array
     }
 
     /// Copies a key's secret to the clipboard.
@@ -80,14 +83,10 @@ public final class KeyListViewModel {
     /// - Parameter key: The key whose secret to copy.
     public func copySecret(_ key: APIKey) async throws {
         let secret = try await apiKeyManager.getSecret(for: key)
-        await clipboardManager.copy(secret, label: key.label)
+        clipboardManager.copy(secret, label: key.label, keyID: key.id)
 
         // Mark key as used
         try await apiKeyManager.markAsUsed(key)
-
-        // Update local copy
-        if let index = keys.firstIndex(where: { $0.id == key.id }) {
-            keys[index].lastUsedAt = Date()
-        }
+        // @FetchAll automatically updates keys array
     }
 }

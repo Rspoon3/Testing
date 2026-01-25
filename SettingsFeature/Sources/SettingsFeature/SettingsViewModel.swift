@@ -106,7 +106,7 @@ public final class SettingsViewModel {
             }
 
             // Clear clipboard
-            await clipboardManager.clearClipboard()
+            clipboardManager.clearClipboard()
 
             // Clear recent copies
             clipboardManager.recentCopies = []

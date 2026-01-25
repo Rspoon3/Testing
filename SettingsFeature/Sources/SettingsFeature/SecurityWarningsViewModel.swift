@@ -143,7 +143,7 @@ public final class SecurityWarningsViewModel {
 
     /// Finds recent clipboard activity.
     private func findRecentClipboardActivity() async -> [SecurityWarning] {
-        let recentCopies = await clipboardManager.recentCopies
+        let recentCopies = clipboardManager.recentCopies
         let now = Date()
 
         // Only show copies from last 24 hours

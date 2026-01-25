@@ -1,6 +1,7 @@
 import CloudKit
 import CryptoKit
 import Foundation
+import GRDB
 import TestDriveCore
 
 /// Manages vault operations including creation, sharing, and key wrapping.
@@ -85,11 +86,9 @@ public final class VaultManager {
             identifier: "owner-\(vaultID.uuidString)"
         )
 
-        // Save vault to database
-        // Note: Actual SQLiteData API will be used in production
-        // This is a placeholder for the implementation
-        try await database.write { _ in
-            // db.insert(vault) - SQLiteData API
+        // Save vault to database using SQLiteData API
+        try await database.write { db in
+            try Vault.insert { vault }.execute(db)
         }
 
         return vault
@@ -113,11 +112,14 @@ public final class VaultManager {
     /// - Parameter vault: The vault with updated metadata.
     /// - Throws: Database error if update fails.
     public func updateVault(_ vault: Vault) async throws {
-        var updatedVault = vault
-        updatedVault.updatedAt = Date()
+        let updatedVault = {
+            var v = vault
+            v.updatedAt = Date()
+            return v
+        }()
 
-        try await database.write { _ in
-            // db.update(updatedVault) - SQLiteData API
+        try await database.write { db in
+            try Vault.update(updatedVault).execute(db)
         }
     }
 
@@ -127,8 +129,8 @@ public final class VaultManager {
     /// - Throws: Database or keychain error if deletion fails.
     public func deleteVault(_ vault: Vault) async throws {
         // Delete from database (cascade deletes API keys)
-        try await database.write { _ in
-            // db.delete(vault) - SQLiteData API
+        try await database.write { db in
+            try Vault.delete(vault).execute(db)
         }
 
         // Clear Keychain data
@@ -141,9 +143,8 @@ public final class VaultManager {
     /// - Returns: Array of all vaults sorted by sort order.
     /// - Throws: Database error if fetch fails.
     public func fetchAllVaults() async throws -> [Vault] {
-        try await database.read { _ in
-            // db.query(Vault.self).sorted(by: \.sortOrder).fetchAll() - SQLiteData API
-            []
+        try await database.read { db in
+            try Vault.order(by: \.sortOrder).fetchAll(db)
         }
     }
 
@@ -193,8 +194,21 @@ public final class VaultManager {
         let publicKeyData = encryption.publicKeyData(from: privateKey)
 
         // Update participant record with public key
-        try await database.write { _ in
-            // SQLiteData query and update operations
+        try await database.write { db in
+            // Find the participant record for this vault and user
+            let participants = try VaultParticipant
+                .where { $0.vaultID.eq(vault.id) }
+                .fetchAll(db)
+
+            guard var participant = participants.first(where: { $0.userID == recipientUserID }) else {
+                throw VaultManagerError.participantNotFound
+            }
+
+            // Update with public key
+            participant.publicKey = publicKeyData
+            participant.acceptanceStatus = .accepted
+
+            try VaultParticipant.update(participant).execute(db)
         }
     }
 
@@ -258,8 +272,8 @@ public final class VaultManager {
         )
 
         // Save to database
-        try await database.write { _ in
-            // db.insert(wrappedKey) - SQLiteData API
+        try await database.write { db in
+            try WrappedVaultKey.insert { wrappedKey }.execute(db)
         }
     }
 
@@ -322,9 +336,11 @@ public final class VaultManager {
     /// - Returns: Array of participants.
     /// - Throws: Database error if fetch fails.
     public func fetchParticipants(for vaultID: UUID) async throws -> [VaultParticipant] {
-        try await database.read { _ in
-            // db.query(VaultParticipant.self).filter(\.vaultID == vaultID).fetchAll()
-            []
+        try await database.read { db in
+            try VaultParticipant
+                .where { $0.vaultID.eq(vaultID) }
+                .order { $0.addedAt }
+                .fetchAll(db)
         }
     }
 
@@ -333,8 +349,20 @@ public final class VaultManager {
     /// - Parameter participant: The participant to revoke.
     /// - Throws: Database error if deletion fails.
     public func revokeShare(for participant: VaultParticipant) async throws {
-        try await database.write { _ in
-            // Delete wrapped keys and participant - SQLiteData API
+        try await database.write { db in
+            // Delete all wrapped keys for this participant
+            // Fetch by vaultID then filter by recipientUserID
+            let wrappedKeys = try WrappedVaultKey
+                .where { $0.vaultID.eq(participant.vaultID) }
+                .fetchAll(db)
+                .filter { $0.recipientUserID == participant.userID }
+
+            for wrappedKey in wrappedKeys {
+                try WrappedVaultKey.delete(wrappedKey).execute(db)
+            }
+
+            // Delete the participant record
+            try VaultParticipant.delete(participant).execute(db)
         }
     }
 }
@@ -354,4 +382,7 @@ public enum VaultManagerError: Error {
 
     /// The wrapped vault key has an invalid format.
     case invalidWrappedKey
+
+    /// The participant record was not found in the database.
+    case participantNotFound
 }

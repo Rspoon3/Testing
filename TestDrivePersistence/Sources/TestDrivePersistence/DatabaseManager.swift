@@ -14,7 +14,7 @@ import TestDriveCore
 public final class DatabaseManager {
 
     private let database: DatabaseQueue
-    private let syncEngine: SyncEngine?
+    private var syncEngine: SyncEngine?
 
     public var isSyncing = false
     public var lastSyncDate: Date?
@@ -34,7 +34,16 @@ public final class DatabaseManager {
     ) throws {
         let fileURL = try Self.databaseURL()
 
-        self.database = try DatabaseQueue(path: fileURL.path)
+        // Use SQLiteData's defaultDatabase to enable @FetchAll observation
+        var configuration = GRDB.Configuration()
+        configuration.prepareDatabase { db in
+            try db.attachMetadatabase()
+        }
+        self.database = try SQLiteData.defaultDatabase(at: fileURL.path, configuration: configuration)
+        self.syncEngine = nil
+
+        // Create database schema BEFORE initializing SyncEngine
+        try initializeDatabase()
 
         if enableSync {
             self.syncEngine = try SyncEngine(
@@ -42,11 +51,7 @@ public final class DatabaseManager {
                 tables: APIKey.self, Vault.self, VaultParticipant.self, WrappedVaultKey.self,
                 containerIdentifier: containerIdentifier
             )
-        } else {
-            self.syncEngine = nil
         }
-
-        try initializeDatabase()
     }
 
     // MARK: - Database Operations
@@ -90,11 +95,77 @@ public final class DatabaseManager {
 
     /// Initializes the database schema.
     ///
-    /// SQLiteData's @Table macro handles schema creation automatically.
-    /// This method is here for any additional setup needed.
+    /// Creates all necessary tables before SyncEngine initialization.
     private func initializeDatabase() throws {
-        // SQLiteData @Table macro creates tables automatically
-        // Additional indexes or constraints can be added here if needed
+        var migrator = DatabaseMigrator()
+
+        // Migration v1: Create initial schema
+        migrator.registerMigration("v1") { db in
+            // Create vaults table
+            try db.create(table: "vaults") { t in
+                t.column("id", .blob).notNull().primaryKey()
+                t.column("name", .text).notNull()
+                t.column("iconName", .text).notNull()
+                t.column("colorHex", .text).notNull()
+                t.column("sortOrder", .integer).notNull()
+                t.column("isDefault", .boolean).notNull()
+                t.column("createdAt", .datetime).notNull()
+                t.column("updatedAt", .datetime).notNull()
+                t.column("ownerPublicKey", .blob).notNull()
+                t.column("ckRecordID", .text)
+                t.column("ckShareID", .text)
+                t.column("isShared", .boolean).notNull()
+                t.column("ownerUserID", .text)
+            }
+
+            // Create apiKeys table
+            try db.create(table: "apiKeys") { t in
+                t.column("id", .blob).notNull().primaryKey()
+                t.column("label", .text).notNull()
+                t.column("websiteDomain", .text)
+                t.column("company", .text)
+                t.column("environment", .text).notNull()
+                t.column("tagsString", .text).notNull()
+                t.column("createdAt", .datetime).notNull()
+                t.column("rotateAt", .datetime)
+                t.column("lastUsedAt", .datetime)
+                t.column("notes", .text).notNull()
+                t.column("vaultID", .blob).notNull()
+                t.column("encryptedSecret", .blob).notNull()
+                t.column("nonce", .blob).notNull()
+                t.column("ckRecordID", .text)
+
+                t.foreignKey(["vaultID"], references: "vaults", columns: ["id"], onDelete: .cascade)
+            }
+
+            // Create vaultParticipants table
+            try db.create(table: "vaultParticipants") { t in
+                t.column("id", .blob).notNull().primaryKey()
+                t.column("vaultID", .blob).notNull()
+                t.column("userID", .text).notNull()
+                t.column("publicKey", .blob)
+                t.column("permission", .text).notNull()
+                t.column("acceptanceStatus", .text).notNull()
+                t.column("addedAt", .datetime).notNull()
+
+                t.foreignKey(["vaultID"], references: "vaults", columns: ["id"], onDelete: .cascade)
+            }
+
+            // Create wrappedVaultKeys table
+            try db.create(table: "wrappedVaultKeys") { t in
+                t.column("id", .blob).notNull().primaryKey()
+                t.column("vaultID", .blob).notNull()
+                t.column("recipientUserID", .text).notNull()
+                t.column("encryptedVaultKey", .blob).notNull()
+                t.column("ephemeralPublicKey", .blob).notNull()
+                t.column("wrappedAt", .datetime).notNull()
+                t.column("ckRecordID", .text)
+
+                t.foreignKey(["vaultID"], references: "vaults", columns: ["id"], onDelete: .cascade)
+            }
+        }
+
+        try migrator.migrate(database)
     }
 
     /// Observes sync state changes.

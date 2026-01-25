@@ -1,4 +1,5 @@
 import Foundation
+import SQLiteData
 import TestDriveCore
 import TestDrivePersistence
 
@@ -9,10 +10,12 @@ import TestDrivePersistence
 @Observable
 public final class VaultListViewModel {
 
-    public var vaults: [Vault] = []
-    public var isLoading = false
+    @ObservationIgnored @FetchAll(Vault.order(by: \.sortOrder))
+    public var vaults: [Vault]
+
     public var errorMessage: String?
     public var keyCounts: [UUID: Int] = [:]
+    public var isLoading = false
 
     public let vaultManager: VaultManager
     public let apiKeyManager: APIKeyManager
@@ -44,16 +47,23 @@ public final class VaultListViewModel {
         errorMessage = nil
 
         do {
-            vaults = try await vaultManager.fetchAllVaults()
-            await loadKeyCounts()
-
-            // Trigger sync with CloudKit
-            try? await database.startSync()
+            try await $vaults.load(Vault.order(by: \.sortOrder))
+            await updateKeyCounts()
         } catch {
             errorMessage = "Failed to load vaults: \(error.localizedDescription)"
         }
 
         isLoading = false
+    }
+
+    /// Loads key counts for all vaults.
+    public func loadKeyCounts() async {
+        await updateKeyCounts()
+    }
+
+    /// Starts sync with CloudKit.
+    public func startSync() async {
+        try? await database.startSync()
     }
 
     /// Creates a new vault.
@@ -73,7 +83,7 @@ public final class VaultListViewModel {
             colorHex: colorHex
         )
 
-        vaults.append(vault)
+        // @FetchAll automatically updates vaults array
         keyCounts[vault.id] = 0
     }
 
@@ -82,14 +92,14 @@ public final class VaultListViewModel {
     /// - Parameter vault: The vault to delete.
     public func deleteVault(_ vault: Vault) async throws {
         try await vaultManager.deleteVault(vault)
-        vaults.removeAll { $0.id == vault.id }
+        // @FetchAll automatically updates vaults array
         keyCounts.removeValue(forKey: vault.id)
     }
 
     // MARK: - Private Helpers
 
-    /// Loads key counts for all vaults.
-    private func loadKeyCounts() async {
+    /// Updates key counts for all vaults.
+    private func updateKeyCounts() async {
         let vaultIDs = vaults.map(\.id)
 
         do {
