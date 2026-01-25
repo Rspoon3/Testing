@@ -82,7 +82,7 @@ struct TagInputView: View {
             TagInputView(
                 tags: $tags,
                 onAdd: { tags.append($0) },
-                onRemove: { tags.removeAll { $0 == $1 } }
+                onRemove: { tag in tags.removeAll { $0 == tag } }
             )
         }
     }
