@@ -24,26 +24,86 @@ public struct VaultListView: View {
     public var body: some View {
         NavigationStack {
             List {
-                ForEach(viewModel.vaults) { vault in
-                    NavigationLink {
-                        KeyListView(
-                            viewModel: KeyListViewModel(
-                                vault: vault,
-                                apiKeyManager: viewModel.getAPIKeyManager(),
-                                clipboardManager: ClipboardManager()
-                            )
-                        )
-                    } label: {
-                        VaultRowView(vault: vault, keyCount: 0)
+                if !viewModel.pinnedVaults.isEmpty {
+                    Section {
+                        ForEach(viewModel.pinnedVaults) { vault in
+                            NavigationLink {
+                                KeyListView(
+                                    viewModel: KeyListViewModel(
+                                        vault: vault,
+                                        apiKeyManager: viewModel.getAPIKeyManager(),
+                                        clipboardManager: ClipboardManager()
+                                    )
+                                )
+                            } label: {
+                                VaultRowView(vault: vault, keyCount: 0)
+                            }
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    Task {
+                                        await viewModel.deleteVault(vault)
+                                    }
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                                Button {
+                                    Task {
+                                        await viewModel.togglePin(for: vault)
+                                    }
+                                } label: {
+                                    Image(systemName: "pin.slash")
+                                }
+                                .tint(.orange)
+                            }
+                        }
+                    } header: {
+                        Text("Pinned")
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                            .textCase(nil)
                     }
                 }
-                .onDelete { indexSet in
-                    Task {
-                        await viewModel.deleteVaults(at: indexSet)
+
+                Section {
+                    ForEach(viewModel.unpinnedVaults) { vault in
+                        NavigationLink {
+                            KeyListView(
+                                viewModel: KeyListViewModel(
+                                    vault: vault,
+                                    apiKeyManager: viewModel.getAPIKeyManager(),
+                                    clipboardManager: ClipboardManager()
+                                )
+                            )
+                        } label: {
+                            VaultRowView(vault: vault, keyCount: 0)
+                        }
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                Task {
+                                    await viewModel.deleteVault(vault)
+                                }
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            Button {
+                                Task {
+                                    await viewModel.togglePin(for: vault)
+                                }
+                            } label: {
+                                Image(systemName: "pin")
+                            }
+                            .tint(.orange)
+                        }
                     }
+                } header: {
+                    Text("Vaults")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .textCase(nil)
                 }
             }
-            .navigationTitle("Vaults (\(viewModel.vaults.count))")
+            .navigationTitle("Vaults")
+            .searchable(text: $viewModel.searchText, prompt: "Search vaults")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

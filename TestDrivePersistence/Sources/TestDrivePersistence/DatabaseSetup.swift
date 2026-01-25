@@ -34,6 +34,7 @@ public func appDatabase() throws -> any DatabaseWriter {
             t.column("iconName", .text).notNull()
             t.column("colorHex", .text).notNull()
             t.column("sortOrder", .integer).notNull()
+            t.column("isPinned", .boolean).notNull().defaults(to: false)
             t.column("isDefault", .boolean).notNull()
             t.column("createdAt", .datetime).notNull()
             t.column("updatedAt", .datetime).notNull()
