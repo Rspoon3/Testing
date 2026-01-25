@@ -6,7 +6,8 @@
 let package = Package(
     name: "TestDrivePersistence",
     platforms: [
-        .iOS(.v26)
+        .iOS(.v26),
+        .macOS(.v15)
     ],
     products: [
         .library(for: .testDrivePersistence)

@@ -122,7 +122,7 @@ extension Package.Dependency {
 
     static let structuredQueries: Package.Dependency = .package(
         url: "https://github.com/pointfreeco/swift-structured-queries",
-        from: "1.0.0"
+        exact: "0.28.0"
     )
 
     static let sfSymbols: Package.Dependency = .package(
