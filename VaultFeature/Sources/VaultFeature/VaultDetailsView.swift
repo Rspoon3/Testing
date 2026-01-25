@@ -9,7 +9,6 @@ public struct VaultDetailsView: View {
 
     @State private var viewModel: VaultDetailsViewModel
     @State private var showingAddSheet = false
-    @State private var selectedKey: APIKey?
 
     // MARK: - Initializer
 
@@ -71,15 +70,6 @@ public struct VaultDetailsView: View {
                 )
             )
         }
-        .navigationDestination(item: $selectedKey) { key in
-            KeyDetailView(
-                viewModel: KeyDetailViewModel(
-                    key: key,
-                    apiKeyManager: viewModel.apiKeyManager,
-                    clipboardManager: viewModel.clipboardManager
-                )
-            )
-        }
     }
 
     // MARK: - Private Views
@@ -113,12 +103,17 @@ public struct VaultDetailsView: View {
     }
 
     private func keyRow(for key: APIKey, isPinned: Bool) -> some View {
-        Button {
-            selectedKey = key
+        NavigationLink {
+            KeyDetailView(
+                viewModel: KeyDetailViewModel(
+                    key: key,
+                    apiKeyManager: viewModel.apiKeyManager,
+                    clipboardManager: viewModel.clipboardManager
+                )
+            )
         } label: {
             KeyRowView(key: key)
         }
-        .buttonStyle(.plain)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) {
                 deleteKey(key)
