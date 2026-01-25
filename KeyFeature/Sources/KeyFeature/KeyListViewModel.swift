@@ -14,7 +14,7 @@ public final class KeyListViewModel {
     public var keys: [APIKey]
 
     @ObservationIgnored @FetchAll(Vault.none)
-    private var vaults: [Vault]
+    private var currentVaultArray: [Vault]
 
     public var searchText = ""
     public var errorMessage: String?
@@ -22,8 +22,9 @@ public final class KeyListViewModel {
     public var vaultForm: Vault.Draft?
 
     /// The vault being displayed. Automatically updates when vault is edited.
+    /// Note: currentVaultArray contains at most one element due to WHERE id = ? query.
     public var vault: Vault {
-        vaults.first ?? initialVault
+        currentVaultArray.first ?? initialVault
     }
 
     private let initialVault: Vault
@@ -78,7 +79,8 @@ public final class KeyListViewModel {
 
         do {
             async let keysTask = $keys.load(APIKey.where { $0.vaultID.eq(vaultID) }, animation: .default)
-            async let vaultTask = $vaults.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
+            // Query by primary key - only returns one row (performant)
+            async let vaultTask = $currentVaultArray.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
 
             _ = try await (keysTask.task, vaultTask.task)
         } catch {
