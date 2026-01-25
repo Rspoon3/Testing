@@ -14,7 +14,6 @@ let package = Package(
     dependencies: [
         .sfSymbols,
         .testDriveCore,
-        .testDriveApp,
         .testDrivePersistence,
         .vaultFeature,
         .keyFeature,
@@ -58,7 +57,6 @@ extension Target {
         dependencies: [
             .sfSymbols,
             .testDriveCore,
-            .testDriveApp,
             .testDrivePersistence,
             .vaultFeature,
             .keyFeature,
@@ -93,11 +91,6 @@ extension Target.Dependency {
         package: "TestDriveCore"
     )
 
-    static let testDriveApp: Target.Dependency = .product(
-        name: "TestDriveApp",
-        package: "TestDriveApp"
-    )
-
     static let testDrivePersistence: Target.Dependency = .product(
         name: "TestDrivePersistence",
         package: "TestDrivePersistence"
@@ -128,10 +121,6 @@ extension Package.Dependency {
 
     static let testDriveCore: Package.Dependency = .package(
         path: "../TestDriveCore"
-    )
-
-    static let testDriveApp: Package.Dependency = .package(
-        path: "../TestDriveApp"
     )
 
     static let testDrivePersistence: Package.Dependency = .package(

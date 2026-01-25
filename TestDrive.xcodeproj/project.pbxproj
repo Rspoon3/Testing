@@ -391,6 +391,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/TestDriveCore/.build/prebuilts/swift-syntax/602.0.0/swiftlang-6.2.3.3.21-MacroSupport-macos_aarch64/lib",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.TestDrive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -424,6 +428,10 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/TestDriveCore/.build/prebuilts/swift-syntax/602.0.0/swiftlang-6.2.3.3.21-MacroSupport-macos_aarch64/lib",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.TestDrive;
