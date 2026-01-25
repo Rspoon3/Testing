@@ -55,10 +55,10 @@ public struct KeyListView: View {
             }
         }
         .task {
-            await viewModel.loadKeys()
+            await viewModel.task()
         }
         .refreshable {
-            await viewModel.loadKeys()
+            await viewModel.task()
         }
         .sheet(item: $viewModel.vaultForm) { draft in
             VaultFormView(vault: draft, vaultManager: viewModel.vaultManager)

@@ -65,18 +65,26 @@ public final class KeyListViewModel {
 
     // MARK: - Public Helpers
 
+    /// Main task called when view appears.
+    public func task() async {
+        await loadVault()
+        await loadKeys()
+    }
+
+    /// Loads the vault from database to observe changes.
+    private func loadVault() async {
+        await withErrorReporting {
+            try await $vault.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
+        }
+    }
+
     /// Loads all keys in the vault.
-    public func loadKeys() async {
+    private func loadKeys() async {
         isLoading = true
         errorMessage = nil
 
-        do {
-            async let keysTask = $keys.load(APIKey.where { $0.vaultID.eq(vaultID) }, animation: .default)
-            async let vaultTask = $vault.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
-
-            _ = try await (keysTask.task, vaultTask.task)
-        } catch {
-            errorMessage = "Failed to load data: \(error.localizedDescription)"
+        await withErrorReporting {
+            try await $keys.load(APIKey.where { $0.vaultID.eq(vaultID) }, animation: .default)
         }
 
         isLoading = false
