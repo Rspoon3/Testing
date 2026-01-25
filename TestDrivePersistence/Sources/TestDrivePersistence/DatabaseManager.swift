@@ -1,5 +1,6 @@
 import CloudKit
 import Foundation
+import GRDB
 import SQLiteData
 import TestDriveCore
 
@@ -11,8 +12,8 @@ import TestDriveCore
 @Observable
 public final class DatabaseManager: Sendable {
 
-    private let database: Database
-    private let syncEngine: SyncEngine?
+    nonisolated(unsafe) private let database: DatabaseQueue
+    nonisolated(unsafe) private let syncEngine: SyncEngine?
 
     public var isSyncing = false
     public var lastSyncDate: Date?
@@ -32,17 +33,12 @@ public final class DatabaseManager: Sendable {
     ) throws {
         let fileURL = try Self.databaseURL()
 
-        self.database = try Database(path: fileURL.path)
+        self.database = try DatabaseQueue(path: fileURL.path)
 
         if enableSync {
-            self.syncEngine = SyncEngine(
-                database: database,
-                tables: [
-                    APIKey.self,
-                    Vault.self,
-                    VaultParticipant.self,
-                    WrappedVaultKey.self
-                ],
+            self.syncEngine = try SyncEngine(
+                for: database,
+                tables: APIKey.self, Vault.self, VaultParticipant.self, WrappedVaultKey.self,
                 containerIdentifier: containerIdentifier
             )
 
@@ -65,11 +61,9 @@ public final class DatabaseManager: Sendable {
     /// - Returns: The result of the query.
     /// - Throws: Database error if the query fails.
     public func read<T: Sendable>(
-        _ query: @Sendable (Database) throws -> T
+        _ query: @escaping @Sendable (GRDB.Database) throws -> T
     ) async throws -> T {
-        try await Task.detached {
-            try query(self.database)
-        }.value
+        try await database.read(query)
     }
 
     /// Writes to the database.
@@ -77,45 +71,23 @@ public final class DatabaseManager: Sendable {
     /// - Parameter update: A closure that performs write operations.
     /// - Throws: Database error if the update fails.
     public func write(
-        _ update: @Sendable (Database) throws -> Void
+        _ update: @escaping @Sendable (GRDB.Database) throws -> Void
     ) async throws {
-        try await Task.detached {
-            try update(self.database)
-        }.value
+        try await database.write(update)
     }
 
     // MARK: - Sync Operations
 
-    /// Triggers a manual sync with CloudKit.
-    ///
-    /// Useful for pull-to-refresh functionality.
-    public func sync() async throws {
-        guard let syncEngine else { return }
-
-        isSyncing = true
-        syncError = nil
-
-        do {
-            try await syncEngine.sync()
-            lastSyncDate = Date()
-        } catch {
-            syncError = error
-            throw error
-        }
-
-        isSyncing = false
-    }
-
     /// Starts the sync engine for automatic background sync.
-    public func startSync() async throws {
+    public func startSync() throws {
         guard let syncEngine else { return }
-        try await syncEngine.start()
+        try syncEngine.start()
     }
 
     /// Stops the sync engine.
-    public func stopSync() async throws {
+    public func stopSync() {
         guard let syncEngine else { return }
-        try await syncEngine.stop()
+        syncEngine.stop()
     }
 
     // MARK: - Private Helpers

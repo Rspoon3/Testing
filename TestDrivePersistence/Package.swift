@@ -6,13 +6,14 @@
 let package = Package(
     name: "TestDrivePersistence",
     platforms: [
-        .iOS(.v18)
+        .iOS(.v26)
     ],
     products: [
         .library(for: .testDrivePersistence)
     ],
     dependencies: [
         .sqliteData,
+        .grdb,
         .testDriveCore
     ],
     targets: [
@@ -64,6 +65,7 @@ extension Target {
         name: "TestDrivePersistence",
         dependencies: [
             .sqliteData,
+            .grdb,
             .testDriveCore
         ]
     )
@@ -92,6 +94,11 @@ extension Target.Dependency {
         package: "sqlite-data"
     )
 
+    static let grdb: Target.Dependency = .product(
+        name: "GRDB",
+        package: "GRDB.swift"
+    )
+
     static let testDriveCore: Target.Dependency = .product(
         name: "TestDriveCore",
         package: "TestDriveCore"
@@ -103,6 +110,11 @@ extension Package.Dependency {
     static let sqliteData: Package.Dependency = .package(
         url: "https://github.com/pointfreeco/sqlite-data",
         exact: "1.2.0"
+    )
+
+    static let grdb: Package.Dependency = .package(
+        url: "https://github.com/groue/GRDB.swift",
+        from: "7.0.0"
     )
 
     static let testDriveCore: Package.Dependency = .package(

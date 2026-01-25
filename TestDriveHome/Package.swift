@@ -6,7 +6,7 @@
 let package = Package(
     name: "TestDriveHome",
     platforms: [
-        .iOS(.v18)
+        .iOS(.v26)
     ],
     products: [
         .library(for: .testDriveHome)
