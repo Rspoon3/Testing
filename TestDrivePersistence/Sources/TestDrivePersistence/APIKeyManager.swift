@@ -141,6 +141,29 @@ public final class APIKeyManager {
         try await updateKey(updated)
     }
 
+    /// Toggles the pinned state of an API key.
+    ///
+    /// - Parameter key: The API key to toggle.
+    /// - Throws: Database error if update fails.
+    public func toggleKeyPin(_ key: APIKey) async throws {
+        try await database.write { db in
+            // Fetch existing preferences
+            let existing = try APIKeyPreference
+                .where { $0.apiKeyID.eq(key.id) }
+                .fetchOne(db)
+
+            if var preference = existing {
+                // Update existing
+                preference.isPinned.toggle()
+                try APIKeyPreference.update(preference).execute(db)
+            } else {
+                // Create new preferences with isPinned = true
+                let preference = APIKeyPreference(apiKeyID: key.id, isPinned: true)
+                try APIKeyPreference.insert { preference }.execute(db)
+            }
+        }
+    }
+
     // MARK: - Query Operations
 
     /// Fetches all API keys in a vault.

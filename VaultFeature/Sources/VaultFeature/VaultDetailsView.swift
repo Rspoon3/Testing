@@ -26,7 +26,7 @@ public struct VaultDetailsView: View {
         Group {
             if viewModel.isLoading {
                 ProgressView()
-            } else if viewModel.filteredKeys.isEmpty {
+            } else if viewModel.pinnedKeys.isEmpty && viewModel.unpinnedKeys.isEmpty {
                 if viewModel.searchText.isEmpty {
                     EmptyKeysView()
                 } else {
@@ -63,35 +63,13 @@ public struct VaultDetailsView: View {
         .sheet(item: $viewModel.vaultForm) { draft in
             VaultFormView(vault: draft, vaultManager: viewModel.vaultManager)
         }
-    }
-
-    // MARK: - Private Views
-
-    private var keyList: some View {
-        List {
-            ForEach(viewModel.filteredKeys) { key in
-                Button {
-                    selectedKey = key
-                } label: {
-                    KeyRowView(key: key)
-                }
-                .buttonStyle(.plain)
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) {
-                        deleteKey(key)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-                .swipeActions(edge: .leading) {
-                    Button {
-                        copySecret(key)
-                    } label: {
-                        Label("Copy", systemImage: "doc.on.doc")
-                    }
-                    .tint(.blue)
-                }
-            }
+        .sheet(isPresented: $showingAddSheet) {
+            EditKeyView(
+                viewModel: EditKeyViewModel(
+                    vaultID: viewModel.vaultID,
+                    apiKeyManager: viewModel.apiKeyManager
+                )
+            )
         }
         .navigationDestination(item: $selectedKey) { key in
             KeyDetailView(
@@ -102,13 +80,67 @@ public struct VaultDetailsView: View {
                 )
             )
         }
-        .sheet(isPresented: $showingAddSheet) {
-            EditKeyView(
-                viewModel: EditKeyViewModel(
-                    vaultID: viewModel.vaultID,
-                    apiKeyManager: viewModel.apiKeyManager
-                )
-            )
+    }
+
+    // MARK: - Private Views
+
+    private var keyList: some View {
+        List {
+            if !viewModel.pinnedKeys.isEmpty {
+                Section {
+                    ForEach(viewModel.pinnedKeys) { key in
+                        keyRow(for: key, isPinned: true)
+                    }
+                } header: {
+                    Text("Pinned")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .textCase(nil)
+                }
+            }
+
+            Section {
+                ForEach(viewModel.unpinnedKeys) { key in
+                    keyRow(for: key, isPinned: false)
+                }
+            } header: {
+                Text("Keys")
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .textCase(nil)
+            }
+        }
+    }
+
+    private func keyRow(for key: APIKey, isPinned: Bool) -> some View {
+        Button {
+            selectedKey = key
+        } label: {
+            KeyRowView(key: key)
+        }
+        .buttonStyle(.plain)
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                deleteKey(key)
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button {
+                togglePin(key)
+            } label: {
+                Label(isPinned ? "Unpin" : "Pin", systemImage: isPinned ? "pin.slash" : "pin")
+            }
+            .tint(.orange)
+        }
+        .swipeActions(edge: .leading) {
+            Button {
+                copySecret(key)
+            } label: {
+                Label("Copy", systemImage: "doc.on.doc")
+            }
+            .tint(.blue)
         }
     }
 
@@ -127,6 +159,12 @@ public struct VaultDetailsView: View {
     private func copySecret(_ key: APIKey) {
         Task {
             try? await viewModel.copySecret(key)
+        }
+    }
+
+    private func togglePin(_ key: APIKey) {
+        Task {
+            await viewModel.togglePin(for: key)
         }
     }
 }

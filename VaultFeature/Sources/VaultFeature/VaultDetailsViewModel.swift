@@ -10,13 +10,20 @@ import TestDrivePersistence
 @Observable
 public final class VaultDetailsViewModel {
 
-    @ObservationIgnored @FetchAll(APIKey.none)
-    public var keys: [APIKey]
+    @ObservationIgnored @FetchAll((apiKey: APIKey, preference: APIKeyPreference?).none)
+    private var keyRows: [(apiKey: APIKey, preference: APIKeyPreference?)]
 
     @ObservationIgnored @FetchOne(Vault.none)
     private var observedVault: Vault?
 
-    public var searchText = ""
+    public var searchText = "" {
+        didSet {
+            if oldValue != searchText {
+                updateQuery()
+            }
+        }
+    }
+    public var searchTask: Task<Void, Never>?
     public var errorMessage: String?
     public var isLoading = false
     public var vaultForm: Vault.Draft?
@@ -26,14 +33,29 @@ public final class VaultDetailsViewModel {
         observedVault ?? initialVault
     }
 
+    /// All keys from the database.
+    private var keys: [APIKey] {
+        keyRows.map(\.apiKey)
+    }
+
+    /// Pinned keys filtered by search text.
+    public var pinnedKeys: [APIKey] {
+        filterKeys(keyRows.filter { $0.preference?.isPinned == true }.map(\.apiKey))
+    }
+
+    /// Unpinned keys filtered by search text.
+    public var unpinnedKeys: [APIKey] {
+        filterKeys(keyRows.filter { $0.preference?.isPinned != true }.map(\.apiKey))
+    }
+
     private let initialVault: Vault
     public let vaultID: UUID
     public let apiKeyManager: APIKeyManager
     public let clipboardManager: ClipboardManager
     public let vaultManager: VaultManager
 
-    /// Filtered keys based on search text.
-    public var filteredKeys: [APIKey] {
+    /// Filters keys based on search text.
+    private func filterKeys(_ keys: [APIKey]) -> [APIKey] {
         if searchText.isEmpty {
             return keys
         }
@@ -90,10 +112,44 @@ public final class VaultDetailsViewModel {
         errorMessage = nil
 
         await withErrorReporting {
-            try await $keys.load(APIKey.where { $0.vaultID.eq(vaultID) }, animation: .default)
+            try await $keyRows.load(
+                APIKey
+                    .where { $0.vaultID.eq(vaultID) }
+                    .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
+                    .order { $0.createdAt.desc() },
+                animation: .default
+            )
         }
 
         isLoading = false
+    }
+
+    /// Updates the key query based on current search text.
+    private func updateQuery() {
+        let searchText = self.searchText
+
+        searchTask?.cancel()
+        searchTask = Task {
+            await withErrorReporting {
+                if searchText.isEmpty {
+                    try await $keyRows.load(
+                        APIKey
+                            .where { $0.vaultID.eq(vaultID) }
+                            .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
+                            .order { $0.createdAt.desc() },
+                        animation: .default
+                    )
+                } else {
+                    try await $keyRows.load(
+                        APIKey
+                            .where { $0.vaultID.eq(vaultID) }
+                            .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
+                            .order { $0.createdAt.desc() },
+                        animation: .default
+                    )
+                }
+            }
+        }
     }
 
     /// Deletes an API key.
@@ -114,6 +170,15 @@ public final class VaultDetailsViewModel {
         // Mark key as used
         try await apiKeyManager.markAsUsed(key)
         // @FetchAll automatically updates keys array
+    }
+
+    /// Toggles the pinned state of an API key.
+    ///
+    /// - Parameter key: The key to toggle.
+    public func togglePin(for key: APIKey) async {
+        await withErrorReporting {
+            try await apiKeyManager.toggleKeyPin(key)
+        }
     }
 
     /// Shows the vault configuration screen.

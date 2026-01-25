@@ -113,6 +113,16 @@ public func appDatabase() throws -> any DatabaseWriter {
             t.foreignKey(["vaultID"], references: "vaults", columns: ["id"], onDelete: .cascade)
             t.uniqueKey(["vaultID"]) // One preferences record per vault
         }
+
+        // Create apiKeyPreferences table (local only, not synced to CloudKit)
+        try db.create(table: "apiKeyPreferences") { t in
+            t.column("id", .blob).notNull().primaryKey()
+            t.column("apiKeyID", .blob).notNull()
+            t.column("isPinned", .boolean).notNull().defaults(to: false)
+
+            t.foreignKey(["apiKeyID"], references: "apiKeys", columns: ["id"], onDelete: .cascade)
+            t.uniqueKey(["apiKeyID"]) // One preferences record per API key
+        }
     }
 
     try migrator.migrate(database)
