@@ -2,21 +2,21 @@ import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
-/// Key list screen for a specific vault.
+/// Vault details screen showing all API keys in a vault.
 ///
 /// Displays all API keys with search functionality and swipe actions.
-public struct KeyListView: View {
+public struct VaultDetailsView: View {
 
-    @State private var viewModel: KeyListViewModel
+    @State private var viewModel: VaultDetailsViewModel
     @State private var showingAddSheet = false
     @State private var selectedKey: APIKey?
 
     // MARK: - Initializer
 
-    /// Creates a new key list view.
+    /// Creates a new vault details view.
     ///
     /// - Parameter viewModel: The view model for this view.
-    public init(viewModel: KeyListViewModel) {
+    public init(viewModel: VaultDetailsViewModel) {
         self.viewModel = viewModel
     }
 
@@ -140,8 +140,8 @@ public struct KeyListView: View {
     let akm = APIKeyManager(encryption: enc, vaultManager: vm)
 
     return NavigationStack {
-        KeyListView(
-            viewModel: KeyListViewModel(
+        VaultDetailsView(
+            viewModel: VaultDetailsViewModel(
                 vault: Vault(
                     name: "Test Vault",
                     iconName: "lock.fill",

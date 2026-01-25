@@ -28,8 +28,8 @@ public struct VaultListView: View {
                     Section {
                         ForEach(viewModel.pinnedVaults) { vault in
                             NavigationLink {
-                                KeyListView(
-                                    viewModel: KeyListViewModel(
+                                VaultDetailsView(
+                                    viewModel: VaultDetailsViewModel(
                                         vault: vault,
                                         apiKeyManager: viewModel.getAPIKeyManager(),
                                         clipboardManager: ClipboardManager(),
@@ -68,8 +68,8 @@ public struct VaultListView: View {
                 Section {
                     ForEach(viewModel.unpinnedVaults) { vault in
                         NavigationLink {
-                            KeyListView(
-                                viewModel: KeyListViewModel(
+                            VaultDetailsView(
+                                viewModel: VaultDetailsViewModel(
                                     vault: vault,
                                     apiKeyManager: viewModel.getAPIKeyManager(),
                                     clipboardManager: ClipboardManager(),

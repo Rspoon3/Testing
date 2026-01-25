@@ -3,12 +3,12 @@ import SQLiteData
 import TestDriveCore
 import TestDrivePersistence
 
-/// View model for the key list screen.
+/// View model for the vault details screen.
 ///
 /// Manages API key loading, searching, and deletion within a vault.
 @MainActor
 @Observable
-public final class KeyListViewModel {
+public final class VaultDetailsViewModel {
 
     @ObservationIgnored @FetchAll(APIKey.none)
     public var keys: [APIKey]
@@ -49,7 +49,7 @@ public final class KeyListViewModel {
 
     // MARK: - Initializer
 
-    /// Creates a new key list view model.
+    /// Creates a new vault details view model.
     ///
     /// - Parameters:
     ///   - vault: The vault to display keys from.
