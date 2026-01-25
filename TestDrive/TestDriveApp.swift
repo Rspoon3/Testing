@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import TestDriveHome
 
 @main
 struct TestDriveApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
         }
     }
 }
