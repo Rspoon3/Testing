@@ -20,6 +20,7 @@ public struct ClipboardCopy: Identifiable, Sendable {
 ///
 /// This manager provides a secure way to copy sensitive data to the clipboard
 /// with automatic clearing after a configurable timeout.
+@MainActor
 @Observable
 public final class ClipboardManager {
 
@@ -46,11 +47,9 @@ public final class ClipboardManager {
     ///   - text: The text to copy.
     ///   - label: A label describing what was copied (for notifications).
     ///   - keyID: Optional ID of the key being copied (for security tracking).
-    public func copy(_ text: String, label: String, keyID: UUID? = nil) async {
+    public func copy(_ text: String, label: String, keyID: UUID? = nil) {
         // Copy to clipboard
-        await MainActor.run {
-            UIPasteboard.general.string = text
-        }
+        UIPasteboard.general.string = text
 
         // Track copy activity
         if let keyID = keyID {
@@ -71,30 +70,24 @@ public final class ClipboardManager {
         // Cancel any existing clear task
         clearTask?.cancel()
 
-        // Capture values to avoid data races
-        let duration = autoClearDuration
-
         // Schedule auto-clear
-        clearTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(duration))
+        clearTask = Task {
+            try? await Task.sleep(for: .seconds(self.autoClearDuration))
 
             guard !Task.isCancelled else { return }
 
-            await self?.clearClipboard()
+            self.clearClipboard()
         }
 
         // Show notification if enabled
         if notificationsEnabled {
-            await showCopyNotification(label: label, duration: duration)
+            showCopyNotification(label: label, duration: autoClearDuration)
         }
     }
 
     /// Manually clears the clipboard.
-    public func clearClipboard() async {
-        await MainActor.run {
-            UIPasteboard.general.string = ""
-        }
-
+    public func clearClipboard() {
+        UIPasteboard.general.string = ""
         clearTask?.cancel()
         clearTask = nil
     }
@@ -112,11 +105,9 @@ public final class ClipboardManager {
     /// - Parameters:
     ///   - label: Description of what was copied.
     ///   - duration: The duration before auto-clear.
-    private func showCopyNotification(label: String, duration: TimeInterval) async {
+    private func showCopyNotification(label: String, duration: TimeInterval) {
         // Implementation would show a toast/banner notification
         // For now, this is a placeholder
-        await MainActor.run {
-            print("Copied \(label) to clipboard. Will auto-clear in \(Int(duration))s")
-        }
+        print("Copied \(label) to clipboard. Will auto-clear in \(Int(duration))s")
     }
 }
