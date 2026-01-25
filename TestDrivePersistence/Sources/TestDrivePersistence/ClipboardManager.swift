@@ -21,7 +21,7 @@ public struct ClipboardCopy: Identifiable, Sendable {
 /// This manager provides a secure way to copy sensitive data to the clipboard
 /// with automatic clearing after a configurable timeout.
 @Observable
-public final class ClipboardManager: Sendable {
+public final class ClipboardManager {
 
     /// Duration in seconds before clipboard is automatically cleared.
     public var autoClearDuration: TimeInterval = 30

@@ -6,7 +6,7 @@ import TestDriveCore
 /// This manager handles the full lifecycle of API keys, coordinating with
 /// the VaultManager for encryption key access.
 @Observable
-public final class APIKeyManager: Sendable {
+public final class APIKeyManager {
 
     private let database: DatabaseManager
     private let encryption: EncryptionService
