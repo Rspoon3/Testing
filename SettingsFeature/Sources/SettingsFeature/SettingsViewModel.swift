@@ -7,22 +7,29 @@ import TestDrivePersistence
 ///
 /// Manages app configuration including clipboard settings, theme preferences,
 /// and data management operations.
+@MainActor
 @Observable
 public final class SettingsViewModel {
 
     // MARK: - Settings Properties
 
     /// Duration in seconds before clipboard auto-clears.
-    @AppStorage("clipboardAutoClearDuration")
-    public var autoClearDuration: Int = 30
+    public var autoClearDuration: Int {
+        get { UserDefaults.standard.integer(forKey: "clipboardAutoClearDuration") }
+        set { UserDefaults.standard.set(newValue, forKey: "clipboardAutoClearDuration") }
+    }
 
     /// Whether clipboard notifications are enabled.
-    @AppStorage("clipboardNotificationsEnabled")
-    public var notificationsEnabled: Bool = true
+    public var notificationsEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: "clipboardNotificationsEnabled") }
+        set { UserDefaults.standard.set(newValue, forKey: "clipboardNotificationsEnabled") }
+    }
 
     /// Selected color scheme (system, light, dark).
-    @AppStorage("colorScheme")
-    public var colorScheme: String = "system"
+    public var colorScheme: String {
+        get { UserDefaults.standard.string(forKey: "colorScheme") ?? "system" }
+        set { UserDefaults.standard.set(newValue, forKey: "colorScheme") }
+    }
 
     // MARK: - State Properties
 
@@ -52,6 +59,14 @@ public final class SettingsViewModel {
         self.database = database
         self.vaultManager = vaultManager
         self.clipboardManager = clipboardManager
+
+        // Set defaults if not set
+        if UserDefaults.standard.object(forKey: "clipboardAutoClearDuration") == nil {
+            UserDefaults.standard.set(30, forKey: "clipboardAutoClearDuration")
+        }
+        if UserDefaults.standard.object(forKey: "clipboardNotificationsEnabled") == nil {
+            UserDefaults.standard.set(true, forKey: "clipboardNotificationsEnabled")
+        }
 
         // Sync clipboard settings
         clipboardManager.autoClearDuration = TimeInterval(autoClearDuration)
