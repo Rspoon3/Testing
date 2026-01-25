@@ -1,4 +1,5 @@
 import Foundation
+import StructuredQueriesCore
 
 /// Represents the status of a vault share invitation.
 ///
@@ -13,4 +14,20 @@ public enum AcceptanceStatus: String, Codable, Sendable {
 
     /// Share invitation has been declined.
     case declined
+}
+
+// MARK: - QueryRepresentable Conformance
+
+extension AcceptanceStatus: QueryRepresentable {
+    public typealias QueryOutput = Self
+
+    public static var _columnWidth: Int { 1 }
+
+    public init(queryOutput: Self) {
+        self = queryOutput
+    }
+
+    public var queryOutput: Self {
+        self
+    }
 }

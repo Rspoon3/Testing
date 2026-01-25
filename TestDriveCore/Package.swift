@@ -14,6 +14,7 @@ let package = Package(
     ],
     dependencies: [
         .sqliteData,
+        .structuredQueries,
         .sfSymbols,
         .swiftTools
     ],
@@ -66,6 +67,7 @@ extension Target {
         name: "TestDriveCore",
         dependencies: [
             .sqliteData,
+            .structuredQueriesCore,
             .sfSymbols,
             .swiftTools
         ]
@@ -95,6 +97,11 @@ extension Target.Dependency {
         package: "sqlite-data"
     )
 
+    static let structuredQueriesCore: Target.Dependency = .product(
+        name: "StructuredQueriesCore",
+        package: "swift-structured-queries"
+    )
+
     static let sfSymbols: Target.Dependency = .product(
         name: "SFSymbols",
         package: "SFSymbols"
@@ -111,6 +118,11 @@ extension Package.Dependency {
     static let sqliteData: Package.Dependency = .package(
         url: "https://github.com/pointfreeco/sqlite-data",
         exact: "1.2.0"
+    )
+
+    static let structuredQueries: Package.Dependency = .package(
+        url: "https://github.com/pointfreeco/swift-structured-queries",
+        from: "1.0.0"
     )
 
     static let sfSymbols: Package.Dependency = .package(
