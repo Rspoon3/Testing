@@ -36,7 +36,7 @@ public struct KeyListView: View {
                 keyList
             }
         }
-        .navigationTitle(viewModel.vault.name)
+        .navigationTitle(viewModel.vault?.name ?? "Keys")
         .searchable(text: $viewModel.searchText, prompt: "Search keys")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -105,7 +105,7 @@ public struct KeyListView: View {
         .sheet(isPresented: $showingAddSheet) {
             EditKeyView(
                 viewModel: EditKeyViewModel(
-                    vaultID: viewModel.vault.id,
+                    vaultID: viewModel.vaultID,
                     apiKeyManager: viewModel.apiKeyManager
                 )
             )

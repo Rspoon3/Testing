@@ -13,22 +13,16 @@ public final class KeyListViewModel {
     @ObservationIgnored @FetchAll(APIKey.none)
     public var keys: [APIKey]
 
-    @ObservationIgnored @FetchAll(Vault.none)
-    private var currentVaultArray: [Vault]
+    @ObservationIgnored @FetchOne(Vault.none)
+    public var vault: Vault?
 
     public var searchText = ""
     public var errorMessage: String?
     public var isLoading = false
     public var vaultForm: Vault.Draft?
 
-    /// The vault being displayed. Automatically updates when vault is edited.
-    /// Note: currentVaultArray contains at most one element due to WHERE id = ? query.
-    public var vault: Vault {
-        currentVaultArray.first ?? initialVault
-    }
-
     private let initialVault: Vault
-    private let vaultID: UUID
+    public let vaultID: UUID
     public let apiKeyManager: APIKeyManager
     public let clipboardManager: ClipboardManager
     public let vaultManager: VaultManager
@@ -79,8 +73,7 @@ public final class KeyListViewModel {
 
         do {
             async let keysTask = $keys.load(APIKey.where { $0.vaultID.eq(vaultID) }, animation: .default)
-            // Query by primary key - only returns one row (performant)
-            async let vaultTask = $currentVaultArray.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
+            async let vaultTask = $vault.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
 
             _ = try await (keysTask.task, vaultTask.task)
         } catch {
@@ -112,6 +105,7 @@ public final class KeyListViewModel {
 
     /// Shows the vault configuration screen.
     public func showVaultConfiguration() {
+        guard let vault else { return }
         vaultForm = Vault.Draft(vault)
     }
 }
