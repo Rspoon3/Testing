@@ -13,11 +13,11 @@ public final class VaultListViewModel {
 
     @ObservationIgnored
     @FetchAll(VaultRow.where(\.isPinned), animation: .default)
-    var pinnedVaultRows: [VaultRow]
+    public var pinnedVaultRows: [VaultRow]
 
     @ObservationIgnored
     @FetchAll(VaultRow.where { !$0.isPinned }, animation: .default)
-    var unpinnedVaultRows: [VaultRow]
+    public var unpinnedVaultRows: [VaultRow]
 
     public var pinnedVaults: [Vault] {
         pinnedVaultRows.map(\.vault)

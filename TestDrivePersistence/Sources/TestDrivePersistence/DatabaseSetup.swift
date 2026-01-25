@@ -18,15 +18,18 @@ public func appDatabase() throws -> any DatabaseWriter {
     configuration.prepareDatabase { db in
         try db.attachMetadatabase()
 
-        // Create temporary view combining Vault with VaultPreference
+        // Create temporary view combining Vault with VaultPreference and key count
         try VaultRow.createTemporaryView(
             as: Vault
                 .order(by: \.createdAt)
                 .leftJoin(VaultPreference.all) { $0.id.eq($1.vaultID) }
+                .leftJoin(APIKey.all) { $0.id.eq($2.vaultID) }
+                .group(by: \.id)
                 .select {
                     VaultRow.Columns(
                         vault: $0,
-                        isPinned: $1.isPinned ?? false
+                        isPinned: $1.isPinned ?? false,
+                        keyCount: $2.count()
                     )
                 }
         )

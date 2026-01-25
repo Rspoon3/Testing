@@ -25,30 +25,30 @@ public struct VaultListView: View {
             List {
                 if !viewModel.pinnedVaults.isEmpty {
                     Section {
-                        ForEach(viewModel.pinnedVaults) { vault in
+                        ForEach(viewModel.pinnedVaultRows) { row in
                             NavigationLink {
                                 VaultDetailsView(
                                     viewModel: VaultDetailsViewModel(
-                                        vault: vault,
+                                        vault: row.vault,
                                         apiKeyManager: viewModel.getAPIKeyManager(),
                                         clipboardManager: ClipboardManager(),
                                         vaultManager: viewModel.getVaultManager()
                                     )
                                 )
                             } label: {
-                                VaultRowView(vault: vault, keyCount: 0)
+                                VaultRowView(vault: row.vault, keyCount: row.keyCount)
                             }
                             .swipeActions {
                                 Button(role: .destructive) {
                                     Task {
-                                        await viewModel.deleteVault(vault)
+                                        await viewModel.deleteVault(row.vault)
                                     }
                                 } label: {
                                     Image(systemName: "trash")
                                 }
                                 Button {
                                     Task {
-                                        await viewModel.togglePin(for: vault)
+                                        await viewModel.togglePin(for: row.vault)
                                     }
                                 } label: {
                                     Image(systemName: "pin.slash")
@@ -65,30 +65,30 @@ public struct VaultListView: View {
                 }
 
                 Section {
-                    ForEach(viewModel.unpinnedVaults) { vault in
+                    ForEach(viewModel.unpinnedVaultRows) { row in
                         NavigationLink {
                             VaultDetailsView(
                                 viewModel: VaultDetailsViewModel(
-                                    vault: vault,
+                                    vault: row.vault,
                                     apiKeyManager: viewModel.getAPIKeyManager(),
                                     clipboardManager: ClipboardManager(),
                                     vaultManager: viewModel.getVaultManager()
                                 )
                             )
                         } label: {
-                            VaultRowView(vault: vault, keyCount: 0)
+                            VaultRowView(vault: row.vault, keyCount: row.keyCount)
                         }
                         .swipeActions {
                             Button(role: .destructive) {
                                 Task {
-                                    await viewModel.deleteVault(vault)
+                                    await viewModel.deleteVault(row.vault)
                                 }
                             } label: {
                                 Image(systemName: "trash")
                             }
                             Button {
                                 Task {
-                                    await viewModel.togglePin(for: vault)
+                                    await viewModel.togglePin(for: row.vault)
                                 }
                             } label: {
                                 Image(systemName: "pin")
