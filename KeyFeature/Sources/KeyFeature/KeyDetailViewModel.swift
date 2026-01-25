@@ -5,6 +5,7 @@ import TestDrivePersistence
 /// View model for the key detail screen.
 ///
 /// Manages secret loading, visibility, and clipboard operations.
+@MainActor
 @Observable
 public final class KeyDetailViewModel {
 
@@ -70,15 +71,17 @@ public final class KeyDetailViewModel {
 
     /// Copies the secret to clipboard.
     public func copySecret() async {
-        guard let secret else {
+        // Load secret if not already loaded
+        if secret == nil {
             try? await loadSecret()
-            guard let secret else {
-                haptics.error()
-                return
-            }
         }
 
-        await clipboardManager.copy(secret, label: key.label, keyID: key.id)
+        guard let secret else {
+            haptics.error()
+            return
+        }
+
+        clipboardManager.copy(secret, label: key.label, keyID: key.id)
 
         // Mark key as used
         try? await apiKeyManager.markAsUsed(key)
@@ -89,10 +92,8 @@ public final class KeyDetailViewModel {
         showingCopyConfirmation = true
 
         // Auto-hide confirmation after 2 seconds
-        Task {
-            try? await Task.sleep(for: .seconds(2))
-            showingCopyConfirmation = false
-        }
+        try? await Task.sleep(for: .seconds(2))
+        showingCopyConfirmation = false
     }
 
     /// Deletes the API key.
