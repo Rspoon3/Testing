@@ -27,7 +27,7 @@ public final class VaultListViewModel {
         unpinnedVaultRows.map(\.vault)
     }
 
-    public var showingCreateSheet = false
+    public var vaultForm: Vault.Draft?
     public var searchText = "" {
         didSet {
             if oldValue != searchText {
@@ -124,5 +124,15 @@ public final class VaultListViewModel {
     /// Returns the vault manager for navigation.
     public func getVaultManager() -> VaultManager {
         vaultManager
+    }
+
+    /// Shows the create vault form.
+    public func showCreateVault() {
+        vaultForm = Vault.Draft(
+            name: "",
+            iconName: "lock.fill",
+            colorHex: "#007AFF",
+            ownerPublicKey: Data()
+        )
     }
 }

@@ -61,7 +61,7 @@ public struct KeyListView: View {
             await viewModel.loadKeys()
         }
         .sheet(item: $viewModel.vaultForm) { draft in
-            VaultConfigurationView(vault: draft, vaultManager: viewModel.vaultManager)
+            VaultFormView(vault: draft, vaultManager: viewModel.vaultManager)
         }
     }
 

@@ -1,7 +1,7 @@
+import KeyFeature
 import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
-import KeyFeature
 
 /// Main vault list screen.
 ///
@@ -109,14 +109,14 @@ public struct VaultListView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        viewModel.showingCreateSheet = true
+                        viewModel.showCreateVault()
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
-            .sheet(isPresented: $viewModel.showingCreateSheet) {
-                CreateVaultSheet(vaultManager: viewModel.vaultManager)
+            .sheet(item: $viewModel.vaultForm) { draft in
+                VaultFormView(vault: draft, vaultManager: viewModel.vaultManager)
             }
             .task {
                 await viewModel.loadVaults()
