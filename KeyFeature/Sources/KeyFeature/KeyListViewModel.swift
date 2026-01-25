@@ -13,15 +13,14 @@ public final class KeyListViewModel {
     @ObservationIgnored @FetchAll(APIKey.none)
     public var keys: [APIKey]
 
-    @ObservationIgnored @FetchOne(Vault.none)
-    public var vault: Vault?
+    @ObservationIgnored @FetchOne
+    public var vault: Vault
 
     public var searchText = ""
     public var errorMessage: String?
     public var isLoading = false
     public var vaultForm: Vault.Draft?
 
-    private let initialVault: Vault
     public let vaultID: UUID
     public let apiKeyManager: APIKeyManager
     public let clipboardManager: ClipboardManager
@@ -57,7 +56,7 @@ public final class KeyListViewModel {
         clipboardManager: ClipboardManager,
         vaultManager: VaultManager
     ) {
-        self.initialVault = vault
+        self.vault = vault
         self.vaultID = vault.id
         self.apiKeyManager = apiKeyManager
         self.clipboardManager = clipboardManager
@@ -105,7 +104,6 @@ public final class KeyListViewModel {
 
     /// Shows the vault configuration screen.
     public func showVaultConfiguration() {
-        guard let vault else { return }
         vaultForm = Vault.Draft(vault)
     }
 }

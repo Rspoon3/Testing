@@ -36,7 +36,7 @@ public struct KeyListView: View {
                 keyList
             }
         }
-        .navigationTitle(viewModel.vault?.name ?? "Keys")
+        .navigationTitle(viewModel.vault.name)
         .searchable(text: $viewModel.searchText, prompt: "Search keys")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
