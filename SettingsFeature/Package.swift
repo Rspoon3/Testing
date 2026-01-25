@@ -6,7 +6,7 @@
 let package = Package(
     name: "SettingsFeature",
     platforms: [
-        .iOS(.v18)
+        .iOS(.v26)
     ],
     products: [
         .library(for: .settingsFeature)

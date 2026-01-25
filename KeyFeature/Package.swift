@@ -6,7 +6,7 @@
 let package = Package(
     name: "KeyFeature",
     platforms: [
-        .iOS(.v18)
+        .iOS(.v26)
     ],
     products: [
         .library(for: .keyFeature)
