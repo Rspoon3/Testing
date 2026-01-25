@@ -6,12 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		94D001012F25800000000001 /* SFSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 94D001002F25800000000001 /* SFSymbols */; };
-		94D001032F25800000000002 /* SwiftTools in Frameworks */ = {isa = PBXBuildFile; productRef = 94D001022F25800000000002 /* SwiftTools */; };
-		94D001052F25800000000003 /* SwiftPurchase in Frameworks */ = {isa = PBXBuildFile; productRef = 94D001042F25800000000003 /* SwiftPurchase */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		9483721C2EAE6B2F0094674D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,9 +59,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94D001012F25800000000001 /* SFSymbols in Frameworks */,
-				94D001032F25800000000002 /* SwiftTools in Frameworks */,
-				94D001052F25800000000003 /* SwiftPurchase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,9 +114,6 @@
 			);
 			name = TestDrive;
 			packageProductDependencies = (
-				94D001002F25800000000001 /* SFSymbols */,
-				94D001022F25800000000002 /* SwiftTools */,
-				94D001042F25800000000003 /* SwiftPurchase */,
 			);
 			productName = TestDrive;
 			productReference = 9483720E2EAE6B2E0094674D /* TestDrive.app */;
@@ -183,9 +171,6 @@
 			mainGroup = 948372052EAE6B2E0094674D;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				94D000FF2F25800000000000 /* XCRemoteSwiftPackageReference "SFSymbols" */,
-				94D001012F25800000000004 /* XCRemoteSwiftPackageReference "SwiftTools" */,
-				94D001032F25800000000005 /* XCRemoteSwiftPackageReference "SwiftPurchase" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9483720F2EAE6B2E0094674D /* Products */;
@@ -387,10 +372,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/TestDriveCore/.build/prebuilts/swift-syntax/602.0.0/swiftlang-6.2.3.3.21-MacroSupport-macos_aarch64/lib",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.TestDrive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -424,10 +405,6 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/TestDriveCore/.build/prebuilts/swift-syntax/602.0.0/swiftlang-6.2.3.3.21-MacroSupport-macos_aarch64/lib",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rspoon3.TestDrive;
@@ -517,51 +494,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		94D000FF2F25800000000000 /* XCRemoteSwiftPackageReference "SFSymbols" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Rspoon3/SFSymbols";
-			requirement = {
-				kind = exactVersion;
-				version = 2.8.1;
-			};
-		};
-		94D001012F25800000000004 /* XCRemoteSwiftPackageReference "SwiftTools" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Rspoon3/SwiftTools";
-			requirement = {
-				kind = exactVersion;
-				version = 2.2.5;
-			};
-		};
-		94D001032F25800000000005 /* XCRemoteSwiftPackageReference "SwiftPurchase" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Rspoon3/SwiftPurchase";
-			requirement = {
-				kind = exactVersion;
-				version = 1.0.4;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		94D001002F25800000000001 /* SFSymbols */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 94D000FF2F25800000000000 /* XCRemoteSwiftPackageReference "SFSymbols" */;
-			productName = SFSymbols;
-		};
-		94D001022F25800000000002 /* SwiftTools */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 94D001012F25800000000004 /* XCRemoteSwiftPackageReference "SwiftTools" */;
-			productName = SwiftTools;
-		};
-		94D001042F25800000000003 /* SwiftPurchase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 94D001032F25800000000005 /* XCRemoteSwiftPackageReference "SwiftPurchase" */;
-			productName = SwiftPurchase;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 948372062EAE6B2E0094674D /* Project object */;
 }
