@@ -71,18 +71,21 @@ public final class ClipboardManager {
         // Cancel any existing clear task
         clearTask?.cancel()
 
+        // Capture values to avoid data races
+        let duration = autoClearDuration
+
         // Schedule auto-clear
-        clearTask = Task {
-            try? await Task.sleep(for: .seconds(autoClearDuration))
+        clearTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(duration))
 
             guard !Task.isCancelled else { return }
 
-            await self.clearClipboard()
+            await self?.clearClipboard()
         }
 
         // Show notification if enabled
         if notificationsEnabled {
-            await showCopyNotification(label: label)
+            await showCopyNotification(label: label, duration: duration)
         }
     }
 
@@ -106,12 +109,14 @@ public final class ClipboardManager {
 
     /// Shows a notification that text was copied.
     ///
-    /// - Parameter label: Description of what was copied.
-    private func showCopyNotification(label: String) async {
+    /// - Parameters:
+    ///   - label: Description of what was copied.
+    ///   - duration: The duration before auto-clear.
+    private func showCopyNotification(label: String, duration: TimeInterval) async {
         // Implementation would show a toast/banner notification
         // For now, this is a placeholder
         await MainActor.run {
-            print("Copied \(label) to clipboard. Will auto-clear in \(Int(autoClearDuration))s")
+            print("Copied \(label) to clipboard. Will auto-clear in \(Int(duration))s")
         }
     }
 }
