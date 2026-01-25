@@ -23,9 +23,6 @@ public struct Vault: Identifiable, Sendable, Equatable {
     /// Sort order for displaying vaults in lists.
     public var sortOrder: Int
 
-    /// Indicates if this vault is pinned to the top of the list.
-    public var isPinned: Bool
-
     /// Indicates if this is the default vault for new keys.
     public var isDefault: Bool
 
@@ -67,7 +64,6 @@ public struct Vault: Identifiable, Sendable, Equatable {
     ///   - iconName: SF Symbol name for the vault icon.
     ///   - colorHex: Hex color string for the vault display color.
     ///   - sortOrder: Sort order for displaying vaults in lists.
-    ///   - isPinned: Indicates if this vault is pinned to the top of the list.
     ///   - isDefault: Indicates if this is the default vault for new keys.
     ///   - createdAt: Date when the vault was created. Defaults to current date.
     ///   - updatedAt: Date when the vault was last updated. Defaults to current date.
@@ -82,7 +78,6 @@ public struct Vault: Identifiable, Sendable, Equatable {
         iconName: String,
         colorHex: String,
         sortOrder: Int = 0,
-        isPinned: Bool = false,
         isDefault: Bool = false,
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
@@ -97,7 +92,6 @@ public struct Vault: Identifiable, Sendable, Equatable {
         self.iconName = iconName
         self.colorHex = colorHex
         self.sortOrder = sortOrder
-        self.isPinned = isPinned
         self.isDefault = isDefault
         self.createdAt = createdAt
         self.updatedAt = updatedAt

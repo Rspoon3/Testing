@@ -11,14 +11,20 @@ import TestDrivePersistence
 @Observable
 public final class VaultListViewModel {
 
-    @ObservationIgnored @FetchAll(Vault.none) var vaults: [Vault]
+    @ObservationIgnored
+    @FetchAll(VaultRow.where(\.isPinned), animation: .default)
+    var pinnedVaultRows: [VaultRow]
+
+    @ObservationIgnored
+    @FetchAll(VaultRow.where { !$0.isPinned }, animation: .default)
+    var unpinnedVaultRows: [VaultRow]
 
     public var pinnedVaults: [Vault] {
-        vaults.filter(\.isPinned).sorted { $0.createdAt > $1.createdAt }
+        pinnedVaultRows.map(\.vault)
     }
 
     public var unpinnedVaults: [Vault] {
-        vaults.filter { !$0.isPinned }.sorted { $0.createdAt > $1.createdAt }
+        unpinnedVaultRows.map(\.vault)
     }
 
     public var showingCreateSheet = false
@@ -53,32 +59,40 @@ public final class VaultListViewModel {
 
     /// Loads vaults from the database.
     public func loadVaults() async {
-        await withErrorReporting {
-            try await $vaults.load(
-                Vault.order { $0.createdAt.desc() },
-                animation: .default
-            )
-            .task
-        }
+        // Views are automatically loaded, no manual loading needed
     }
 
     /// Updates the vault query based on current search text.
     public func updateQuery() {
+        let searchText = self.searchText
+        
         searchTask?.cancel()
         searchTask = Task {
             await withErrorReporting {
                 if searchText.isEmpty {
-                    try await $vaults.load(
-                        Vault.order { $0.createdAt.desc() },
+                    async let pinnedTask = $pinnedVaultRows.load(
+                        VaultRow.where(\.isPinned),
                         animation: .default
                     )
+
+                    async let unpinnedTask = $unpinnedVaultRows.load(
+                        VaultRow.where { !$0.isPinned },
+                        animation: .default
+                    )
+
+                    _ = try await (pinnedTask.task, unpinnedTask.task)
                 } else {
-                    try await $vaults.load(
-                        Vault
-                            .where { $0.name.contains(searchText) }
-                            .order { $0.createdAt.desc() },
+                    async let pinnedTask = $pinnedVaultRows.load(
+                        VaultRow.where { $0.vault.name.contains(searchText) && $0.isPinned },
                         animation: .default
                     )
+
+                    async let unpinnedTask = $unpinnedVaultRows.load(
+                        VaultRow.where { $0.vault.name.contains(searchText) && !$0.isPinned },
+                        animation: .default
+                    )
+
+                    _ = try await (pinnedTask.task, unpinnedTask.task)
                 }
             }
         }
@@ -88,10 +102,8 @@ public final class VaultListViewModel {
     ///
     /// - Parameter vault: The vault to toggle.
     public func togglePin(for vault: Vault) async {
-        var updatedVault = vault
-        updatedVault.isPinned.toggle()
         await withErrorReporting {
-            try await vaultManager.updateVault(updatedVault)
+            try await vaultManager.toggleVaultPin(vault)
         }
     }
 

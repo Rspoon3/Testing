@@ -90,6 +90,9 @@ public final class VaultManager {
             try Vault.insert { vault }.execute(db)
         }
 
+        // Create default preferences
+        try await createDefaultPreferences(for: vaultID)
+
         #if DEBUG
         // Verify vault was inserted
         let inserted = try await database.read { db in
@@ -100,6 +103,17 @@ public final class VaultManager {
         #endif
 
         return vault
+    }
+
+    /// Creates default preferences for a vault.
+    ///
+    /// - Parameter vaultID: The vault identifier.
+    /// - Throws: Database error if creation fails.
+    private func createDefaultPreferences(for vaultID: UUID) async throws {
+        let preferences = VaultPreference(vaultID: vaultID, isPinned: false)
+        try await database.write { db in
+            try VaultPreference.insert { preferences }.execute(db)
+        }
     }
 
     /// Retrieves the vault encryption key from Keychain.
@@ -128,6 +142,29 @@ public final class VaultManager {
 
         try await database.write { db in
             try Vault.update(updatedVault).execute(db)
+        }
+    }
+
+    /// Toggles the pinned state of a vault.
+    ///
+    /// - Parameter vault: The vault to toggle.
+    /// - Throws: Database error if update fails.
+    public func toggleVaultPin(_ vault: Vault) async throws {
+        try await database.write { db in
+            // Fetch existing preferences
+            let existing = try VaultPreference
+                .where { $0.vaultID.eq(vault.id) }
+                .fetchOne(db)
+
+            if var preferences = existing {
+                // Update existing
+                preferences.isPinned.toggle()
+                try VaultPreference.update(preferences).execute(db)
+            } else {
+                // Create new preferences with isPinned = true
+                let preferences = VaultPreference(vaultID: vault.id, isPinned: true)
+                try VaultPreference.insert { preferences }.execute(db)
+            }
         }
     }
 

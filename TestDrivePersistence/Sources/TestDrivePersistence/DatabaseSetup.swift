@@ -13,10 +13,24 @@ import TestDriveCore
 public func appDatabase() throws -> any DatabaseWriter {
     let database: any DatabaseWriter
 
-    var configuration = GRDB.Configuration()
+    var configuration = Configuration()
     configuration.foreignKeysEnabled = true
     configuration.prepareDatabase { db in
         try db.attachMetadatabase()
+
+        // Create temporary view combining Vault with VaultPreference
+        try VaultRow.createTemporaryView(
+            as: Vault
+                .order(by: \.createdAt)
+                .leftJoin(VaultPreference.all) { $0.id.eq($1.vaultID) }
+                .select {
+                    VaultRow.Columns(
+                        vault: $0,
+                        isPinned: $1.isPinned ?? false
+                    )
+                }
+        )
+        .execute(db)
     }
 
     // Use document directory for persistent storage
@@ -34,7 +48,6 @@ public func appDatabase() throws -> any DatabaseWriter {
             t.column("iconName", .text).notNull()
             t.column("colorHex", .text).notNull()
             t.column("sortOrder", .integer).notNull()
-            t.column("isPinned", .boolean).notNull().defaults(to: false)
             t.column("isDefault", .boolean).notNull()
             t.column("createdAt", .datetime).notNull()
             t.column("updatedAt", .datetime).notNull()
@@ -89,6 +102,16 @@ public func appDatabase() throws -> any DatabaseWriter {
             t.column("ckRecordID", .text)
 
             t.foreignKey(["vaultID"], references: "vaults", columns: ["id"], onDelete: .cascade)
+        }
+
+        // Create vaultPreferences table (local only, not synced to CloudKit)
+        try db.create(table: "vaultPreferences") { t in
+            t.column("id", .blob).notNull().primaryKey()
+            t.column("vaultID", .blob).notNull()
+            t.column("isPinned", .boolean).notNull().defaults(to: false)
+
+            t.foreignKey(["vaultID"], references: "vaults", columns: ["id"], onDelete: .cascade)
+            t.uniqueKey(["vaultID"]) // One preferences record per vault
         }
     }
 
