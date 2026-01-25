@@ -33,11 +33,6 @@ public final class VaultDetailsViewModel {
         observedVault ?? initialVault
     }
 
-    /// All keys from the database.
-    private var keys: [APIKey] {
-        keyRows.map(\.apiKey)
-    }
-
     /// Pinned keys filtered by search text.
     public var pinnedKeys: [APIKey] {
         filterKeys(keyRows.filter(\.isPinned).map(\.apiKey))
