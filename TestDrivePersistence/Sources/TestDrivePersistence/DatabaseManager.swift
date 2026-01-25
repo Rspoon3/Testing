@@ -10,10 +10,10 @@ import TestDriveCore
 /// sets up CloudKit sync for end-to-end encrypted vault sharing, and provides
 /// a clean interface for database operations.
 @Observable
-public final class DatabaseManager: Sendable {
+public final class DatabaseManager {
 
-    nonisolated(unsafe) private let database: DatabaseQueue
-    nonisolated(unsafe) private let syncEngine: SyncEngine?
+    private let database: DatabaseQueue
+    private let syncEngine: SyncEngine?
 
     public var isSyncing = false
     public var lastSyncDate: Date?
@@ -79,9 +79,9 @@ public final class DatabaseManager: Sendable {
     // MARK: - Sync Operations
 
     /// Starts the sync engine for automatic background sync.
-    public func startSync() throws {
+    public func startSync() async throws {
         guard let syncEngine else { return }
-        try syncEngine.start()
+        try await syncEngine.start()
     }
 
     /// Stops the sync engine.
