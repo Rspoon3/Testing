@@ -1,4 +1,5 @@
 import Foundation
+import SQLiteData
 import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
@@ -10,7 +11,16 @@ import TestDrivePersistence
 @Observable
 public final class KeyDetailViewModel {
 
-    public var key: APIKey
+    @ObservationIgnored @FetchOne(APIKey.none)
+    private var observedKey: APIKey?
+
+    private let initialKey: APIKey
+
+    /// The API key being displayed. Returns observed key if loaded, otherwise initial key.
+    public var key: APIKey {
+        observedKey ?? initialKey
+    }
+
     public var secret: String?
     public var isSecretVisible = false
     public var isLoading = false
@@ -36,10 +46,13 @@ public final class KeyDetailViewModel {
         clipboardManager: ClipboardManager,
         haptics: HapticFeedbackManager = HapticFeedbackManager()
     ) {
-        self.key = key
+        self.initialKey = key
         self.apiKeyManager = apiKeyManager
         self.clipboardManager = clipboardManager
         self.haptics = haptics
+
+        // Set up fetch query to observe key changes
+        _observedKey = FetchOne(APIKey.where { $0.id.eq(key.id) })
     }
 
     // MARK: - Public Helpers
@@ -83,14 +96,10 @@ public final class KeyDetailViewModel {
         }
         
         clipboardManager.copy(secret, label: key.label, keyID: key.id)
-        
-        // Mark key as used
+
+        // Mark key as used (database update will be observed automatically)
         try? await apiKeyManager.markAsUsed(key)
-        
-        withAnimation {
-            key.lastUsedAt = Date()
-        }
-        
+
         // Provide haptic feedback
         haptics.success()
         showingCopyConfirmation = true
