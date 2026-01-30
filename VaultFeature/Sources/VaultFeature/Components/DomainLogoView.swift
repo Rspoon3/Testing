@@ -89,6 +89,7 @@ struct DomainLogoView: View {
 
 // MARK: - Environment Key
 
+@MainActor
 private struct DomainLogoServiceKey: EnvironmentKey {
     static let defaultValue = DomainLogoService.shared
 }
