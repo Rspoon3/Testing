@@ -45,7 +45,7 @@ struct KeyRowView: View {
                         Text("Last used: \(lastUsed, format: .relative(presentation: .named))")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
-                            .transition(.scale.combined(with: .opacity))
+                            .transition(.opacity)
                             .id(lastUsed)
                     }
 
@@ -57,7 +57,6 @@ struct KeyRowView: View {
                             .foregroundStyle(.orange)
                     }
                 }
-                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: key.lastUsedAt)
             }
         }
         .padding(.vertical, 4)
