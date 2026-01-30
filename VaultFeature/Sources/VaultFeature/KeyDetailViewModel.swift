@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
@@ -75,22 +76,25 @@ public final class KeyDetailViewModel {
         if secret == nil {
             try? await loadSecret()
         }
-
+        
         guard let secret else {
             haptics.error()
             return
         }
-
+        
         clipboardManager.copy(secret, label: key.label, keyID: key.id)
-
+        
         // Mark key as used
         try? await apiKeyManager.markAsUsed(key)
-        key.lastUsedAt = Date()
-
+        
+        withAnimation {
+            key.lastUsedAt = Date()
+        }
+        
         // Provide haptic feedback
         haptics.success()
         showingCopyConfirmation = true
-
+        
         // Auto-hide confirmation after 2 seconds
         try? await Task.sleep(for: .seconds(2))
         showingCopyConfirmation = false

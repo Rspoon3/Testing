@@ -164,10 +164,9 @@ public struct KeyDetailView: View {
 
             if let lastUsed = viewModel.key.lastUsedAt {
                 LabeledContent("Last Used", value: lastUsed, format: .dateTime)
-                    .transition(.opacity)
-                    .id(lastUsed)
             }
         }
+        .animation(.default, value: viewModel.key)
     }
 
     private var dangerSection: some View {
