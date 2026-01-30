@@ -13,7 +13,7 @@ struct DomainLogoView: View {
 
     @State private var logoImage: UIImage?
     @State private var isLoading = true
-    @Environment(\.domainLogoService) private var logoService
+    private let logoService = DomainLogoService.shared
 
     // MARK: - Body
 
@@ -84,20 +84,6 @@ struct DomainLogoView: View {
 
         logoImage = await logoService.logo(for: domain)
         isLoading = false
-    }
-}
-
-// MARK: - Environment Key
-
-@MainActor
-private struct DomainLogoServiceKey: EnvironmentKey {
-    static let defaultValue = DomainLogoService.shared
-}
-
-extension EnvironmentValues {
-    var domainLogoService: DomainLogoService {
-        get { self[DomainLogoServiceKey.self] }
-        set { self[DomainLogoServiceKey.self] = newValue }
     }
 }
 
