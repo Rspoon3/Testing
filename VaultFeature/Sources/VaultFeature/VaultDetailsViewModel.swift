@@ -84,25 +84,20 @@ public final class VaultDetailsViewModel {
         self.apiKeyManager = apiKeyManager
         self.clipboardManager = clipboardManager
         self.vaultManager = vaultManager
+
+        // Set up fetch queries
+        _observedVault = FetchOne(Vault.where { $0.id.eq(vault.id) })
+        _keyRows = FetchAll(
+            APIKeyRow.where { $0.apiKey.vaultID.eq(vault.id) },
+            animation: .default
+        )
     }
 
     // MARK: - Public Helpers
 
-    /// Main task called when view appears.
+    /// Main task called when view appears or refreshed.
     public func task() async {
-        await loadVault()
-        await loadKeys()
-    }
-
-    /// Loads the vault from database to observe changes.
-    private func loadVault() async {
-        await withErrorReporting {
-            try await $observedVault.load(Vault.where { $0.id.eq(vaultID) }, animation: .default)
-        }
-    }
-
-    /// Loads all keys in the vault.
-    private func loadKeys() async {
+        // Keys are automatically loaded via @FetchAll, but we reload for refresh action
         isLoading = true
         errorMessage = nil
 

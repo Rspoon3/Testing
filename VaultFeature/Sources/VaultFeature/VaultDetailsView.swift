@@ -53,9 +53,6 @@ public struct VaultDetailsView: View {
                 }
             }
         }
-        .task {
-            await viewModel.task()
-        }
         .refreshable {
             await viewModel.task()
         }
