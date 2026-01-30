@@ -25,6 +25,7 @@ public struct KeyDetailView: View {
 
     public var body: some View {
         List {
+            headerSection
             secretSection
             metadataSection
             timestampsSection
@@ -60,6 +61,36 @@ public struct KeyDetailView: View {
     }
 
     // MARK: - Private Views
+
+    private var headerSection: some View {
+        Section {
+            HStack(spacing: 16) {
+                if let domain = viewModel.key.websiteDomain {
+                    DomainLogoView(domain: domain, size: 64)
+                } else {
+                    Image(systemName: "key.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 64, height: 64)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(viewModel.key.label)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+
+                    if let domain = viewModel.key.websiteDomain {
+                        Text(domain)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Spacer()
+            }
+            .padding(.vertical, 8)
+        }
+    }
 
     private var secretSection: some View {
         Section("Secret") {

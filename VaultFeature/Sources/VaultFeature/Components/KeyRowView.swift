@@ -9,39 +9,51 @@ struct KeyRowView: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(key.label)
-                    .font(.headline)
-
-                Spacer()
-
-                environmentBadge
-            }
-
+        HStack(spacing: 12) {
+            // Domain logo
             if let domain = key.websiteDomain {
-                Text(domain)
-                    .font(.subheadline)
+                DomainLogoView(domain: domain, size: 40)
+            } else {
+                Image(systemName: "key.fill")
+                    .frame(width: 40, height: 40)
                     .foregroundStyle(.secondary)
             }
 
-            if !key.tags.isEmpty {
-                tagList
-            }
+            // Key info
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(key.label)
+                        .font(.headline)
 
-            HStack {
-                if let lastUsed = key.lastUsedAt {
-                    Text("Last used: \(lastUsed, format: .relative(presentation: .named))")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    Spacer()
+
+                    environmentBadge
                 }
 
-                Spacer()
+                if let domain = key.websiteDomain {
+                    Text(domain)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
 
-                if let rotateAt = key.rotateAt, rotateAt <= Date() {
-                    Label("Needs rotation", systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
+                if !key.tags.isEmpty {
+                    tagList
+                }
+
+                HStack {
+                    if let lastUsed = key.lastUsedAt {
+                        Text("Last used: \(lastUsed, format: .relative(presentation: .named))")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+
+                    Spacer()
+
+                    if let rotateAt = key.rotateAt, rotateAt <= Date() {
+                        Label("Needs rotation", systemImage: "exclamationmark.triangle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
                 }
             }
         }
