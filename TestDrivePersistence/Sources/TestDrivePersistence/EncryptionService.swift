@@ -202,18 +202,6 @@ public final class EncryptionService: Sendable {
 // MARK: - Nonce Extension
 
 extension AES.GCM.Nonce {
-
-    /// Creates a nonce from Data.
-    ///
-    /// - Parameter data: The nonce data (must be 12 bytes).
-    /// - Throws: Error if the data length is invalid.
-    init(data: Data) throws {
-        guard data.count == 12 else {
-            throw EncryptionError.invalidNonceLength
-        }
-        try self.init(data: data)
-    }
-
     /// Returns the Data representation of the nonce.
     var dataRepresentation: Data {
         withUnsafeBytes { Data($0) }
