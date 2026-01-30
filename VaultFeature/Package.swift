@@ -15,7 +15,8 @@ let package = Package(
         .sfSymbols,
         .testDriveCore,
         .testDrivePersistence,
-        .sqliteData
+        .sqliteData,
+        .sharing
     ],
     targets: [
         .vaultFeature,
@@ -56,7 +57,8 @@ extension Target {
             .sfSymbols,
             .testDriveCore,
             .testDrivePersistence,
-            .sqliteData
+            .sqliteData,
+            .sharing
         ]
     )
 
@@ -96,6 +98,11 @@ extension Target.Dependency {
         name: "SQLiteData",
         package: "sqlite-data"
     )
+
+    static let sharing: Target.Dependency = .product(
+        name: "Sharing",
+        package: "swift-sharing"
+    )
 }
 
 extension Package.Dependency {
@@ -116,5 +123,10 @@ extension Package.Dependency {
     static let sqliteData: Package.Dependency = .package(
         url: "https://github.com/pointfreeco/sqlite-data",
         exact: "1.5.0"
+    )
+
+    static let sharing: Package.Dependency = .package(
+        url: "https://github.com/pointfreeco/swift-sharing",
+        from: "2.3.0"
     )
 }

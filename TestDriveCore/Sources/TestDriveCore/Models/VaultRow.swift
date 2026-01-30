@@ -7,7 +7,7 @@ import SQLiteData
 /// and counts associated API keys, allowing efficient querying of vaults with their
 /// pin status and key counts.
 @Selection
-public struct VaultRow: Equatable, Sendable, Identifiable {
+public struct VaultRow: Equatable, Sendable, Identifiable, Hashable {
     /// Unique identifier (uses vault's id).
     public var id: UUID { vault.id }
     /// The vault.

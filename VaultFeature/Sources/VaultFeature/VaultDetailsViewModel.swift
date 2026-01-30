@@ -1,7 +1,25 @@
 import Foundation
+import Sharing
 import SQLiteData
+import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
+
+public enum KeyOrdering: String, CaseIterable, Sendable {
+    case name = "Name"
+    case dateCreated = "Date Created"
+    case lastUsed = "Last Used"
+    case environment = "Environment"
+
+    var icon: Image {
+        switch self {
+        case .name: Image(systemName: "textformat")
+        case .dateCreated: Image(systemName: "calendar")
+        case .lastUsed: Image(systemName: "clock")
+        case .environment: Image(systemName: "server.rack")
+        }
+    }
+}
 
 /// View model for the vault details screen.
 ///
@@ -15,6 +33,8 @@ public final class VaultDetailsViewModel {
 
     @ObservationIgnored @FetchOne(Vault.none)
     private var observedVault: Vault?
+
+    @ObservationIgnored @Shared var ordering: KeyOrdering
 
     public var searchText = "" {
         didSet {
@@ -85,41 +105,74 @@ public final class VaultDetailsViewModel {
         self.clipboardManager = clipboardManager
         self.vaultManager = vaultManager
 
-        // Set up fetch queries
+        // Initialize sorting preference from AppStorage
+        _ordering = Shared(
+            wrappedValue: .name,
+            .appStorage("keyOrdering")
+        )
+
+        // Set up vault observation
         _observedVault = FetchOne(Vault.where { $0.id.eq(vault.id) })
+
+        // Initialize @FetchAll with query (data loads synchronously)
         _keyRows = FetchAll(
-            APIKeyRow.where { $0.apiKey.vaultID.eq(vault.id) },
+            APIKeyRow
+                .where { $0.apiKey.vaultID.eq(vault.id) }
+                .order {
+                    switch _ordering.wrappedValue {
+                    case .name:
+                        $0.apiKey.label
+                    case .dateCreated:
+                        $0.apiKey.createdAt.desc()
+                    case .lastUsed:
+                        $0.apiKey.lastUsedAt.desc(nulls: .last)
+                    case .environment:
+                        $0.apiKey.environment
+                    }
+                },
             animation: .default
         )
     }
 
     // MARK: - Public Helpers
 
+    /// Updates the sorting order for keys.
+    public func orderingButtonTapped(_ ordering: KeyOrdering) async {
+        $ordering.withLock { $0 = ordering }
+        updateQuery()
+    }
+
     /// Main task called when view appears or refreshed.
     public func task() async {
-        // Keys are automatically loaded via @FetchAll, but we reload for refresh action
+        // Data already loaded in init - only reload on explicit refresh
         isLoading = true
         errorMessage = nil
-
-        await withErrorReporting {
-            try await $keyRows.load(
-                APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) },
-                animation: .default
-            )
-        }
-
+        updateQuery()
         isLoading = false
     }
 
     /// Updates the key query based on current search text.
     private func updateQuery() {
-        let searchText = self.searchText
+        let ordering = self.ordering
 
         searchTask?.cancel()
         searchTask = Task {
             await withErrorReporting {
                 try await $keyRows.load(
-                    APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) },
+                    APIKeyRow
+                        .where { $0.apiKey.vaultID.eq(vaultID) }
+                        .order {
+                            switch ordering {
+                            case .name:
+                                $0.apiKey.label
+                            case .dateCreated:
+                                $0.apiKey.createdAt.desc()
+                            case .lastUsed:
+                                $0.apiKey.lastUsedAt.desc(nulls: .last)
+                            case .environment:
+                                $0.apiKey.environment
+                            }
+                        },
                     animation: .default
                 )
             }

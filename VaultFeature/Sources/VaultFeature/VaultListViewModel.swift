@@ -1,8 +1,25 @@
 import Foundation
+import Sharing
 import SQLiteData
 import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
+
+public enum VaultOrdering: String, CaseIterable, Sendable {
+    case name = "Name"
+    case dateCreated = "Date Created"
+    case keyCount = "Key Count"
+    case lastUpdated = "Last Updated"
+
+    var icon: Image {
+        switch self {
+        case .name: Image(systemName: "textformat")
+        case .dateCreated: Image(systemName: "calendar")
+        case .keyCount: Image(systemName: "number")
+        case .lastUpdated: Image(systemName: "clock")
+        }
+    }
+}
 
 /// View model for the vault list screen.
 ///
@@ -12,12 +29,14 @@ import TestDrivePersistence
 public final class VaultListViewModel {
 
     @ObservationIgnored
-    @FetchAll(VaultRow.where(\.isPinned), animation: .default)
+    @FetchAll(VaultRow.none, animation: .default)
     public var pinnedVaultRows: [VaultRow]
 
     @ObservationIgnored
-    @FetchAll(VaultRow.where { !$0.isPinned }, animation: .default)
+    @FetchAll(VaultRow.none, animation: .default)
     public var unpinnedVaultRows: [VaultRow]
+
+    @ObservationIgnored @Shared var ordering: VaultOrdering
 
     public var pinnedVaults: [Vault] {
         pinnedVaultRows.map(\.vault)
@@ -53,42 +72,146 @@ public final class VaultListViewModel {
     ) {
         self.vaultManager = vaultManager
         self.apiKeyManager = apiKeyManager
+
+        // Initialize sorting preference from AppStorage
+        _ordering = Shared(
+            wrappedValue: .name,
+            .appStorage("vaultOrdering")
+        )
+
+        // Initialize @FetchAll with actual queries (data loads synchronously)
+        let currentOrdering = _ordering.wrappedValue
+        _pinnedVaultRows = FetchAll(
+            VaultRow
+                .where(\.isPinned)
+                .order {
+                    switch currentOrdering {
+                    case .name:
+                        $0.vault.name
+                    case .dateCreated:
+                        $0.vault.createdAt.desc()
+                    case .keyCount:
+                        $0.keyCount.desc()
+                    case .lastUpdated:
+                        $0.vault.updatedAt.desc()
+                    }
+                },
+            animation: .default
+        )
+        _unpinnedVaultRows = FetchAll(
+            VaultRow
+                .where { !$0.isPinned }
+                .order {
+                    switch currentOrdering {
+                    case .name:
+                        $0.vault.name
+                    case .dateCreated:
+                        $0.vault.createdAt.desc()
+                    case .keyCount:
+                        $0.keyCount.desc()
+                    case .lastUpdated:
+                        $0.vault.updatedAt.desc()
+                    }
+                },
+            animation: .default
+        )
     }
 
     // MARK: - Public Helpers
 
     /// Loads vaults from the database.
     public func loadVaults() async {
-        // Views are automatically loaded, no manual loading needed
+        // Data already loaded in init - no action needed
+        // This is kept for compatibility with view's .task modifier
+    }
+
+    /// Updates the sorting order for vaults.
+    public func orderingButtonTapped(_ ordering: VaultOrdering) async {
+        $ordering.withLock { $0 = ordering }
+        updateQuery()
     }
 
     /// Updates the vault query based on current search text.
     public func updateQuery() {
         let searchText = self.searchText
-        
+        let ordering = self.ordering
+
         searchTask?.cancel()
         searchTask = Task {
             await withErrorReporting {
                 if searchText.isEmpty {
+                    // Reload with base queries
                     async let pinnedTask = $pinnedVaultRows.load(
-                        VaultRow.where(\.isPinned),
+                        VaultRow
+                            .where(\.isPinned)
+                            .order {
+                                switch ordering {
+                                case .name:
+                                    $0.vault.name
+                                case .dateCreated:
+                                    $0.vault.createdAt.desc()
+                                case .keyCount:
+                                    $0.keyCount.desc()
+                                case .lastUpdated:
+                                    $0.vault.updatedAt.desc()
+                                }
+                            },
                         animation: .default
                     )
 
                     async let unpinnedTask = $unpinnedVaultRows.load(
-                        VaultRow.where { !$0.isPinned },
+                        VaultRow
+                            .where { !$0.isPinned }
+                            .order {
+                                switch ordering {
+                                case .name:
+                                    $0.vault.name
+                                case .dateCreated:
+                                    $0.vault.createdAt.desc()
+                                case .keyCount:
+                                    $0.keyCount.desc()
+                                case .lastUpdated:
+                                    $0.vault.updatedAt.desc()
+                                }
+                            },
                         animation: .default
                     )
 
                     _ = try await (pinnedTask.task, unpinnedTask.task)
                 } else {
                     async let pinnedTask = $pinnedVaultRows.load(
-                        VaultRow.where { $0.vault.name.contains(searchText) && $0.isPinned },
+                        VaultRow
+                            .where { $0.vault.name.contains(searchText) && $0.isPinned }
+                            .order {
+                                switch ordering {
+                                case .name:
+                                    $0.vault.name
+                                case .dateCreated:
+                                    $0.vault.createdAt.desc()
+                                case .keyCount:
+                                    $0.keyCount.desc()
+                                case .lastUpdated:
+                                    $0.vault.updatedAt.desc()
+                                }
+                            },
                         animation: .default
                     )
 
                     async let unpinnedTask = $unpinnedVaultRows.load(
-                        VaultRow.where { $0.vault.name.contains(searchText) && !$0.isPinned },
+                        VaultRow
+                            .where { $0.vault.name.contains(searchText) && !$0.isPinned }
+                            .order {
+                                switch ordering {
+                                case .name:
+                                    $0.vault.name
+                                case .dateCreated:
+                                    $0.vault.createdAt.desc()
+                                case .keyCount:
+                                    $0.keyCount.desc()
+                                case .lastUpdated:
+                                    $0.vault.updatedAt.desc()
+                                }
+                            },
                         animation: .default
                     )
 

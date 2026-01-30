@@ -113,12 +113,33 @@ public struct VaultListView: View {
                         Image(systemName: "plus")
                     }
                 }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Menu {
+                            ForEach(VaultOrdering.allCases, id: \.self) { ordering in
+                                Button {
+                                    Task {
+                                        await viewModel.orderingButtonTapped(ordering)
+                                    }
+                                } label: {
+                                    Label {
+                                        Text(ordering.rawValue)
+                                    } icon: {
+                                        ordering.icon
+                                    }
+                                }
+                            }
+                        } label: {
+                            Label("Sort By", systemImage: "arrow.up.arrow.down")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                }
             }
             .sheet(item: $viewModel.vaultForm) { draft in
                 VaultFormView(vault: draft, vaultManager: viewModel.vaultManager)
-            }
-            .task {
-                await viewModel.loadVaults()
             }
         }
     }

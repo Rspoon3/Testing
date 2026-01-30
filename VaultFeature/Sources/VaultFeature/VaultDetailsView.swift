@@ -45,11 +45,36 @@ public struct VaultDetailsView: View {
                     Image(systemName: "plus")
                 }
             }
+
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     viewModel.showVaultConfiguration()
                 } label: {
                     Image(systemName: "info.circle")
+                }
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Menu {
+                        ForEach(KeyOrdering.allCases, id: \.self) { ordering in
+                            Button {
+                                Task {
+                                    await viewModel.orderingButtonTapped(ordering)
+                                }
+                            } label: {
+                                Label {
+                                    Text(ordering.rawValue)
+                                } icon: {
+                                    ordering.icon
+                                }
+                            }
+                        }
+                    } label: {
+                        Label("Sort By", systemImage: "arrow.up.arrow.down")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
             }
         }
