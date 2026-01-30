@@ -141,8 +141,8 @@ public final class DomainLogoService {
     // MARK: - Private Helpers - Network
 
     private func fetchFromNetwork(domain: String) async -> UIImage? {
-        // Google Favicon API
-        guard let url = URL(string: "https://www.google.com/s2/favicons?domain=\(domain)&sz=64") else {
+        // Google Favicon API - request 256x256 for better quality
+        guard let url = URL(string: "https://www.google.com/s2/favicons?domain=\(domain)&sz=256") else {
             return nil
         }
 

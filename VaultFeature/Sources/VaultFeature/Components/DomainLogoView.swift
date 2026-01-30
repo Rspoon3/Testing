@@ -22,6 +22,8 @@ struct DomainLogoView: View {
             if let image = logoImage {
                 Image(uiImage: image)
                     .resizable()
+                    .interpolation(.high)
+                    .antialiased(true)
                     .scaledToFit()
                     .frame(width: size, height: size)
                     .clipShape(RoundedRectangle(cornerRadius: size * 0.2))
