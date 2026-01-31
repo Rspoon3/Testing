@@ -39,22 +39,26 @@ public final class VaultDetailsViewModel {
         let ordering: KeyOrdering
 
         func fetch(_ db: Database) throws -> Value {
-            // Build base query for this vault
-            var baseQuery = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
+            // Helper to build query with pinned filter
+            func fetchRows(isPinned: Bool) throws -> [APIKeyRow] {
+                // Start with vault filter
+                var query = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
 
-            // Apply FTS5 search filter if search text provided
-            if !searchText.isEmpty {
-                baseQuery = baseQuery
-                    .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
-                    .where { _, apiKeyText in
-                        apiKeyText.match(searchText)
-                    }
-                    .select { row, _ in row }
-            }
+                // Add pinned filter
+                query = query.where { isPinned ? $0.isPinned : !$0.isPinned }
 
-            // Helper to apply ordering and fetch
-            func fetchWithOrdering(_ query: Where<APIKeyRow>) throws -> [APIKeyRow] {
-                try query
+                // Apply FTS5 search filter if search text provided
+                if !searchText.isEmpty {
+                    query = query
+                        .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
+                        .where { _, apiKeyText in
+                            apiKeyText.match(searchText)
+                        }
+                        .select { row, _ in row }
+                }
+
+                // Apply ordering and fetch
+                return try query
                     .order {
                         switch ordering {
                         case .name:
@@ -72,8 +76,8 @@ public final class VaultDetailsViewModel {
 
             // Execute both queries in single transaction
             return try Value(
-                pinnedRows: fetchWithOrdering(baseQuery.where(\.isPinned)),
-                unpinnedRows: fetchWithOrdering(baseQuery.where { !$0.isPinned })
+                pinnedRows: fetchRows(isPinned: true),
+                unpinnedRows: fetchRows(isPinned: false)
             )
         }
     }
