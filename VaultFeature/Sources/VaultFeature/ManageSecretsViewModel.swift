@@ -49,7 +49,7 @@ public final class ManageSecretsViewModel {
     public init(
         credential: Credential,
         credentialManager: CredentialManager,
-        haptics: HapticFeedbackManager = .live
+        haptics: HapticFeedbackManager = HapticFeedbackManager()
     ) {
         self.credential = credential
         self.credentialManager = credentialManager
