@@ -229,11 +229,13 @@ public final class CredentialManager {
         rotateAt: Date? = nil
     ) async throws {
         // Fetch existing secret
-        guard var secret = try await database.read({ db in
+        let secret = try await database.read { db in
             try CredentialSecret
                 .where { $0.credentialID.eq(credential.id) && $0.secretLabel.eq(label) }
                 .fetchOne(db)
-        }) else {
+        }
+
+        guard var secret else {
             throw CredentialError.secretNotFound(label)
         }
 
@@ -342,11 +344,13 @@ public final class CredentialManager {
         label: String,
         reason: String
     ) async throws {
-        guard var secret = try await database.read({ db in
+        let secret = try await database.read { db in
             try CredentialSecret
                 .where { $0.credentialID.eq(credential.id) && $0.secretLabel.eq(label) }
                 .fetchOne(db)
-        }) else {
+        }
+
+        guard var secret else {
             throw CredentialError.secretNotFound(label)
         }
 
