@@ -347,6 +347,28 @@ public final class CredentialManager {
         }
     }
 
+    /// Decrypts a historical secret value.
+    ///
+    /// - Parameters:
+    ///   - historyEntry: The history entry containing the encrypted value.
+    ///   - credential: The credential this secret belongs to (for vault key access).
+    /// - Returns: The plaintext secret value.
+    /// - Throws: Encryption error if decryption fails.
+    public func decryptHistoricalSecret(
+        _ historyEntry: CredentialSecretHistory,
+        for credential: Credential
+    ) async throws -> String {
+        // Get vault encryption key
+        let vaultKey = try await vaultManager.getVaultKey(for: credential.vaultID)
+
+        // Decrypt historical secret
+        return try encryption.decryptSecret(
+            ciphertext: historyEntry.encryptedSecret,
+            nonce: historyEntry.nonce,
+            vaultKey: vaultKey
+        )
+    }
+
     /// Revokes a secret (marks as revoked, adds to history).
     ///
     /// - Parameters:

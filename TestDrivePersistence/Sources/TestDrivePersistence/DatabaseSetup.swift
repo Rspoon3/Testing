@@ -118,8 +118,8 @@ public func appDatabase() throws -> any DatabaseWriter {
         try db.create(index: "idx_credentialSecrets_sortOrder", on: "credentialSecrets", columns: ["credentialID", "sortOrder"])
         try db.create(index: "idx_credentialSecrets_status", on: "credentialSecrets", columns: ["status"])
 
-        // Create credentialSecretHistory table (audit log)
-        try db.create(table: "credentialSecretHistory") { t in
+        // Create credentialSecretHistories table (audit log) - pluralized to match @Table macro
+        try db.create(table: "credentialSecretHistories") { t in
             t.column("id", .blob).notNull().primaryKey()
             t.column("credentialSecretID", .blob).notNull()
             t.column("encryptedSecret", .blob).notNull()
@@ -131,7 +131,7 @@ public func appDatabase() throws -> any DatabaseWriter {
         }
 
         // Create index for secret history
-        try db.create(index: "idx_secretHistory_secretID", on: "credentialSecretHistory", columns: ["credentialSecretID"])
+        try db.create(index: "idx_secretHistory_secretID", on: "credentialSecretHistories", columns: ["credentialSecretID"])
 
         // Create vaultParticipants table
         try db.create(table: "vaultParticipants") { t in
