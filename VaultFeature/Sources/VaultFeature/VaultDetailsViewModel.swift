@@ -41,10 +41,13 @@ public final class VaultDetailsViewModel {
         func fetch(_ db: Database) throws -> Value {
             // Helper to build query with pinned filter
             func fetchRows(isPinned: Bool) throws -> [APIKeyRow] {
-                // Build query: vault + pinned filter
-                let baseQuery = APIKeyRow
-                    .where { $0.apiKey.vaultID.eq(vaultID) }
-                    .where { isPinned ? ($0.preference.isPinned ?? false) : !($0.preference.isPinned ?? false) }
+                // Build base query with vault and pinned filters
+                let vaultQuery = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
+                let baseQuery = if isPinned {
+                    vaultQuery.where { $0.preference.isPinned ?? false }
+                } else {
+                    vaultQuery.where { !($0.preference.isPinned ?? false) }
+                }
 
                 // Apply FTS5 search filter if search text provided
                 if !searchText.isEmpty {
