@@ -1,9 +1,9 @@
 import Foundation
 import StructuredQueriesCore
 
-/// Represents the environment type for an API key.
+/// Represents the environment type for an credential.
 ///
-/// Use this enum to categorize API keys based on their deployment environment,
+/// Use this enum to categorize credentials based on their deployment environment,
 /// helping organize keys by their intended use case.
 public enum APIEnvironment: String, Codable, CaseIterable, Sendable {
     /// Production environment for live systems.

@@ -1,10 +1,10 @@
 import SwiftUI
 import TestDriveCore
 
-/// Row view for displaying an API key in a list.
-struct KeyRowView: View {
+/// Row view for displaying a credential in a list.
+struct CredentialRowView: View {
 
-    let key: APIKey
+    let key: Credential
 
     // MARK: - Body
 
@@ -108,8 +108,8 @@ struct KeyRowView: View {
 
 #Preview {
     List {
-        KeyRowView(
-            key: APIKey(
+        CredentialRowView(
+            key: Credential(
                 label: "GitHub API Token",
                 websiteDomain: "github.com",
                 company: "GitHub",
@@ -121,8 +121,8 @@ struct KeyRowView: View {
             )
         )
 
-        KeyRowView(
-            key: APIKey(
+        CredentialRowView(
+            key: Credential(
                 label: "Stripe Test Key",
                 websiteDomain: "stripe.com",
                 environment: .development,

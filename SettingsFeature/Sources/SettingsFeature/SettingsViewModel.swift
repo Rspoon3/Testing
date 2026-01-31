@@ -45,7 +45,7 @@ public final class SettingsViewModel {
     @ObservationIgnored @Dependency(\.defaultDatabase) private var database
     private let vaultManager: VaultManager
     private let clipboardManager: ClipboardManager
-    private let apiKeyManager: APIKeyManager
+    private let credentialManager: CredentialManager
 
     // MARK: - Initializer
 
@@ -54,15 +54,15 @@ public final class SettingsViewModel {
     /// - Parameters:
     ///   - vaultManager: The vault manager for vault operations.
     ///   - clipboardManager: The clipboard manager for configuration.
-    ///   - apiKeyManager: The API key manager for key operations.
+    ///   - credentialManager: The credential manager for key operations.
     public init(
         vaultManager: VaultManager,
         clipboardManager: ClipboardManager,
-        apiKeyManager: APIKeyManager
+        credentialManager: CredentialManager
     ) {
         self.vaultManager = vaultManager
         self.clipboardManager = clipboardManager
-        self.apiKeyManager = apiKeyManager
+        self.credentialManager = credentialManager
 
         // Set defaults if not set
         if UserDefaults.standard.object(forKey: "clipboardAutoClearDuration") == nil {
@@ -156,8 +156,8 @@ public final class SettingsViewModel {
                 // Fetch keys for this vault (without secrets)
                 // Note: Secrets are NOT exported for security
                 let keys = try await database.read { _ in
-                    // db.query(APIKey.self).filter(\.vaultID == vault.id).all()
-                    return [APIKey]() // Placeholder
+                    // db.query(Credential.self).filter(\.vaultID == vault.id).all()
+                    return [Credential]() // Placeholder
                 }
 
                 let keysData = keys.map { key in
@@ -235,13 +235,13 @@ public final class SettingsViewModel {
 
                 let notesOptions = [
                     "Used for CI/CD deployments and automated workflows. Rate limit: 5000 req/hour",
-                    "Payment processing API key with webhook endpoints configured. Expires: Q2 2026",
+                    "Payment processing credential with webhook endpoints configured. Expires: Q2 2026",
                     "OAuth credentials for third-party integration. Restricted to US-East-1 region",
                     "Service account key for analytics dashboard. Read-only access to production data",
                     "API token for monitoring and alerting services. Auto-generated on 2024-12-15",
                     "Webhook secret for real-time event processing. Rotate every 90 days",
                     "Client credentials for mobile app authentication. Scopes: read, write, admin",
-                    "Legacy API key - migrate to OAuth2 before end of quarter. Deprecated",
+                    "Legacy credential - migrate to OAuth2 before end of quarter. Deprecated",
                     "Emergency access key - only use for production incidents. Notify team lead",
                     "Integration key for Slack notifications and team alerts. Channel: #engineering"
                 ]
@@ -276,7 +276,7 @@ public final class SettingsViewModel {
                 // Create descriptive label with company and environment
                 let label = "\(company) \(environment.rawValue.capitalized)"
 
-                try await apiKeyManager.createKey(
+                try await credentialManager.createKey(
                     label: label,
                     secret: secret,
                     vaultID: vault.id,

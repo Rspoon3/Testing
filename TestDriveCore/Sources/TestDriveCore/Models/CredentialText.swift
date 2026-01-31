@@ -1,16 +1,16 @@
 import Foundation
 import SQLiteData
 
-/// FTS5 virtual table for full-text search of API keys.
+/// FTS5 virtual table for full-text search of credentials.
 ///
-/// This table mirrors searchable text fields from the APIKey table
+/// This table mirrors searchable text fields from the Credential table
 /// and enables efficient full-text search with ranking.
 @Table
-public struct APIKeyText: FTS5 {
-    /// Row ID linking to the APIKey table.
+public struct CredentialText: FTS5 {
+    /// Row ID linking to the Credential table.
     public let rowid: Int
 
-    /// Searchable: API key label.
+    /// Searchable: credential label.
     public let label: String
 
     /// Searchable: Website domain.
@@ -23,7 +23,7 @@ public struct APIKeyText: FTS5 {
     public let notes: String
 }
 
-extension APIKeyText.TableColumns {
+extension CredentialText.TableColumns {
     /// Default BM25 ranking with weighted columns.
     ///
     /// - label: 10x weight (most important)

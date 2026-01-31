@@ -5,7 +5,7 @@ import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
-public enum KeyOrdering: String, CaseIterable, Sendable {
+public enum CredentialOrdering: String, CaseIterable, Sendable {
     case name = "Name"
     case dateCreated = "Date Created"
     case lastUsed = "Last Used"
@@ -23,36 +23,36 @@ public enum KeyOrdering: String, CaseIterable, Sendable {
 
 /// View model for the vault details screen.
 ///
-/// Manages API key loading, searching, and deletion within a vault.
+/// Manages credential loading, searching, and deletion within a vault.
 @MainActor
 @Observable
 public final class VaultDetailsViewModel {
 
     struct KeyRowsRequest: FetchKeyRequest {
         struct Value {
-            var pinnedRows: [APIKeyRow] = []
-            var unpinnedRows: [APIKeyRow] = []
+            var pinnedRows: [CredentialRow] = []
+            var unpinnedRows: [CredentialRow] = []
         }
 
         let vaultID: UUID
         let searchText: String
-        let ordering: KeyOrdering
+        let ordering: CredentialOrdering
 
         func fetch(_ db: Database) throws -> Value {
             // Helper to build complete query for pinned or unpinned rows
-            func fetchRows(isPinned: Bool) throws -> [APIKeyRow] {
-                // Step 1: Start from base APIKey table and filter by vault
-                let baseQuery = APIKey.where { apiKey in
+            func fetchRows(isPinned: Bool) throws -> [CredentialRow] {
+                // Step 1: Start from base Credential table and filter by vault
+                let baseQuery = Credential.where { apiKey in
                     apiKey.vaultID.eq(vaultID)
                 }
 
-                // Step 2: Join with APIKeyPreference to get pinned state
+                // Step 2: Join with CredentialPreference to get pinned state
                 let withPreference = baseQuery
-                    .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
+                    .leftJoin(CredentialPreference.all) { $0.id.eq($1.apiKeyID) }
 
                 // Step 3: Join with FTS5 for search
                 let joined = withPreference
-                    .join(APIKeyText.all) { $0.rowid.eq($2.rowid) }
+                    .join(CredentialText.all) { $0.rowid.eq($2.rowid) }
 
                 // Step 4: Apply filters (pinned state and search)
                 let query = joined
@@ -80,7 +80,7 @@ public final class VaultDetailsViewModel {
                         }
                     }
                     .select { apiKey, preference, _ in
-                        APIKeyRow.Columns(
+                        CredentialRow.Columns(
                             apiKey: apiKey,
                             isPinned: preference.isPinned ?? false
                         )
@@ -103,7 +103,7 @@ public final class VaultDetailsViewModel {
     @ObservationIgnored @FetchOne(Vault.none)
     private var observedVault: Vault?
 
-    @ObservationIgnored @Shared var ordering: KeyOrdering
+    @ObservationIgnored @Shared var ordering: CredentialOrdering
 
     public var searchText = "" {
         didSet {
@@ -123,18 +123,18 @@ public final class VaultDetailsViewModel {
     }
 
     /// Pinned keys (search-filtered at database level).
-    public var pinnedKeys: [APIKey] {
+    public var pinnedKeys: [Credential] {
         keyRows.pinnedRows.map(\.apiKey)
     }
 
     /// Unpinned keys (search-filtered at database level).
-    public var unpinnedKeys: [APIKey] {
+    public var unpinnedKeys: [Credential] {
         keyRows.unpinnedRows.map(\.apiKey)
     }
 
     private let initialVault: Vault
     public let vaultID: UUID
-    public let apiKeyManager: APIKeyManager
+    public let credentialManager: CredentialManager
     public let clipboardManager: ClipboardManager
     public let vaultManager: VaultManager
 
@@ -144,18 +144,18 @@ public final class VaultDetailsViewModel {
     ///
     /// - Parameters:
     ///   - vault: The vault to display keys from.
-    ///   - apiKeyManager: The API key manager.
+    ///   - credentialManager: The credential manager.
     ///   - clipboardManager: The clipboard manager.
     ///   - vaultManager: The vault manager.
     public init(
         vault: Vault,
-        apiKeyManager: APIKeyManager,
+        credentialManager: CredentialManager,
         clipboardManager: ClipboardManager,
         vaultManager: VaultManager
     ) {
         self.initialVault = vault
         self.vaultID = vault.id
-        self.apiKeyManager = apiKeyManager
+        self.credentialManager = credentialManager
         self.clipboardManager = clipboardManager
         self.vaultManager = vaultManager
 
@@ -180,7 +180,7 @@ public final class VaultDetailsViewModel {
     // MARK: - Public Helpers
 
     /// Updates the sorting order for keys.
-    public func orderingButtonTapped(_ ordering: KeyOrdering) async {
+    public func orderingButtonTapped(_ ordering: CredentialOrdering) async {
         $ordering.withLock { $0 = ordering }
         updateQuery()
     }
@@ -216,32 +216,32 @@ public final class VaultDetailsViewModel {
         }
     }
 
-    /// Deletes an API key.
+    /// Deletes an credential.
     ///
     /// - Parameter key: The key to delete.
-    public func deleteKey(_ key: APIKey) async throws {
-        try await apiKeyManager.deleteKey(key)
+    public func deleteKey(_ key: Credential) async throws {
+        try await credentialManager.deleteKey(key)
         // @FetchAll automatically updates keys array
     }
 
     /// Copies a key's secret to the clipboard.
     ///
     /// - Parameter key: The key whose secret to copy.
-    public func copySecret(_ key: APIKey) async throws {
-        let secret = try await apiKeyManager.getSecret(for: key)
+    public func copySecret(_ key: Credential) async throws {
+        let secret = try await credentialManager.getSecret(for: key)
         clipboardManager.copy(secret, label: key.label, keyID: key.id)
 
         // Mark key as used
-        try await apiKeyManager.markAsUsed(key)
+        try await credentialManager.markAsUsed(key)
         // @FetchAll automatically updates keys array
     }
 
-    /// Toggles the pinned state of an API key.
+    /// Toggles the pinned state of an credential.
     ///
     /// - Parameter key: The key to toggle.
-    public func togglePin(for key: APIKey) async {
+    public func togglePin(for key: Credential) async {
         await withErrorReporting {
-            try await apiKeyManager.toggleKeyPin(key)
+            try await credentialManager.toggleKeyPin(key)
         }
     }
 

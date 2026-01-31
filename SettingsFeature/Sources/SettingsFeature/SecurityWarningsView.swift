@@ -112,12 +112,12 @@ struct WarningRowView: View {
     let enc = EncryptionService()
     let key = KeychainService()
     let vm = VaultManager(encryption: enc, keychain: key)
-    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+    let akm = CredentialManager(encryption: enc, vaultManager: vm)
     let clip = ClipboardManager()
 
     return SecurityWarningsView(
         viewModel: SecurityWarningsViewModel(
-            apiKeyManager: akm,
+            credentialManager: akm,
             clipboardManager: clip
         )
     )

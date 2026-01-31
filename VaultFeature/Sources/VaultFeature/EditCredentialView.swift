@@ -2,10 +2,10 @@ import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
-/// Sheet for creating or editing an API key.
-public struct EditKeyView: View {
+/// Sheet for creating or editing an credential.
+public struct EditCredentialView: View {
 
-    @State private var viewModel: EditKeyViewModel
+    @State private var viewModel: EditCredentialViewModel
     @Environment(\.dismiss) private var dismiss
 
     private let isEditMode: Bool
@@ -15,7 +15,7 @@ public struct EditKeyView: View {
     /// Creates a new edit key view.
     ///
     /// - Parameter viewModel: The view model for this view.
-    public init(viewModel: EditKeyViewModel) {
+    public init(viewModel: EditCredentialViewModel) {
         self.viewModel = viewModel
         self.isEditMode = viewModel.existingKey != nil
     }
@@ -149,12 +149,12 @@ public struct EditKeyView: View {
     let enc = EncryptionService()
     let key = KeychainService()
     let vm = VaultManager(encryption: enc, keychain: key)
-    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+    let akm = CredentialManager(encryption: enc, vaultManager: vm)
 
-    return EditKeyView(
-        viewModel: EditKeyViewModel(
+    return EditCredentialView(
+        viewModel: EditCredentialViewModel(
             vaultID: UUID(),
-            apiKeyManager: akm
+            credentialManager: akm
         )
     )
 }

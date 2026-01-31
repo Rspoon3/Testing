@@ -28,7 +28,7 @@ public final class SyncConflictResolver: Sendable {
         }
     }
 
-    /// Resolves conflicts for APIKey records.
+    /// Resolves conflicts for Credential records.
     ///
     /// Strategy: Most recent update wins. If timestamps are equal,
     /// prefer the version with more metadata.
@@ -37,7 +37,7 @@ public final class SyncConflictResolver: Sendable {
     ///   - local: The local version of the key.
     ///   - remote: The remote version from CloudKit.
     /// - Returns: The resolved key.
-    public func resolveAPIKey(local: APIKey, remote: APIKey) -> APIKey {
+    public func resolveCredential(local: Credential, remote: Credential) -> Credential {
         // If one was updated more recently, use that
         if local.createdAt != remote.createdAt {
             return local.createdAt > remote.createdAt ? local : remote
@@ -82,10 +82,10 @@ public final class SyncConflictResolver: Sendable {
 
     // MARK: - Private Helpers
 
-    /// Calculates a metadata completeness score for an API key.
+    /// Calculates a metadata completeness score for an credential.
     ///
     /// Used to prefer the version with more information in case of ties.
-    private func metadataScore(for key: APIKey) -> Int {
+    private func metadataScore(for key: Credential) -> Int {
         var score = 0
 
         if key.websiteDomain != nil { score += 1 }

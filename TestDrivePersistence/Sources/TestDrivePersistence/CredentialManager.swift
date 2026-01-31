@@ -4,13 +4,13 @@ import GRDB
 import SQLiteData
 import TestDriveCore
 
-/// Manages API key operations including creation, encryption, and search.
+/// Manages credential operations including creation, encryption, and search.
 ///
-/// This manager handles the full lifecycle of API keys, coordinating with
+/// This manager handles the full lifecycle of credentials, coordinating with
 /// the VaultManager for encryption key access.
 @MainActor
 @Observable
-public final class APIKeyManager {
+public final class CredentialManager {
 
     @ObservationIgnored @Dependency(\.defaultDatabase) private var database
     private let encryption: EncryptionService
@@ -18,7 +18,7 @@ public final class APIKeyManager {
 
     // MARK: - Initializer
 
-    /// Creates a new API key manager.
+    /// Creates a new credential manager.
     ///
     /// - Parameters:
     ///   - encryption: The encryption service.
@@ -33,11 +33,11 @@ public final class APIKeyManager {
 
     // MARK: - CRUD Operations
 
-    /// Creates a new API key with encrypted secret.
+    /// Creates a new credential with encrypted secret.
     ///
     /// - Parameters:
-    ///   - label: User-facing label for the API key.
-    ///   - secret: The plaintext API key secret to encrypt.
+    ///   - label: User-facing label for the credential.
+    ///   - secret: The plaintext credential secret to encrypt.
     ///   - vaultID: The vault to store the key in.
     ///   - websiteDomain: Optional website domain.
     ///   - company: Optional company name.
@@ -45,7 +45,7 @@ public final class APIKeyManager {
     ///   - tags: Tags for categorization.
     ///   - notes: User notes.
     ///   - rotateAt: Optional rotation reminder date.
-    /// - Returns: The newly created API key.
+    /// - Returns: The newly created credential.
     /// - Throws: Database or encryption error if creation fails.
     public func createKey(
         label: String,
@@ -57,15 +57,15 @@ public final class APIKeyManager {
         tags: [String] = [],
         notes: String = "",
         rotateAt: Date? = nil
-    ) async throws -> APIKey {
+    ) async throws -> Credential {
         // Get vault encryption key
         let vaultKey = try await vaultManager.getVaultKey(for: vaultID)
 
         // Encrypt secret
         let (ciphertext, nonce) = try encryption.encryptSecret(secret, with: vaultKey)
 
-        // Create API key record
-        let apiKey = APIKey(
+        // Create credential record
+        let apiKey = Credential(
             label: label,
             websiteDomain: websiteDomain,
             company: company,
@@ -81,18 +81,18 @@ public final class APIKeyManager {
 
         // Save to database
         try await database.write { db in
-            try APIKey.insert { apiKey }.execute(db)
+            try Credential.insert { apiKey }.execute(db)
         }
 
         return apiKey
     }
 
-    /// Retrieves the decrypted secret for an API key.
+    /// Retrieves the decrypted secret for an credential.
     ///
-    /// - Parameter key: The API key.
+    /// - Parameter key: The credential.
     /// - Returns: The plaintext secret.
     /// - Throws: Database or encryption error if decryption fails.
-    public func getSecret(for key: APIKey) async throws -> String {
+    public func getSecret(for key: Credential) async throws -> String {
         // Get vault encryption key
         let vaultKey = try await vaultManager.getVaultKey(for: key.vaultID)
 
@@ -106,113 +106,113 @@ public final class APIKeyManager {
         return secret
     }
 
-    /// Updates an API key's metadata.
+    /// Updates an credential's metadata.
     ///
     /// Note: To update the secret, delete and recreate the key.
     ///
-    /// - Parameter key: The API key with updated metadata.
+    /// - Parameter key: The credential with updated metadata.
     /// - Throws: Database error if update fails.
-    public func updateKey(_ key: APIKey) async throws {
+    public func updateKey(_ key: Credential) async throws {
         try await database.write { db in
-            try APIKey.update(key).execute(db)
+            try Credential.update(key).execute(db)
         }
     }
 
-    /// Deletes an API key.
+    /// Deletes an credential.
     ///
-    /// - Parameter key: The API key to delete.
+    /// - Parameter key: The credential to delete.
     /// - Throws: Database error if deletion fails.
-    public func deleteKey(_ key: APIKey) async throws {
+    public func deleteKey(_ key: Credential) async throws {
         try await database.write { db in
-            try APIKey.delete(key).execute(db)
+            try Credential.delete(key).execute(db)
         }
     }
 
-    /// Marks an API key as recently used.
+    /// Marks an credential as recently used.
     ///
     /// Updates the lastUsedAt timestamp, useful for tracking key activity.
     ///
-    /// - Parameter key: The API key that was used.
+    /// - Parameter key: The credential that was used.
     /// - Throws: Database error if update fails.
-    public func markAsUsed(_ key: APIKey) async throws {
+    public func markAsUsed(_ key: Credential) async throws {
         var updated = key
         updated.lastUsedAt = Date()
 
         try await updateKey(updated)
     }
 
-    /// Toggles the pinned state of an API key.
+    /// Toggles the pinned state of an credential.
     ///
-    /// - Parameter key: The API key to toggle.
+    /// - Parameter key: The credential to toggle.
     /// - Throws: Database error if update fails.
-    public func toggleKeyPin(_ key: APIKey) async throws {
+    public func toggleKeyPin(_ key: Credential) async throws {
         try await database.write { db in
             // Fetch existing preferences
-            let existing = try APIKeyPreference
+            let existing = try CredentialPreference
                 .where { $0.apiKeyID.eq(key.id) }
                 .fetchOne(db)
 
             if var preference = existing {
                 // Update existing
                 preference.isPinned.toggle()
-                try APIKeyPreference.update(preference).execute(db)
+                try CredentialPreference.update(preference).execute(db)
             } else {
                 // Create new preferences with isPinned = true
-                let preference = APIKeyPreference(apiKeyID: key.id, isPinned: true)
-                try APIKeyPreference.insert { preference }.execute(db)
+                let preference = CredentialPreference(apiKeyID: key.id, isPinned: true)
+                try CredentialPreference.insert { preference }.execute(db)
             }
         }
     }
 
     // MARK: - Query Operations
 
-    /// Fetches all API keys in a vault.
+    /// Fetches all credentials in a vault.
     ///
     /// - Parameter vaultID: The vault identifier.
-    /// - Returns: Array of API keys sorted by creation date (newest first).
+    /// - Returns: Array of credentials sorted by creation date (newest first).
     /// - Throws: Database error if fetch fails.
-    public func fetchKeys(in vaultID: UUID) async throws -> [APIKey] {
+    public func fetchKeys(in vaultID: UUID) async throws -> [Credential] {
         try await database.read { db in
-            try APIKey
+            try Credential
                 .where { $0.vaultID.eq(vaultID) }
                 .order { $0.createdAt.desc() }
                 .fetchAll(db)
         }
     }
 
-    /// Fetches all API keys across all vaults.
+    /// Fetches all credentials across all vaults.
     ///
-    /// - Returns: Array of all API keys sorted by creation date.
+    /// - Returns: Array of all credentials sorted by creation date.
     /// - Throws: Database error if fetch fails.
-    public func fetchAllKeys() async throws -> [APIKey] {
+    public func fetchAllKeys() async throws -> [Credential] {
         try await database.read { db in
-            try APIKey
+            try Credential
                 .order { $0.createdAt.desc() }
                 .fetchAll(db)
         }
     }
 
-    /// Searches API keys by query string.
+    /// Searches credentials by query string.
     ///
     /// Searches in label, domain, company, and tags.
     ///
     /// - Parameters:
     ///   - query: The search query string.
     ///   - vaultID: Optional vault to limit search to.
-    /// - Returns: Array of matching API keys.
+    /// - Returns: Array of matching credentials.
     /// - Throws: Database error if search fails.
-    public func searchKeys(query: String, in vaultID: UUID? = nil) async throws -> [APIKey] {
+    public func searchKeys(query: String, in vaultID: UUID? = nil) async throws -> [Credential] {
         let lowercaseQuery = query.lowercased()
 
         return try await database.read { db in
-            let allKeys: [APIKey]
+            let allKeys: [Credential]
 
             if let vaultID {
-                allKeys = try APIKey
+                allKeys = try Credential
                     .where { $0.vaultID.eq(vaultID) }
                     .fetchAll(db)
             } else {
-                allKeys = try APIKey.fetchAll(db)
+                allKeys = try Credential.fetchAll(db)
             }
 
             // Client-side filtering for text search (SQLiteData doesn't support LIKE easily)
@@ -225,17 +225,17 @@ public final class APIKeyManager {
         }
     }
 
-    /// Fetches API keys needing rotation.
+    /// Fetches credentials needing rotation.
     ///
     /// Returns keys with rotateAt dates in the past or within the next 7 days.
     ///
     /// - Returns: Array of keys needing rotation.
     /// - Throws: Database error if fetch fails.
-    public func fetchKeysNeedingRotation() async throws -> [APIKey] {
+    public func fetchKeysNeedingRotation() async throws -> [Credential] {
         let warningDate = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
 
         return try await database.read { db in
-            let allKeys = try APIKey
+            let allKeys = try Credential
                 .order { $0.createdAt.desc() }
                 .fetchAll(db)
 
@@ -248,27 +248,27 @@ public final class APIKeyManager {
         }
     }
 
-    /// Fetches API keys by environment.
+    /// Fetches credentials by environment.
     ///
     /// - Parameters:
     ///   - environment: The environment to filter by.
     ///   - vaultID: Optional vault to limit search to.
-    /// - Returns: Array of matching API keys.
+    /// - Returns: Array of matching credentials.
     /// - Throws: Database error if fetch fails.
     public func fetchKeys(
         environment: APIEnvironment,
         in vaultID: UUID? = nil
-    ) async throws -> [APIKey] {
+    ) async throws -> [Credential] {
         try await database.read { db in
             if let vaultID {
                 // Fetch by environment then filter by vaultID
-                return try APIKey
+                return try Credential
                     .where { $0.environment.eq(environment) }
                     .order { $0.createdAt.desc() }
                     .fetchAll(db)
                     .filter { $0.vaultID == vaultID }
             } else {
-                return try APIKey
+                return try Credential
                     .where { $0.environment.eq(environment) }
                     .order { $0.createdAt.desc() }
                     .fetchAll(db)
@@ -276,26 +276,26 @@ public final class APIKeyManager {
         }
     }
 
-    /// Fetches API keys by tags.
+    /// Fetches credentials by tags.
     ///
     /// - Parameters:
     ///   - tags: The tags to search for (OR logic).
     ///   - vaultID: Optional vault to limit search to.
-    /// - Returns: Array of matching API keys.
+    /// - Returns: Array of matching credentials.
     /// - Throws: Database error if fetch fails.
     public func fetchKeys(
         withTags tags: [String],
         in vaultID: UUID? = nil
-    ) async throws -> [APIKey] {
+    ) async throws -> [Credential] {
         try await database.read { db in
-            let allKeys: [APIKey]
+            let allKeys: [Credential]
 
             if let vaultID {
-                allKeys = try APIKey
+                allKeys = try Credential
                     .where { $0.vaultID.eq(vaultID) }
                     .fetchAll(db)
             } else {
-                allKeys = try APIKey.fetchAll(db)
+                allKeys = try Credential.fetchAll(db)
             }
 
             // Client-side filtering for tag matching
@@ -314,7 +314,7 @@ public final class APIKeyManager {
     /// - Throws: Database error if count fails.
     public func keyCount(in vaultID: UUID) async throws -> Int {
         try await database.read { db in
-            try APIKey
+            try Credential
                 .where { $0.vaultID.eq(vaultID) }
                 .fetchCount(db)
         }

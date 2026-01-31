@@ -18,7 +18,7 @@ public final class SecurityWarningsViewModel {
     public var errorMessage: String?
 
     @ObservationIgnored @Dependency(\.defaultDatabase) private var database
-    private let apiKeyManager: APIKeyManager
+    private let credentialManager: CredentialManager
     private let clipboardManager: ClipboardManager
 
     // MARK: - Initializer
@@ -26,13 +26,13 @@ public final class SecurityWarningsViewModel {
     /// Creates a new security warnings view model.
     ///
     /// - Parameters:
-    ///   - apiKeyManager: The API key manager for key operations.
+    ///   - credentialManager: The credential manager for key operations.
     ///   - clipboardManager: The clipboard manager for activity tracking.
     public init(
-        apiKeyManager: APIKeyManager,
+        credentialManager: CredentialManager,
         clipboardManager: ClipboardManager
     ) {
-        self.apiKeyManager = apiKeyManager
+        self.credentialManager = credentialManager
         self.clipboardManager = clipboardManager
     }
 
@@ -87,9 +87,9 @@ public final class SecurityWarningsViewModel {
 
         // Query database for keys with rotateAt date in the past
         let allKeys = try await database.read { _ in
-            // db.query(APIKey.self).filter(\.rotateAt != nil).all()
+            // db.query(Credential.self).filter(\.rotateAt != nil).all()
             // Placeholder: In real implementation, query all keys
-            return [APIKey]() // Placeholder
+            return [Credential]() // Placeholder
         }
 
         let expired = allKeys.filter { key in
@@ -118,8 +118,8 @@ public final class SecurityWarningsViewModel {
 
         // Query database for keys with rotateAt date within 7 days
         let allKeys = try await database.read { _ in
-            // db.query(APIKey.self).filter(\.rotateAt != nil).all()
-            return [APIKey]() // Placeholder
+            // db.query(Credential.self).filter(\.rotateAt != nil).all()
+            return [Credential]() // Placeholder
         }
 
         let needsRotation = allKeys.filter { key in

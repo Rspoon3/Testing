@@ -2,9 +2,9 @@ import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
-/// Vault details screen showing all API keys in a vault.
+/// Vault details screen showing all credentials in a vault.
 ///
-/// Displays all API keys with search functionality and swipe actions.
+/// Displays all credentials with search functionality and swipe actions.
 public struct VaultDetailsView: View {
 
     @State private var viewModel: VaultDetailsViewModel
@@ -27,7 +27,7 @@ public struct VaultDetailsView: View {
                 ProgressView()
             } else if viewModel.pinnedKeys.isEmpty && viewModel.unpinnedKeys.isEmpty {
                 if viewModel.searchText.isEmpty {
-                    EmptyKeysView()
+                    EmptyCredentialsView()
                 } else {
                     noResultsView
                 }
@@ -36,7 +36,7 @@ public struct VaultDetailsView: View {
             }
         }
         .navigationTitle(viewModel.vault.name)
-        .searchable(text: $viewModel.searchText, prompt: "Search keys")
+        .searchable(text: $viewModel.searchText, prompt: "Search credentials")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -57,7 +57,7 @@ public struct VaultDetailsView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Menu {
-                        ForEach(KeyOrdering.allCases, id: \.self) { ordering in
+                        ForEach(CredentialOrdering.allCases, id: \.self) { ordering in
                             Button {
                                 Task {
                                     await viewModel.orderingButtonTapped(ordering)
@@ -85,10 +85,10 @@ public struct VaultDetailsView: View {
             VaultFormView(vault: draft, vaultManager: viewModel.vaultManager)
         }
         .sheet(isPresented: $showingAddSheet) {
-            EditKeyView(
-                viewModel: EditKeyViewModel(
+            EditCredentialView(
+                viewModel: EditCredentialViewModel(
                     vaultID: viewModel.vaultID,
-                    apiKeyManager: viewModel.apiKeyManager
+                    credentialManager: viewModel.credentialManager
                 )
             )
         }
@@ -104,7 +104,7 @@ public struct VaultDetailsView: View {
                         keyRow(for: key, isPinned: true)
                     }
                 } header: {
-                    Text("Pinned")
+                    Text("Pinned Credentials")
                         .font(.headline)
                         .foregroundStyle(.primary)
                         .textCase(nil)
@@ -117,7 +117,7 @@ public struct VaultDetailsView: View {
                     keyRow(for: key, isPinned: false)
                 }
             } header: {
-                Text("Keys")
+                Text("Credentials")
                     .font(.headline)
                     .foregroundStyle(.primary)
                     .textCase(nil)
@@ -126,17 +126,17 @@ public struct VaultDetailsView: View {
         }
     }
 
-    private func keyRow(for key: APIKey, isPinned: Bool) -> some View {
+    private func keyRow(for key: Credential, isPinned: Bool) -> some View {
         NavigationLink {
-            KeyDetailView(
-                viewModel: KeyDetailViewModel(
+            CredentialDetailView(
+                viewModel: CredentialDetailViewModel(
                     key: key,
-                    apiKeyManager: viewModel.apiKeyManager,
+                    credentialManager: viewModel.credentialManager,
                     clipboardManager: viewModel.clipboardManager
                 )
             )
         } label: {
-            KeyRowView(key: key)
+            CredentialRowView(key: key)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) {
@@ -169,19 +169,19 @@ public struct VaultDetailsView: View {
 
     // MARK: - Private Helpers
 
-    private func deleteKey(_ key: APIKey) {
+    private func deleteKey(_ key: Credential) {
         Task {
             try? await viewModel.deleteKey(key)
         }
     }
 
-    private func copySecret(_ key: APIKey) {
+    private func copySecret(_ key: Credential) {
         Task {
             try? await viewModel.copySecret(key)
         }
     }
 
-    private func togglePin(_ key: APIKey) {
+    private func togglePin(_ key: Credential) {
         Task {
             await viewModel.togglePin(for: key)
         }
@@ -194,7 +194,7 @@ public struct VaultDetailsView: View {
     let enc = EncryptionService()
     let key = KeychainService()
     let vm = VaultManager(encryption: enc, keychain: key)
-    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+    let akm = CredentialManager(encryption: enc, vaultManager: vm)
 
     return NavigationStack {
         VaultDetailsView(
@@ -205,7 +205,7 @@ public struct VaultDetailsView: View {
                     colorHex: "#007AFF",
                     ownerPublicKey: Data()
                 ),
-                apiKeyManager: akm,
+                credentialManager: akm,
                 clipboardManager: ClipboardManager(),
                 vaultManager: vm
             )

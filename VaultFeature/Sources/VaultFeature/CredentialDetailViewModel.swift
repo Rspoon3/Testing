@@ -9,15 +9,15 @@ import TestDrivePersistence
 /// Manages secret loading, visibility, and clipboard operations.
 @MainActor
 @Observable
-public final class KeyDetailViewModel {
+public final class CredentialDetailViewModel {
 
-    @ObservationIgnored @FetchOne(APIKey.none)
-    private var observedKey: APIKey?
+    @ObservationIgnored @FetchOne(Credential.none)
+    private var observedKey: Credential?
 
-    private let initialKey: APIKey
+    private let initialKey: Credential
 
-    /// The API key being displayed. Returns observed key if loaded, otherwise initial key.
-    public var key: APIKey {
+    /// The credential being displayed. Returns observed key if loaded, otherwise initial key.
+    public var key: Credential {
         observedKey ?? initialKey
     }
 
@@ -27,7 +27,7 @@ public final class KeyDetailViewModel {
     public var errorMessage: String?
     public var showingCopyConfirmation = false
 
-    let apiKeyManager: APIKeyManager
+    let credentialManager: CredentialManager
     private let clipboardManager: ClipboardManager
     private let haptics: HapticFeedbackManager
 
@@ -36,23 +36,23 @@ public final class KeyDetailViewModel {
     /// Creates a new key detail view model.
     ///
     /// - Parameters:
-    ///   - key: The API key to display.
-    ///   - apiKeyManager: The API key manager.
+    ///   - key: The credential to display.
+    ///   - credentialManager: The credential manager.
     ///   - clipboardManager: The clipboard manager.
     ///   - haptics: The haptic feedback manager.
     public init(
-        key: APIKey,
-        apiKeyManager: APIKeyManager,
+        key: Credential,
+        credentialManager: CredentialManager,
         clipboardManager: ClipboardManager,
         haptics: HapticFeedbackManager = HapticFeedbackManager()
     ) {
         self.initialKey = key
-        self.apiKeyManager = apiKeyManager
+        self.credentialManager = credentialManager
         self.clipboardManager = clipboardManager
         self.haptics = haptics
 
         // Set up fetch query to observe key changes
-        _observedKey = FetchOne(APIKey.where { $0.id.eq(key.id) })
+        _observedKey = FetchOne(Credential.where { $0.id.eq(key.id) })
     }
 
     // MARK: - Public Helpers
@@ -65,7 +65,7 @@ public final class KeyDetailViewModel {
         errorMessage = nil
 
         do {
-            secret = try await apiKeyManager.getSecret(for: key)
+            secret = try await credentialManager.getSecret(for: key)
         } catch {
             errorMessage = "Failed to load secret: \(error.localizedDescription)"
             throw error
@@ -98,7 +98,7 @@ public final class KeyDetailViewModel {
         clipboardManager.copy(secret, label: key.label, keyID: key.id)
 
         // Mark key as used (database update will be observed automatically)
-        try? await apiKeyManager.markAsUsed(key)
+        try? await credentialManager.markAsUsed(key)
 
         // Provide haptic feedback
         haptics.success()
@@ -109,10 +109,10 @@ public final class KeyDetailViewModel {
         showingCopyConfirmation = false
     }
 
-    /// Deletes the API key.
+    /// Deletes the credential.
     public func deleteKey() async throws {
         haptics.warning()
-        try await apiKeyManager.deleteKey(key)
+        try await credentialManager.deleteKey(key)
         haptics.success()
     }
 }

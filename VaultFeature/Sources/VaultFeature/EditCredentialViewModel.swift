@@ -2,12 +2,12 @@ import Foundation
 import TestDriveCore
 import TestDrivePersistence
 
-/// View model for creating or editing an API key.
+/// View model for creating or editing an credential.
 ///
 /// Manages form state, validation, and save operations.
 @MainActor
 @Observable
-public final class EditKeyViewModel {
+public final class EditCredentialViewModel {
 
     // Form fields
     public var label = ""
@@ -26,8 +26,8 @@ public final class EditKeyViewModel {
     public var errorMessage: String?
 
     private let vaultID: UUID
-    private let apiKeyManager: APIKeyManager
-    public let existingKey: APIKey?
+    private let credentialManager: CredentialManager
+    public let existingKey: Credential?
 
     /// Indicates if the form is valid and can be saved.
     public var isValid: Bool {
@@ -49,13 +49,13 @@ public final class EditKeyViewModel {
     ///
     /// - Parameters:
     ///   - vaultID: The vault to create the key in.
-    ///   - apiKeyManager: The API key manager.
+    ///   - credentialManager: The credential manager.
     public init(
         vaultID: UUID,
-        apiKeyManager: APIKeyManager
+        credentialManager: CredentialManager
     ) {
         self.vaultID = vaultID
-        self.apiKeyManager = apiKeyManager
+        self.credentialManager = credentialManager
         self.existingKey = nil
     }
 
@@ -63,13 +63,13 @@ public final class EditKeyViewModel {
     ///
     /// - Parameters:
     ///   - key: The existing key to edit.
-    ///   - apiKeyManager: The API key manager.
+    ///   - credentialManager: The credential manager.
     public init(
-        key: APIKey,
-        apiKeyManager: APIKeyManager
+        key: Credential,
+        credentialManager: CredentialManager
     ) {
         self.vaultID = key.vaultID
-        self.apiKeyManager = apiKeyManager
+        self.credentialManager = credentialManager
         self.existingKey = key
 
         // Pre-fill form with existing values
@@ -88,7 +88,7 @@ public final class EditKeyViewModel {
 
     // MARK: - Public Helpers
 
-    /// Saves the API key (create or update).
+    /// Saves the credential (create or update).
     public func save() async throws {
         guard isValid else {
             errorMessage = "Label and secret are required"
@@ -110,10 +110,10 @@ public final class EditKeyViewModel {
                 updated.notes = notes
                 updated.rotateAt = enableRotationReminder ? rotateAt : nil
 
-                try await apiKeyManager.updateKey(updated)
+                try await credentialManager.updateKey(updated)
             } else {
                 // Create new key
-                _ = try await apiKeyManager.createKey(
+                _ = try await credentialManager.createKey(
                     label: label.trimmingCharacters(in: .whitespacesAndNewlines),
                     secret: secret.trimmingCharacters(in: .whitespacesAndNewlines),
                     vaultID: vaultID,
@@ -133,7 +133,7 @@ public final class EditKeyViewModel {
         isSaving = false
     }
 
-    /// Generates a random API key secret.
+    /// Generates a random credential secret.
     ///
     /// - Parameter length: The length of the secret (default: 32).
     /// - Returns: A random alphanumeric string.

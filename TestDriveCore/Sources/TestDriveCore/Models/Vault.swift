@@ -1,9 +1,9 @@
 import Foundation
 import SQLiteData
 
-/// Represents a secure vault for organizing API keys.
+/// Represents a secure vault for organizing credentials.
 ///
-/// A vault is an encrypted container that groups related API keys together.
+/// A vault is an encrypted container that groups related credentials together.
 /// Each vault has its own encryption key and can be shared with other users
 /// via CloudKit sharing with end-to-end encryption.
 @Table

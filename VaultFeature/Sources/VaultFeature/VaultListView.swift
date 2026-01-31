@@ -30,7 +30,7 @@ public struct VaultListView: View {
                                 VaultDetailsView(
                                     viewModel: VaultDetailsViewModel(
                                         vault: row.vault,
-                                        apiKeyManager: viewModel.getAPIKeyManager(),
+                                        credentialManager: viewModel.getCredentialManager(),
                                         clipboardManager: ClipboardManager(),
                                         vaultManager: viewModel.getVaultManager()
                                     )
@@ -70,7 +70,7 @@ public struct VaultListView: View {
                             VaultDetailsView(
                                 viewModel: VaultDetailsViewModel(
                                     vault: row.vault,
-                                    apiKeyManager: viewModel.getAPIKeyManager(),
+                                    credentialManager: viewModel.getCredentialManager(),
                                     clipboardManager: ClipboardManager(),
                                     vaultManager: viewModel.getVaultManager()
                                 )
@@ -151,10 +151,10 @@ public struct VaultListView: View {
     let enc = EncryptionService()
     let key = KeychainService()
     let vaultManager = VaultManager(encryption: enc, keychain: key)
-    let apiKeyManager = APIKeyManager(encryption: enc, vaultManager: vaultManager)
+    let credentialManager = CredentialManager(encryption: enc, vaultManager: vaultManager)
     let viewModel = VaultListViewModel(
         vaultManager: vaultManager,
-        apiKeyManager: apiKeyManager
+        credentialManager: credentialManager
     )
 
     return VaultListView(viewModel: viewModel)

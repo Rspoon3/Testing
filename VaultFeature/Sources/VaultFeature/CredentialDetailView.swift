@@ -2,12 +2,12 @@ import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
-/// Detail view for a single API key.
+/// Detail view for a single credential.
 ///
 /// Displays all metadata and provides secret viewing/copying functionality.
-public struct KeyDetailView: View {
+public struct CredentialDetailView: View {
 
-    @State private var viewModel: KeyDetailViewModel
+    @State private var viewModel: CredentialDetailViewModel
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     @Environment(\.dismiss) private var dismiss
@@ -17,7 +17,7 @@ public struct KeyDetailView: View {
     /// Creates a new key detail view.
     ///
     /// - Parameter viewModel: The view model for this view.
-    public init(viewModel: KeyDetailViewModel) {
+    public init(viewModel: CredentialDetailViewModel) {
         self.viewModel = viewModel
     }
 
@@ -43,10 +43,10 @@ public struct KeyDetailView: View {
             }
         }
         .sheet(isPresented: $showingEditSheet) {
-            EditKeyView(
-                viewModel: EditKeyViewModel(
+            EditCredentialView(
+                viewModel: EditCredentialViewModel(
                     key: viewModel.key,
-                    apiKeyManager: viewModel.apiKeyManager
+                    credentialManager: viewModel.credentialManager
                 )
             )
         }
@@ -211,23 +211,23 @@ public struct KeyDetailView: View {
     let enc = EncryptionService()
     let key = KeychainService()
     let vm = VaultManager(encryption: enc, keychain: key)
-    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+    let akm = CredentialManager(encryption: enc, vaultManager: vm)
 
     return NavigationStack {
-        KeyDetailView(
-            viewModel: KeyDetailViewModel(
-                key: APIKey(
+        CredentialDetailView(
+            viewModel: CredentialDetailViewModel(
+                key: Credential(
                     label: "GitHub API Token",
                     websiteDomain: "github.com",
                     company: "GitHub",
                     environment: .production,
                     tags: ["git", "vcs"],
-                    notes: "Production API key for CI/CD",
+                    notes: "Production credential for CI/CD",
                     vaultID: UUID(),
                     encryptedSecret: Data(),
                     nonce: Data()
                 ),
-                apiKeyManager: akm,
+                credentialManager: akm,
                 clipboardManager: ClipboardManager()
             )
         )

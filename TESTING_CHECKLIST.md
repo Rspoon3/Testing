@@ -545,7 +545,7 @@ This document provides a comprehensive manual testing checklist for TestDrive be
 - [ ] Navigate to shared vault
 - [ ] **Expected**: Vault record has ownerPublicKey (public is OK)
 - [ ] **Expected**: Vault key NOT in CloudKit plaintext
-- [ ] **Expected**: APIKey records have encryptedSecret (ciphertext)
+- [ ] **Expected**: Credential records have encryptedSecret (ciphertext)
 - [ ] **Expected**: WrappedVaultKey records exist for each participant
 - [ ] **Expected**: Ephemeral public keys present
 - [ ] Try to read shared secret directly
