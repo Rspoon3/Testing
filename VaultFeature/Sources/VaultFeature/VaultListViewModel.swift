@@ -28,22 +28,70 @@ public enum VaultOrdering: String, CaseIterable, Sendable {
 @Observable
 public final class VaultListViewModel {
 
-    @ObservationIgnored
-    @FetchAll(VaultRow.none, animation: .default)
-    public var pinnedVaultRows: [VaultRow]
+    struct VaultRowsRequest: FetchKeyRequest {
+        struct Value {
+            var pinnedRows: [VaultRow] = []
+            var unpinnedRows: [VaultRow] = []
+        }
+
+        let searchText: String
+        let ordering: VaultOrdering
+
+        func fetch(_ db: Database) throws -> Value {
+            // Build base query with search filter
+            var baseQuery = VaultRow.all
+
+            if !searchText.isEmpty {
+                baseQuery = baseQuery.where { $0.vault.name.contains(searchText) }
+            }
+
+            // Execute both queries in single transaction
+            return try Value(
+                pinnedRows: baseQuery
+                    .where(\.isPinned)
+                    .order {
+                        switch ordering {
+                        case .name:
+                            $0.vault.name
+                        case .dateCreated:
+                            $0.vault.createdAt.desc()
+                        case .keyCount:
+                            $0.keyCount.desc()
+                        case .lastUpdated:
+                            $0.vault.updatedAt.desc()
+                        }
+                    }
+                    .fetchAll(db),
+                unpinnedRows: baseQuery
+                    .where { !$0.isPinned }
+                    .order {
+                        switch ordering {
+                        case .name:
+                            $0.vault.name
+                        case .dateCreated:
+                            $0.vault.createdAt.desc()
+                        case .keyCount:
+                            $0.keyCount.desc()
+                        case .lastUpdated:
+                            $0.vault.updatedAt.desc()
+                        }
+                    }
+                    .fetchAll(db)
+            )
+        }
+    }
 
     @ObservationIgnored
-    @FetchAll(VaultRow.none, animation: .default)
-    public var unpinnedVaultRows: [VaultRow]
+    @Fetch var vaultRows = VaultRowsRequest.Value()
 
     @ObservationIgnored @Shared var ordering: VaultOrdering
 
     public var pinnedVaults: [Vault] {
-        pinnedVaultRows.map(\.vault)
+        vaultRows.pinnedRows.map(\.vault)
     }
 
     public var unpinnedVaults: [Vault] {
-        unpinnedVaultRows.map(\.vault)
+        vaultRows.unpinnedRows.map(\.vault)
     }
 
     public var vaultForm: Vault.Draft?
@@ -79,40 +127,11 @@ public final class VaultListViewModel {
             .appStorage("vaultOrdering")
         )
 
-        // Initialize @FetchAll with actual queries (data loads synchronously)
+        // Initialize @Fetch with initial request (data loads synchronously)
         let currentOrdering = _ordering.wrappedValue
-        _pinnedVaultRows = FetchAll(
-            VaultRow
-                .where(\.isPinned)
-                .order {
-                    switch currentOrdering {
-                    case .name:
-                        $0.vault.name
-                    case .dateCreated:
-                        $0.vault.createdAt.desc()
-                    case .keyCount:
-                        $0.keyCount.desc()
-                    case .lastUpdated:
-                        $0.vault.updatedAt.desc()
-                    }
-                },
-            animation: .default
-        )
-        _unpinnedVaultRows = FetchAll(
-            VaultRow
-                .where { !$0.isPinned }
-                .order {
-                    switch currentOrdering {
-                    case .name:
-                        $0.vault.name
-                    case .dateCreated:
-                        $0.vault.createdAt.desc()
-                    case .keyCount:
-                        $0.keyCount.desc()
-                    case .lastUpdated:
-                        $0.vault.updatedAt.desc()
-                    }
-                },
+        _vaultRows = Fetch(
+            wrappedValue: VaultRowsRequest.Value(),
+            VaultRowsRequest(searchText: "", ordering: currentOrdering),
             animation: .default
         )
     }
@@ -139,84 +158,10 @@ public final class VaultListViewModel {
         searchTask?.cancel()
         searchTask = Task {
             await withErrorReporting {
-                if searchText.isEmpty {
-                    // Reload with base queries
-                    async let pinnedTask = $pinnedVaultRows.load(
-                        VaultRow
-                            .where(\.isPinned)
-                            .order {
-                                switch ordering {
-                                case .name:
-                                    $0.vault.name
-                                case .dateCreated:
-                                    $0.vault.createdAt.desc()
-                                case .keyCount:
-                                    $0.keyCount.desc()
-                                case .lastUpdated:
-                                    $0.vault.updatedAt.desc()
-                                }
-                            },
-                        animation: .default
-                    )
-
-                    async let unpinnedTask = $unpinnedVaultRows.load(
-                        VaultRow
-                            .where { !$0.isPinned }
-                            .order {
-                                switch ordering {
-                                case .name:
-                                    $0.vault.name
-                                case .dateCreated:
-                                    $0.vault.createdAt.desc()
-                                case .keyCount:
-                                    $0.keyCount.desc()
-                                case .lastUpdated:
-                                    $0.vault.updatedAt.desc()
-                                }
-                            },
-                        animation: .default
-                    )
-
-                    _ = try await (pinnedTask.task, unpinnedTask.task)
-                } else {
-                    async let pinnedTask = $pinnedVaultRows.load(
-                        VaultRow
-                            .where { $0.vault.name.contains(searchText) && $0.isPinned }
-                            .order {
-                                switch ordering {
-                                case .name:
-                                    $0.vault.name
-                                case .dateCreated:
-                                    $0.vault.createdAt.desc()
-                                case .keyCount:
-                                    $0.keyCount.desc()
-                                case .lastUpdated:
-                                    $0.vault.updatedAt.desc()
-                                }
-                            },
-                        animation: .default
-                    )
-
-                    async let unpinnedTask = $unpinnedVaultRows.load(
-                        VaultRow
-                            .where { $0.vault.name.contains(searchText) && !$0.isPinned }
-                            .order {
-                                switch ordering {
-                                case .name:
-                                    $0.vault.name
-                                case .dateCreated:
-                                    $0.vault.createdAt.desc()
-                                case .keyCount:
-                                    $0.keyCount.desc()
-                                case .lastUpdated:
-                                    $0.vault.updatedAt.desc()
-                                }
-                            },
-                        animation: .default
-                    )
-
-                    _ = try await (pinnedTask.task, unpinnedTask.task)
-                }
+                try await $vaultRows.load(
+                    VaultRowsRequest(searchText: searchText, ordering: ordering),
+                    animation: .default
+                )
             }
         }
     }

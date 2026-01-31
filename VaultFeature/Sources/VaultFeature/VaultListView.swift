@@ -25,7 +25,7 @@ public struct VaultListView: View {
             List {
                 if !viewModel.pinnedVaults.isEmpty {
                     Section {
-                        ForEach(viewModel.pinnedVaultRows) { row in
+                        ForEach(viewModel.vaultRows.pinnedRows) { row in
                             NavigationLink {
                                 VaultDetailsView(
                                     viewModel: VaultDetailsViewModel(
@@ -65,7 +65,7 @@ public struct VaultListView: View {
                 }
 
                 Section {
-                    ForEach(viewModel.unpinnedVaultRows) { row in
+                    ForEach(viewModel.vaultRows.unpinnedRows) { row in
                         NavigationLink {
                             VaultDetailsView(
                                 viewModel: VaultDetailsViewModel(
