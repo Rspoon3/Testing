@@ -43,7 +43,7 @@ public func appDatabase() throws -> any DatabaseWriter {
                 .select {
                     APIKeyRow.Columns(
                         apiKey: $0,
-                        preference: $1
+                        isPinned: $1.isPinned ?? false
                     )
                 }
         )

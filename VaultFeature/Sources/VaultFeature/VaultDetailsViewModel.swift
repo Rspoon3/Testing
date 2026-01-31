@@ -39,60 +39,41 @@ public final class VaultDetailsViewModel {
         let ordering: KeyOrdering
 
         func fetch(_ db: Database) throws -> Value {
-            // Helper to build query with pinned filter
-            func fetchRows(isPinned: Bool) throws -> [APIKeyRow] {
-                // Build base query with vault and pinned filters
-                let vaultQuery = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
-                let baseQuery = if isPinned {
-                    vaultQuery.where { $0.preference.isPinned ?? false }
-                } else {
-                    vaultQuery.where { !($0.preference.isPinned ?? false) }
-                }
+            // Build base query for this vault
+            var baseQuery = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
 
-                // Apply FTS5 search filter if search text provided
-                if !searchText.isEmpty {
-                    return try baseQuery
-                        .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
-                        .where { _, apiKeyText in
-                            apiKeyText.match(searchText)
+            // Apply FTS5 search filter if search text provided
+            if !searchText.isEmpty {
+                baseQuery = baseQuery
+                    .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
+                    .where { _, apiKeyText in
+                        apiKeyText.match(searchText)
+                    }
+                    .select { row, _ in row }
+            }
+
+            // Helper to apply ordering and fetch
+            func fetchWithOrdering(_ query: Where<APIKeyRow>) throws -> [APIKeyRow] {
+                try query
+                    .order {
+                        switch ordering {
+                        case .name:
+                            $0.apiKey.label
+                        case .dateCreated:
+                            $0.apiKey.createdAt.desc()
+                        case .lastUsed:
+                            $0.apiKey.lastUsedAt.desc(nulls: .last)
+                        case .environment:
+                            $0.apiKey.environment
                         }
-                        .select { row, _ in row }
-                        .order {
-                            switch ordering {
-                            case .name:
-                                $0.apiKey.label
-                            case .dateCreated:
-                                $0.apiKey.createdAt.desc()
-                            case .lastUsed:
-                                $0.apiKey.lastUsedAt.desc(nulls: .last)
-                            case .environment:
-                                $0.apiKey.environment
-                            }
-                        }
-                        .fetchAll(db)
-                } else {
-                    // No search - just apply ordering
-                    return try baseQuery
-                        .order {
-                            switch ordering {
-                            case .name:
-                                $0.apiKey.label
-                            case .dateCreated:
-                                $0.apiKey.createdAt.desc()
-                            case .lastUsed:
-                                $0.apiKey.lastUsedAt.desc(nulls: .last)
-                            case .environment:
-                                $0.apiKey.environment
-                            }
-                        }
-                        .fetchAll(db)
-                }
+                    }
+                    .fetchAll(db)
             }
 
             // Execute both queries in single transaction
             return try Value(
-                pinnedRows: fetchRows(isPinned: true),
-                unpinnedRows: fetchRows(isPinned: false)
+                pinnedRows: fetchWithOrdering(baseQuery.where(\.isPinned)),
+                unpinnedRows: fetchWithOrdering(baseQuery.where { !$0.isPinned })
             )
         }
     }

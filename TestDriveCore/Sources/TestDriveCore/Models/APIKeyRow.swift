@@ -9,13 +9,8 @@ public struct APIKeyRow: Sendable, Equatable {
     /// The API key.
     public let apiKey: APIKey
 
-    /// The local preferences for this API key (nil if none exist).
-    public let preference: APIKeyPreference?
-
     /// Whether this API key is pinned.
-    public var isPinned: Bool {
-        preference?.isPinned ?? false
-    }
+    public let isPinned: Bool
 
     // MARK: - Initializer
 
@@ -23,9 +18,9 @@ public struct APIKeyRow: Sendable, Equatable {
     ///
     /// - Parameters:
     ///   - apiKey: The API key.
-    ///   - preference: The local preferences for this API key.
-    public init(apiKey: APIKey, preference: APIKeyPreference? = nil) {
+    ///   - isPinned: Whether the API key is pinned.
+    public init(apiKey: APIKey, isPinned: Bool) {
         self.apiKey = apiKey
-        self.preference = preference
+        self.isPinned = isPinned
     }
 }
