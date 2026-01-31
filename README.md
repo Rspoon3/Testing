@@ -31,3 +31,42 @@ Different branches are used to isolate and test various concepts. Check the bran
 - Xcode (latest version recommended)
 - macOS development environment
 - iOS/iPadOS Simulator or physical device for testing
+
+---
+
+## Documentation
+
+### Audit Log System
+
+A comprehensive audit logging system for tracking all vault, credential, and secret operations. Provides complete visibility into "who did what and when" for compliance, security monitoring, and user accountability.
+
+**📖 [Read the complete Audit Log documentation →](./AUDIT_LOG.md)**
+
+**Key Features:**
+- Complete activity tracking (create, update, delete, copy, reveal, rotate, share, revoke)
+- User attribution via CloudKit integration
+- Unified timeline across all entity types
+- Rich JSON-based metadata
+- CloudKit sync across all devices
+- Performance optimized with async logging and comprehensive indexes
+- Privacy-conscious (no secret values logged, userIDs pseudonymized)
+
+**Quick Links:**
+- [Why Audit Logging?](./AUDIT_LOG.md#why-audit-logging)
+- [Architecture Overview](./AUDIT_LOG.md#architecture)
+- [Data Model & Schema](./AUDIT_LOG.md#data-model)
+- [Services (UserContextService, AuditLogger)](./AUDIT_LOG.md#services)
+- [Integration Points](./AUDIT_LOG.md#integration-points)
+- [User Interface Design](./AUDIT_LOG.md#user-interface)
+- [Implementation Roadmap](./AUDIT_LOG.md#implementation-roadmap)
+- [Verification Checklist](./AUDIT_LOG.md#verification-checklist)
+
+### Other Documentation
+
+- [CloudKit Setup Guide](./CLOUDKIT_SETUP.md)
+- [CloudKit Sharing Implementation](./CLOUDKIT_SHARING_IMPL.md)
+- [Sharing Guide](./SHARING_GUIDE.md)
+- [Implementation Summary](./IMPLEMENTATION_SUMMARY.md)
+- [Release Notes](./RELEASE_NOTES.md)
+- [Testing Checklist](./TESTING_CHECKLIST.md)
+- [Features](./Features.md)
