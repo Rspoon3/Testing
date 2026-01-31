@@ -41,9 +41,13 @@ public final class VaultDetailsViewModel {
         func fetch(_ db: Database) throws -> Value {
             // Helper to build complete query for pinned or unpinned rows
             func fetchRows(isPinned: Bool) throws -> [APIKeyRow] {
-                try APIKeyRow
+                // Step 1: Apply vault and pinned filters
+                let filteredRows = APIKeyRow
                     .where { $0.apiKey.vaultID.eq(vaultID) }
                     .where { isPinned ? $0.isPinned : !$0.isPinned }
+
+                // Step 2: Join with FTS5 and apply search filter
+                let searchQuery = filteredRows
                     .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
                     .where { _, apiKeyText in
                         if !searchText.isEmpty {
@@ -51,6 +55,9 @@ public final class VaultDetailsViewModel {
                         }
                     }
                     .select { row, _ in row }
+
+                // Step 3: Apply ordering and fetch
+                return try searchQuery
                     .order {
                         switch ordering {
                         case .name:
