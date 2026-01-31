@@ -115,9 +115,7 @@ struct CredentialRowView: View {
                 company: "GitHub",
                 environment: .production,
                 tags: ["git", "vcs", "production"],
-                vaultID: UUID(),
-                encryptedSecret: Data(),
-                nonce: Data()
+                vaultID: UUID()
             )
         )
 
@@ -127,9 +125,7 @@ struct CredentialRowView: View {
                 websiteDomain: "stripe.com",
                 environment: .development,
                 tags: ["payment"],
-                vaultID: UUID(),
-                encryptedSecret: Data(),
-                nonce: Data()
+                vaultID: UUID()
             )
         )
     }
