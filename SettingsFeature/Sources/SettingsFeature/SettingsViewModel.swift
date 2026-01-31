@@ -45,6 +45,7 @@ public final class SettingsViewModel {
     @ObservationIgnored @Dependency(\.defaultDatabase) private var database
     private let vaultManager: VaultManager
     private let clipboardManager: ClipboardManager
+    private let apiKeyManager: APIKeyManager
 
     // MARK: - Initializer
 
@@ -53,12 +54,15 @@ public final class SettingsViewModel {
     /// - Parameters:
     ///   - vaultManager: The vault manager for vault operations.
     ///   - clipboardManager: The clipboard manager for configuration.
+    ///   - apiKeyManager: The API key manager for key operations.
     public init(
         vaultManager: VaultManager,
-        clipboardManager: ClipboardManager
+        clipboardManager: ClipboardManager,
+        apiKeyManager: APIKeyManager
     ) {
         self.vaultManager = vaultManager
         self.clipboardManager = clipboardManager
+        self.apiKeyManager = apiKeyManager
 
         // Set defaults if not set
         if UserDefaults.standard.object(forKey: "clipboardAutoClearDuration") == nil {
@@ -202,6 +206,47 @@ public final class SettingsViewModel {
         default: return nil // System
         }
     }
+
+    #if DEBUG
+    /// Populates database with test data for debugging.
+    public func populateTestData() async throws {
+        // Create a test vault if none exists
+        let vaults = try await vaultManager.fetchAllVaults()
+        let vault: Vault
+
+        if let existingVault = vaults.first {
+            vault = existingVault
+        } else {
+            // Create new vault
+            vault = try await vaultManager.createVault(name: "Test Vault")
+        }
+
+        // Test data for 5 keys with various properties
+        let testKeys: [(label: String, domain: String, company: String, environment: APIEnvironment, keyCount: Int)] = [
+            ("GitHub API", "github.com", "GitHub", .production, 1),
+            ("AWS Keys", "aws.amazon.com", "Amazon", .production, 5),
+            ("Stripe Test", "stripe.com", "Stripe", .development, 10),
+            ("Firebase", "firebase.google.com", "Google", .staging, 15),
+            ("Heroku", "heroku.com", "Salesforce", .production, 20)
+        ]
+
+        for testKey in testKeys {
+            // Create the key with test secret
+            let secret = "test_\(testKey.label.replacingOccurrences(of: " ", with: "_"))_secret_\(UUID().uuidString.prefix(8))"
+
+            try await apiKeyManager.createKey(
+                label: "\(testKey.label) (\(testKey.keyCount) keys)",
+                secret: secret,
+                vaultID: vault.id,
+                websiteDomain: testKey.domain,
+                company: testKey.company,
+                environment: testKey.environment,
+                tags: ["test", "debug"],
+                notes: "Test key with \(testKey.keyCount) refilled keys"
+            )
+        }
+    }
+    #endif
 }
 
 /// Export-related errors.

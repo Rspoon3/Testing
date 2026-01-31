@@ -69,7 +69,8 @@ public struct HomeView: View {
         SettingsView(
             viewModel: SettingsViewModel(
                 vaultManager: vaultManager,
-                clipboardManager: clipboardManager
+                clipboardManager: clipboardManager,
+                apiKeyManager: apiKeyManager
             )
         )
         .tabItem {

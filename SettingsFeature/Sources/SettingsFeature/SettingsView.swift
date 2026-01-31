@@ -28,6 +28,9 @@ public struct SettingsView: View {
                 clipboardSection
                 themeSection
                 dataSection
+                #if DEBUG
+                debugSection
+                #endif
                 aboutSection
             }
             .navigationTitle("Settings")
@@ -138,6 +141,28 @@ public struct SettingsView: View {
         }
     }
 
+    #if DEBUG
+    private var debugSection: some View {
+        Section {
+            Button {
+                Task {
+                    do {
+                        try await viewModel.populateTestData()
+                    } catch {
+                        viewModel.errorMessage = "Failed to populate test data: \(error.localizedDescription)"
+                    }
+                }
+            } label: {
+                Label("Populate Test Data", systemImage: "hammer.fill")
+            }
+        } header: {
+            Text("Debug")
+        } footer: {
+            Text("Creates 5 test API keys with 1-20 keys each: GitHub (1), AWS (5), Stripe (10), Firebase (15), Heroku (20)")
+        }
+    }
+    #endif
+
     private var aboutSection: some View {
         Section("About") {
             HStack {
@@ -206,11 +231,13 @@ struct ShareSheet: UIViewControllerRepresentable {
     let key = KeychainService()
     let vm = VaultManager(encryption: enc, keychain: key)
     let clip = ClipboardManager()
+    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
 
     return SettingsView(
         viewModel: SettingsViewModel(
             vaultManager: vm,
-            clipboardManager: clip
+            clipboardManager: clip,
+            apiKeyManager: akm
         )
     )
 }
