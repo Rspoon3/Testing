@@ -35,11 +35,22 @@ public final class VaultDetailsViewModel {
         }
 
         let vaultID: UUID
+        let searchText: String
         let ordering: KeyOrdering
 
         func fetch(_ db: Database) throws -> Value {
             // Build base query for this vault
-            let baseQuery = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
+            var baseQuery = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
+
+            // Apply FTS5 search filter if search text provided
+            if !searchText.isEmpty {
+                baseQuery = baseQuery
+                    .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
+                    .where { _, apiKeyText in
+                        apiKeyText.match(searchText)
+                    }
+                    .select { row, _ in row }
+            }
 
             // Helper to apply ordering and fetch
             func fetchWithOrdering(_ query: Where<APIKeyRow>) throws -> [APIKeyRow] {
@@ -75,7 +86,13 @@ public final class VaultDetailsViewModel {
 
     @ObservationIgnored @Shared var ordering: KeyOrdering
 
-    public var searchText = ""
+    public var searchText = "" {
+        didSet {
+            if oldValue != searchText {
+                updateQuery()
+            }
+        }
+    }
     public var searchTask: Task<Void, Never>?
     public var errorMessage: String?
     public var isLoading = false
@@ -86,29 +103,14 @@ public final class VaultDetailsViewModel {
         observedVault ?? initialVault
     }
 
-    /// Pinned keys filtered by search text.
+    /// Pinned keys (search-filtered at database level).
     public var pinnedKeys: [APIKey] {
-        filterKeys(keyRows.pinnedRows.map(\.apiKey))
+        keyRows.pinnedRows.map(\.apiKey)
     }
 
-    /// Unpinned keys filtered by search text.
+    /// Unpinned keys (search-filtered at database level).
     public var unpinnedKeys: [APIKey] {
-        filterKeys(keyRows.unpinnedRows.map(\.apiKey))
-    }
-
-    /// Filters keys based on search text.
-    private func filterKeys(_ keys: [APIKey]) -> [APIKey] {
-        if searchText.isEmpty {
-            return keys
-        }
-
-        let lowercased = searchText.lowercased()
-        return keys.filter { key in
-            key.label.lowercased().contains(lowercased) ||
-            key.websiteDomain?.lowercased().contains(lowercased) == true ||
-            key.company?.lowercased().contains(lowercased) == true ||
-            key.tags.contains { $0.lowercased().contains(lowercased) }
-        }
+        keyRows.unpinnedRows.map(\.apiKey)
     }
 
     private let initialVault: Vault
@@ -151,7 +153,7 @@ public final class VaultDetailsViewModel {
         let currentOrdering = _ordering.wrappedValue
         _keyRows = Fetch(
             wrappedValue: KeyRowsRequest.Value(),
-            KeyRowsRequest(vaultID: vault.id, ordering: currentOrdering),
+            KeyRowsRequest(vaultID: vault.id, searchText: "", ordering: currentOrdering),
             animation: .default
         )
     }
@@ -173,15 +175,16 @@ public final class VaultDetailsViewModel {
         isLoading = false
     }
 
-    /// Updates the key query based on current ordering.
+    /// Updates the key query based on search text and ordering.
     private func updateQuery() {
+        let searchText = self.searchText
         let ordering = self.ordering
 
         searchTask?.cancel()
         searchTask = Task {
             await withErrorReporting {
                 try await $keyRows.load(
-                    KeyRowsRequest(vaultID: vaultID, ordering: ordering),
+                    KeyRowsRequest(vaultID: vaultID, searchText: searchText, ordering: ordering),
                     animation: .default
                 )
             }

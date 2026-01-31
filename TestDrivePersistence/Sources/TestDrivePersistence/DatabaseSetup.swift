@@ -57,7 +57,7 @@ public func appDatabase() throws -> any DatabaseWriter {
     // Run migrations
     var migrator = DatabaseMigrator()
 
-    migrator.registerMigration("v1") { db in
+    migrator.registerMigration("v1 - Create tables") { db in
         // Create vaults table
         try db.create(table: "vaults") { t in
             t.column("id", .blob).notNull().primaryKey()
@@ -142,7 +142,80 @@ public func appDatabase() throws -> any DatabaseWriter {
         }
     }
 
+    migrator.registerMigration("v2 - Create FTS5 search index") { db in
+        // Create FTS5 virtual table for full-text search
+        try #sql(
+            """
+            CREATE VIRTUAL TABLE "apiKeyTexts" USING fts5(
+              "label",
+              "websiteDomain",
+              "company",
+              "notes",
+              tokenize='trigram'
+            )
+            """
+        )
+        .execute(db)
+    }
+
     try migrator.migrate(database)
+
+    // Set up triggers to keep FTS5 in sync with APIKey table
+    try database.write { db in
+        // Insert trigger: Add row to FTS5 when APIKey is inserted
+        try APIKey.createTemporaryTrigger(
+            after: .insert { new in
+                APIKeyText.insert {
+                    APIKeyText.Columns(
+                        rowid: new.rowid,
+                        label: new.label,
+                        websiteDomain: new.websiteDomain ?? "",
+                        company: new.company ?? "",
+                        notes: new.notes
+                    )
+                }
+            }
+        )
+        .execute(db)
+
+        // Update trigger: Update FTS5 when searchable columns change
+        try APIKey.createTemporaryTrigger(
+            after: .update {
+                ($0.label, $0.websiteDomain, $0.company, $0.notes)
+            } forEachRow: { _, new in
+                APIKeyText
+                    .where { $0.rowid.eq(new.rowid) }
+                    .update {
+                        $0.label = new.label
+                        $0.websiteDomain = new.websiteDomain ?? ""
+                        $0.company = new.company ?? ""
+                        $0.notes = new.notes
+                    }
+            }
+        )
+        .execute(db)
+
+        // Delete trigger: Remove from FTS5 when APIKey is deleted
+        try APIKey.createTemporaryTrigger(
+            after: .delete { old in
+                APIKeyText
+                    .where { $0.rowid.eq(old.rowid) }
+                    .delete()
+            }
+        )
+        .execute(db)
+
+        // Configure BM25 ranking with weighted columns
+        try #sql(
+            """
+            INSERT INTO \(APIKeyText.self)
+            (\(APIKeyText.self), rank)
+            VALUES
+            ('rank', 'bm25(10, 5, 5, 1)')
+            """
+        )
+        .execute(db)
+    }
 
     return database
 }
