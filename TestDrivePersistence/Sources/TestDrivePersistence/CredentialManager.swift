@@ -164,6 +164,20 @@ public final class CredentialManager {
         )
     }
 
+    /// Fetches all secret records for a credential (without decryption).
+    ///
+    /// - Parameter credential: The credential.
+    /// - Returns: Array of secret records, sorted by sort order.
+    /// - Throws: Database error if fetch fails.
+    public func fetchSecrets(for credential: Credential) async throws -> [CredentialSecret] {
+        try await database.read { db in
+            try CredentialSecret
+                .where { $0.credentialID.eq(credential.id) }
+                .order(by: \.sortOrder)
+                .fetchAll(db)
+        }
+    }
+
     /// Adds a new secret to an existing credential.
     ///
     /// - Parameters:

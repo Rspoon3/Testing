@@ -36,7 +36,7 @@ public final class ManageSecretsViewModel {
     // MARK: - Dependencies
 
     private let credentialManager: CredentialManager
-    @Dependency(\.haptics) private var haptics
+    private let haptics: HapticFeedbackManager
 
     // MARK: - Initializer
 
@@ -45,9 +45,15 @@ public final class ManageSecretsViewModel {
     /// - Parameters:
     ///   - credential: The credential to manage secrets for.
     ///   - credentialManager: The credential manager.
-    public init(credential: Credential, credentialManager: CredentialManager) {
+    ///   - haptics: The haptic feedback manager.
+    public init(
+        credential: Credential,
+        credentialManager: CredentialManager,
+        haptics: HapticFeedbackManager = .live
+    ) {
         self.credential = credential
         self.credentialManager = credentialManager
+        self.haptics = haptics
     }
 
     // MARK: - Public Methods
@@ -58,12 +64,7 @@ public final class ManageSecretsViewModel {
         errorMessage = nil
         defer { isLoading = false }
 
-        secrets = try await credentialManager.database.read { db in
-            try CredentialSecret
-                .where { $0.credentialID.eq(credential.id) }
-                .order(by: \.sortOrder)
-                .fetchAll(db)
-        }
+        secrets = try await credentialManager.fetchSecrets(for: credential)
     }
 
     /// Adds a new secret to the credential.
