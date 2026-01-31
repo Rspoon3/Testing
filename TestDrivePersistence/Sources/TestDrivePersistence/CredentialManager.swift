@@ -393,6 +393,34 @@ public final class CredentialManager {
         }
     }
 
+    /// Decrypts a single secret and returns the plaintext value.
+    ///
+    /// - Parameter secret: The encrypted secret to decrypt.
+    /// - Returns: The decrypted plaintext value.
+    /// - Throws: Encryption error if decryption fails.
+    public func decryptSecret(_ secret: CredentialSecret) async throws -> String {
+        // Fetch the credential to get the vaultID
+        let maybeCredential = try await database.read { db in
+            try Credential
+                .where { $0.id.eq(secret.credentialID) }
+                .fetchOne(db)
+        }
+
+        guard let credential = maybeCredential else {
+            throw CredentialError.noSecretsFound
+        }
+
+        // Get the vault key for decryption
+        let vaultKey = try await vaultManager.getVaultKey(vaultID: credential.vaultID)
+
+        // Decrypt the secret value
+        return try encryption.decryptSecret(
+            secret.encryptedSecret,
+            nonce: secret.nonce,
+            key: vaultKey
+        )
+    }
+
     /// Updates a credential's metadata.
     ///
     /// - Parameter credential: The credential with updated metadata.

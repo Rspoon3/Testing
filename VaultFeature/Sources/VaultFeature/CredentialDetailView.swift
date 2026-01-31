@@ -2,9 +2,7 @@ import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
-/// Detail view for a single credential.
-///
-/// Displays all metadata and provides secret viewing/copying functionality.
+/// Detail view for displaying a single credential and its secrets.
 public struct CredentialDetailView: View {
 
     @State private var viewModel: CredentialDetailViewModel
@@ -14,7 +12,7 @@ public struct CredentialDetailView: View {
 
     // MARK: - Initializer
 
-    /// Creates a new key detail view.
+    /// Creates a new credential detail view.
     ///
     /// - Parameter viewModel: The view model for this view.
     public init(viewModel: CredentialDetailViewModel) {
@@ -26,7 +24,7 @@ public struct CredentialDetailView: View {
     public var body: some View {
         List {
             headerSection
-            secretSection
+            secretsSection
             metadataSection
             timestampsSection
             dangerSection
@@ -45,18 +43,21 @@ public struct CredentialDetailView: View {
         .sheet(isPresented: $showingEditSheet) {
             EditCredentialView(
                 viewModel: EditCredentialViewModel(
-                    key: viewModel.key,
+                    credential: viewModel.key,
                     credentialManager: viewModel.credentialManager
                 )
             )
         }
-        .alert("Delete Key", isPresented: $showingDeleteAlert) {
+        .alert("Delete Credential", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 deleteKey()
             }
         } message: {
             Text("Are you sure you want to delete '\(viewModel.key.label)'? This action cannot be undone.")
+        }
+        .task {
+            try? await viewModel.loadSecrets()
         }
     }
 
@@ -92,26 +93,86 @@ public struct CredentialDetailView: View {
         }
     }
 
-    private var secretSection: some View {
-        Section("Secret") {
-            SecretFieldView(
-                secret: viewModel.secret,
-                isVisible: viewModel.isSecretVisible,
-                isLoading: viewModel.isLoading,
-                onToggleVisibility: {
-                    Task {
-                        await viewModel.toggleSecretVisibility()
-                    }
+    private var secretsSection: some View {
+        Section {
+            if viewModel.isLoading {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
                 }
-            )
+                .padding()
+            } else if viewModel.secrets.isEmpty {
+                Text("No secrets found")
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
+            } else {
+                ForEach(viewModel.secrets) { secret in
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Secret label
+                        Text(secret.secretLabel)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
 
-            Button {
-                Task {
-                    await viewModel.copySecret()
+                        // Secret value with visibility toggle
+                        HStack(spacing: 8) {
+                            if viewModel.secretVisibility[secret.id] == true {
+                                if let value = viewModel.decryptedSecrets[secret.id] {
+                                    Text(value)
+                                        .font(.body.monospaced())
+                                        .textSelection(.enabled)
+                                } else {
+                                    ProgressView()
+                                }
+                            } else {
+                                Text(String(repeating: "•", count: 16))
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            Button {
+                                Task {
+                                    await viewModel.toggleSecretVisibility(secret.id)
+                                }
+                            } label: {
+                                Image(systemName: viewModel.secretVisibility[secret.id] == true ? "eye.slash" : "eye")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.borderless)
+                        }
+
+                        // Copy button
+                        Button {
+                            Task {
+                                await viewModel.copySecret(secret)
+                            }
+                        } label: {
+                            HStack {
+                                Label("Copy \(secret.secretLabel)", systemImage: "doc.on.doc")
+
+                                Spacer()
+
+                                if viewModel.showingCopyConfirmation == secret.id {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(.green)
+                                        .transition(.scale.combined(with: .opacity))
+                                }
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
-            } label: {
-                Label("Copy Secret", systemImage: "doc.on.doc")
+
+                // TODO: Add ManageSecretsView when created
+                // NavigationLink("Manage Secrets") {
+                //     ManageSecretsView(...)
+                // }
             }
+        } header: {
+            Text("Secrets")
         }
     }
 
@@ -174,7 +235,7 @@ public struct CredentialDetailView: View {
             Button(role: .destructive) {
                 showingDeleteAlert = true
             } label: {
-                Label("Delete Key", systemImage: "trash")
+                Label("Delete Credential", systemImage: "trash")
                     .frame(maxWidth: .infinity, alignment: .center)
             }
         }
@@ -209,9 +270,9 @@ public struct CredentialDetailView: View {
     setupPreviewDependencies()
 
     let enc = EncryptionService()
-    let key = KeychainService()
-    let vm = VaultManager(encryption: enc, keychain: key)
-    let akm = CredentialManager(encryption: enc, vaultManager: vm)
+    let keychain = KeychainService()
+    let vm = VaultManager(encryption: enc, keychain: keychain)
+    let cm = CredentialManager(encryption: enc, vaultManager: vm)
 
     return NavigationStack {
         CredentialDetailView(
@@ -223,12 +284,9 @@ public struct CredentialDetailView: View {
                     environment: .production,
                     tags: ["git", "vcs"],
                     notes: "Production credential for CI/CD",
-                    vaultID: UUID(),
-                    encryptedSecret: Data(),
-                    nonce: Data()
+                    vaultID: UUID()
                 ),
-                credentialManager: akm,
-                clipboardManager: ClipboardManager()
+                credentialManager: cm
             )
         )
     }

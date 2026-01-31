@@ -1,118 +1,130 @@
 import Foundation
-import SQLiteData
-import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
+import Dependencies
+import SQLiteData
+import GRDB
 
-/// View model for the key detail screen.
+/// View model for displaying credential details.
 ///
-/// Manages secret loading, visibility, and clipboard operations.
+/// Manages state for viewing and copying a credential's multiple secrets.
 @MainActor
 @Observable
 public final class CredentialDetailViewModel {
 
-    @ObservationIgnored @FetchOne(Credential.none)
-    private var observedKey: Credential?
+    // MARK: - Published State
 
-    private let initialKey: Credential
+    /// The credential being displayed.
+    public var key: Credential
 
-    /// The credential being displayed. Returns observed key if loaded, otherwise initial key.
-    public var key: Credential {
-        observedKey ?? initialKey
-    }
+    /// All secrets for this credential (metadata only, not decrypted).
+    public var secrets: [CredentialSecret] = []
 
-    public var secret: String?
-    public var isSecretVisible = false
+    /// Decrypted secret values (loaded on demand for performance).
+    public var decryptedSecrets: [UUID: String] = [:]
+
+    /// Per-secret visibility state.
+    public var secretVisibility: [UUID: Bool] = [:]
+
+    /// Whether to show the copy confirmation indicator and which secret.
+    public var showingCopyConfirmation: UUID?
+
+    /// Whether secrets are currently loading.
     public var isLoading = false
-    public var errorMessage: String?
-    public var showingCopyConfirmation = false
 
-    let credentialManager: CredentialManager
-    private let clipboardManager: ClipboardManager
-    private let haptics: HapticFeedbackManager
+    // MARK: - Dependencies
+
+    public let credentialManager: CredentialManager
+    @Dependency(\.pasteboard) private var pasteboard
+    @Dependency(\.haptics) private var haptics
 
     // MARK: - Initializer
 
-    /// Creates a new key detail view model.
+    /// Creates a new credential detail view model.
     ///
     /// - Parameters:
     ///   - key: The credential to display.
-    ///   - credentialManager: The credential manager.
-    ///   - clipboardManager: The clipboard manager.
-    ///   - haptics: The haptic feedback manager.
-    public init(
-        key: Credential,
-        credentialManager: CredentialManager,
-        clipboardManager: ClipboardManager,
-        haptics: HapticFeedbackManager = HapticFeedbackManager()
-    ) {
-        self.initialKey = key
+    ///   - credentialManager: The credential manager for loading secrets.
+    public init(key: Credential, credentialManager: CredentialManager) {
+        self.key = key
         self.credentialManager = credentialManager
-        self.clipboardManager = clipboardManager
-        self.haptics = haptics
-
-        // Set up fetch query to observe key changes
-        _observedKey = FetchOne(Credential.where { $0.id.eq(key.id) })
     }
 
-    // MARK: - Public Helpers
+    // MARK: - Public Methods
 
-    /// Loads the decrypted secret.
-    public func loadSecret() async throws {
-        guard secret == nil else { return }
-
+    /// Loads all secrets for the credential (metadata only).
+    public func loadSecrets() async throws {
+        guard secrets.isEmpty else { return }
         isLoading = true
-        errorMessage = nil
+        defer { isLoading = false }
 
-        do {
-            secret = try await credentialManager.getSecret(for: key)
-        } catch {
-            errorMessage = "Failed to load secret: \(error.localizedDescription)"
-            throw error
+        secrets = try await credentialManager.database.read { db in
+            try CredentialSecret
+                .where { $0.credentialID.eq(key.id) }
+                .order(by: \.sortOrder)
+                .fetchAll(db)
         }
-
-        isLoading = false
     }
 
-    /// Toggles secret visibility.
-    public func toggleSecretVisibility() async {
-        if !isSecretVisible && secret == nil {
-            try? await loadSecret()
-        }
-        isSecretVisible.toggle()
-        haptics.light()
+    /// Decrypts and caches a specific secret value (lazy loading).
+    ///
+    /// - Parameter secret: The secret to decrypt.
+    public func decryptSecret(_ secret: CredentialSecret) async throws {
+        guard decryptedSecrets[secret.id] == nil else { return }
+
+        let decrypted = try await credentialManager.decryptSecret(secret)
+        decryptedSecrets[secret.id] = decrypted
     }
 
-    /// Copies the secret to clipboard.
-    public func copySecret() async {
-        // Load secret if not already loaded
-        if secret == nil {
-            try? await loadSecret()
-        }
-        
-        guard let secret else {
-            haptics.error()
-            return
-        }
-        
-        clipboardManager.copy(secret, label: key.label, keyID: key.id)
+    /// Toggles the visibility of a specific secret.
+    ///
+    /// - Parameter id: The secret ID.
+    public func toggleSecretVisibility(_ id: UUID) async {
+        // Find the secret
+        guard let secret = secrets.first(where: { $0.id == id }) else { return }
 
-        // Mark key as used (database update will be observed automatically)
-        try? await credentialManager.markAsUsed(key)
+        // If making visible and not yet decrypted, decrypt it first
+        let isCurrentlyVisible = secretVisibility[id] ?? false
+        if !isCurrentlyVisible && decryptedSecrets[id] == nil {
+            try? await decryptSecret(secret)
+        }
+
+        // Toggle visibility
+        secretVisibility[id] = !isCurrentlyVisible
+    }
+
+    /// Copies a specific secret to the clipboard and marks it as used.
+    ///
+    /// - Parameter secret: The secret to copy.
+    public func copySecret(_ secret: CredentialSecret) async {
+        // Decrypt if needed
+        if decryptedSecrets[secret.id] == nil {
+            try? await decryptSecret(secret)
+        }
+
+        guard let value = decryptedSecrets[secret.id] else { return }
+
+        // Copy to clipboard
+        pasteboard.copy(value)
+
+        // Mark secret as used
+        try? await credentialManager.markSecretAsUsed(secret)
 
         // Provide haptic feedback
         haptics.success()
-        showingCopyConfirmation = true
-        
+        showingCopyConfirmation = secret.id
+
         // Auto-hide confirmation after 2 seconds
         try? await Task.sleep(for: .seconds(2))
-        showingCopyConfirmation = false
+        if showingCopyConfirmation == secret.id {
+            showingCopyConfirmation = nil
+        }
     }
 
-    /// Deletes the credential.
+    /// Deletes the credential and all its secrets.
     public func deleteKey() async throws {
         haptics.warning()
-        try await credentialManager.deleteKey(key)
+        try await credentialManager.deleteCredential(key)
         haptics.success()
     }
 }
