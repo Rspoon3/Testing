@@ -538,8 +538,17 @@ public final class SettingsViewModel {
                     rotateAt: Date().addingTimeInterval(30 * 24 * 60 * 60) // Rotate in 30 days
                 )
 
-                // Create 5 rotation history entries
+                // Create 5 rotation history entries with usage tracking
                 for j in 1...5 {
+                    // Simulate usage before rotation (copy the secret multiple times)
+                    let secrets = try await credentialManager.fetchSecrets(for: rotatedCred.credential)
+                    if let secret = secrets.first {
+                        let copyCount = Int.random(in: 5...20)
+                        for _ in 0..<copyCount {
+                            try await credentialManager.markSecretAsUsed(secret)
+                        }
+                    }
+
                     let reason: RotationReason
                     switch j {
                     case 1: reason = .compromised
@@ -645,12 +654,30 @@ public final class SettingsViewModel {
                 )
 
                 // Access Key ID history: compromised, then rotated
+                do {
+                    let awsSecrets = try await credentialManager.fetchSecrets(for: awsCred.credential)
+                    if let accessKey = awsSecrets.first(where: { $0.secretLabel == "Access Key ID" }) {
+                        for _ in 0..<Int.random(in: 8...15) {
+                            try await credentialManager.markSecretAsUsed(accessKey)
+                        }
+                    }
+                }
+
                 try await credentialManager.updateSecret(
                     for: awsCred.credential,
                     label: "Access Key ID",
                     newValue: "AKIA\(UUID().uuidString.prefix(16).uppercased())",
                     reason: .compromised
                 )
+
+                do {
+                    let awsSecrets = try await credentialManager.fetchSecrets(for: awsCred.credential)
+                    if let accessKey = awsSecrets.first(where: { $0.secretLabel == "Access Key ID" }) {
+                        for _ in 0..<Int.random(in: 3...8) {
+                            try await credentialManager.markSecretAsUsed(accessKey)
+                        }
+                    }
+                }
 
                 try await credentialManager.updateSecret(
                     for: awsCred.credential,
@@ -660,12 +687,30 @@ public final class SettingsViewModel {
                 )
 
                 // Secret Access Key history: rotated twice
+                do {
+                    let awsSecrets = try await credentialManager.fetchSecrets(for: awsCred.credential)
+                    if let secretKey = awsSecrets.first(where: { $0.secretLabel == "Secret Access Key" }) {
+                        for _ in 0..<Int.random(in: 10...18) {
+                            try await credentialManager.markSecretAsUsed(secretKey)
+                        }
+                    }
+                }
+
                 try await credentialManager.updateSecret(
                     for: awsCred.credential,
                     label: "Secret Access Key",
                     newValue: UUID().uuidString,
                     reason: .rotated
                 )
+
+                do {
+                    let awsSecrets = try await credentialManager.fetchSecrets(for: awsCred.credential)
+                    if let secretKey = awsSecrets.first(where: { $0.secretLabel == "Secret Access Key" }) {
+                        for _ in 0..<Int.random(in: 5...12) {
+                            try await credentialManager.markSecretAsUsed(secretKey)
+                        }
+                    }
+                }
 
                 try await credentialManager.updateSecret(
                     for: awsCred.credential,
@@ -717,6 +762,65 @@ public final class SettingsViewModel {
                     newValue: UUID().uuidString,
                     reason: .rotated
                 )
+
+                // Simulate copy counts for various credentials
+                // Frequently used credentials
+                let frequentlyUsedSecrets = try await credentialManager.fetchSecrets(for: rotatedCred.credential)
+                for _ in 0..<15 {
+                    if let secret = frequentlyUsedSecrets.first {
+                        try await credentialManager.markSecretAsUsed(secret)
+                    }
+                }
+
+                // Moderately used credentials
+                let awsSecrets = try await credentialManager.fetchSecrets(for: awsCred.credential)
+                for secret in awsSecrets {
+                    for _ in 0..<Int.random(in: 3...7) {
+                        try await credentialManager.markSecretAsUsed(secret)
+                    }
+                }
+
+                // Lightly used credentials
+                let expiredSecrets = try await credentialManager.fetchSecrets(for: expiredCred.credential)
+                for secret in expiredSecrets {
+                    for _ in 0..<Int.random(in: 1...3) {
+                        try await credentialManager.markSecretAsUsed(secret)
+                    }
+                }
+
+                // OAuth credentials (one secret used frequently, other barely used)
+                let oauthSecrets = try await credentialManager.fetchSecrets(for: revokedCred.credential)
+                if let clientID = oauthSecrets.first(where: { $0.secretLabel == "Client ID" }) {
+                    for _ in 0..<23 {
+                        try await credentialManager.markSecretAsUsed(clientID)
+                    }
+                }
+                if let clientSecret = oauthSecrets.first(where: { $0.secretLabel == "Client Secret" }) {
+                    for _ in 0..<2 {
+                        try await credentialManager.markSecretAsUsed(clientSecret)
+                    }
+                }
+            }
+
+            // Add some copy counts to regular credentials too
+            for (i, template) in credentialTemplates.enumerated() {
+                if i < 10 {  // Only first 10 credentials to keep it reasonable
+                    let credentials = try await database.read { db in
+                        try Credential
+                            .where { $0.vaultID.eq(vault.id) && $0.label.eq(template.label) }
+                            .fetchAll(db)
+                    }
+
+                    if let credential = credentials.first {
+                        let secrets = try await credentialManager.fetchSecrets(for: credential)
+                        for secret in secrets {
+                            let copyCount = Int.random(in: 0...10)
+                            for _ in 0..<copyCount {
+                                try await credentialManager.markSecretAsUsed(secret)
+                            }
+                        }
+                    }
+                }
             }
         }
     }

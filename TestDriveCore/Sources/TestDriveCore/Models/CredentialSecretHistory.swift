@@ -26,6 +26,9 @@ public struct CredentialSecretHistory: Identifiable, Sendable, Hashable {
     /// Reason for the secret rotation or update.
     public var reason: RotationReason
 
+    /// Number of times this secret value was copied before being replaced.
+    public var copyCount: Int
+
     // MARK: - Initializer
 
     /// Creates a new credential secret history entry.
@@ -37,13 +40,15 @@ public struct CredentialSecretHistory: Identifiable, Sendable, Hashable {
     ///   - nonce: Nonce for AES-GCM decryption.
     ///   - replacedAt: Date when this secret value was replaced. Defaults to current date.
     ///   - reason: Reason for the rotation.
+    ///   - copyCount: Number of times this secret value was copied. Defaults to 0.
     public init(
         id: UUID = UUID(),
         credentialSecretID: UUID,
         encryptedSecret: Data,
         nonce: Data,
         replacedAt: Date = Date(),
-        reason: RotationReason
+        reason: RotationReason,
+        copyCount: Int = 0
     ) {
         self.id = id
         self.credentialSecretID = credentialSecretID
@@ -51,6 +56,7 @@ public struct CredentialSecretHistory: Identifiable, Sendable, Hashable {
         self.nonce = nonce
         self.replacedAt = replacedAt
         self.reason = reason
+        self.copyCount = copyCount
     }
 }
 

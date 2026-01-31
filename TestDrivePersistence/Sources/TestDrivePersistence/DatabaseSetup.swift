@@ -104,6 +104,7 @@ public func appDatabase() throws -> any DatabaseWriter {
             t.column("createdAt", .datetime).notNull()
             t.column("updatedAt", .datetime).notNull()
             t.column("lastUsedAt", .datetime)
+            t.column("copyCount", .integer).notNull().defaults(to: 0)
             t.column("expiresAt", .datetime)
             t.column("rotateAt", .datetime)
             t.column("status", .text).notNull().defaults(to: "active")
@@ -126,6 +127,7 @@ public func appDatabase() throws -> any DatabaseWriter {
             t.column("nonce", .blob).notNull()
             t.column("replacedAt", .datetime).notNull()
             t.column("reason", .text).notNull()
+            t.column("copyCount", .integer).notNull().defaults(to: 0)
 
             t.foreignKey(["credentialSecretID"], references: "credentialSecrets", columns: ["id"], onDelete: .cascade)
         }

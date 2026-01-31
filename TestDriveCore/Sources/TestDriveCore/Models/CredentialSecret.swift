@@ -37,6 +37,9 @@ public struct CredentialSecret: Identifiable, Sendable, Hashable {
     /// Date when this secret was last used (copied or revealed).
     public var lastUsedAt: Date?
 
+    /// Number of times this secret has been copied to clipboard.
+    public var copyCount: Int
+
     /// Optional expiration date for this secret.
     public var expiresAt: Date?
 
@@ -79,6 +82,7 @@ public struct CredentialSecret: Identifiable, Sendable, Hashable {
     ///   - createdAt: Date when this secret was created. Defaults to current date.
     ///   - updatedAt: Date when this secret's value was last changed. Defaults to current date.
     ///   - lastUsedAt: Date when this secret was last used.
+    ///   - copyCount: Number of times this secret has been copied. Defaults to 0.
     ///   - expiresAt: Optional expiration date.
     ///   - rotateAt: Optional rotation reminder date.
     ///   - status: Current status. Defaults to `.active`.
@@ -93,6 +97,7 @@ public struct CredentialSecret: Identifiable, Sendable, Hashable {
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
         lastUsedAt: Date? = nil,
+        copyCount: Int = 0,
         expiresAt: Date? = nil,
         rotateAt: Date? = nil,
         status: SecretStatus = .active,
@@ -107,6 +112,7 @@ public struct CredentialSecret: Identifiable, Sendable, Hashable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.lastUsedAt = lastUsedAt
+        self.copyCount = copyCount
         self.expiresAt = expiresAt
         self.rotateAt = rotateAt
         self.status = status

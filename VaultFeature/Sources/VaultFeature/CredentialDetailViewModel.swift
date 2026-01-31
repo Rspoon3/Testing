@@ -1,4 +1,3 @@
-import Foundation
 import UIKit
 import TestDriveCore
 import TestDrivePersistence
@@ -19,7 +18,9 @@ public final class CredentialDetailViewModel {
     public var key: Credential
 
     /// All secrets for this credential (metadata only, not decrypted).
-    public var secrets: [CredentialSecret] = []
+    /// Automatically updates when database changes.
+    @ObservationIgnored
+    @FetchAll var secrets: [CredentialSecret]
 
     /// Decrypted secret values (loaded on demand for performance).
     public var decryptedSecrets: [UUID: String] = [:]
@@ -29,9 +30,6 @@ public final class CredentialDetailViewModel {
 
     /// Whether to show the copy confirmation indicator and which secret.
     public var showingCopyConfirmation: UUID?
-
-    /// Whether secrets are currently loading.
-    public var isLoading = false
 
     // MARK: - Dependencies
 
@@ -54,18 +52,16 @@ public final class CredentialDetailViewModel {
         self.key = key
         self.credentialManager = credentialManager
         self.haptics = haptics
+
+        // Initialize @FetchAll with query for this credential's secrets
+        _secrets = FetchAll(
+            CredentialSecret
+                .where { $0.credentialID.eq(key.id) }
+                .order { $0.sortOrder }
+        )
     }
 
     // MARK: - Public Methods
-
-    /// Loads all secrets for the credential (metadata only).
-    public func loadSecrets() async throws {
-        guard secrets.isEmpty else { return }
-        isLoading = true
-        defer { isLoading = false }
-
-        secrets = try await credentialManager.fetchSecrets(for: key)
-    }
 
     /// Decrypts and caches a specific secret value (lazy loading).
     ///
@@ -106,9 +102,12 @@ public final class CredentialDetailViewModel {
         guard let value = decryptedSecrets[secret.id] else { return }
 
         // Copy to clipboard
+        #if os(iOS)
         UIPasteboard.general.string = value
+        #endif
 
-        // Mark secret as used
+        // Mark secret as used (updates lastUsedAt and copyCount)
+        // @FetchAll will automatically reload secrets when database changes
         try? await credentialManager.markSecretAsUsed(secret)
 
         // Provide haptic feedback

@@ -57,8 +57,13 @@ public struct CredentialDetailView: View {
         } message: {
             Text("Are you sure you want to delete '\(viewModel.key.label)'? This action cannot be undone.")
         }
-        .task {
-            try? await viewModel.loadSecrets()
+        .navigationDestination(isPresented: $showingManageSecrets) {
+            ManageSecretsView(
+                viewModel: ManageSecretsViewModel(
+                    credential: viewModel.key,
+                    credentialManager: viewModel.credentialManager
+                )
+            )
         }
     }
 
@@ -96,14 +101,7 @@ public struct CredentialDetailView: View {
 
     private var secretsSection: some View {
         Section {
-            if viewModel.isLoading {
-                HStack {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                }
-                .padding()
-            } else if viewModel.secrets.isEmpty {
+            if viewModel.secrets.isEmpty {
                 Text("No secrets found")
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -177,14 +175,6 @@ public struct CredentialDetailView: View {
                 .font(.subheadline)
                 .textCase(nil)
             }
-        }
-        .navigationDestination(isPresented: $showingManageSecrets) {
-            ManageSecretsView(
-                viewModel: ManageSecretsViewModel(
-                    credential: viewModel.key,
-                    credentialManager: viewModel.credentialManager
-                )
-            )
         }
     }
 

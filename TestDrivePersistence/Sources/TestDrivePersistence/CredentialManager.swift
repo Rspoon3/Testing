@@ -252,13 +252,14 @@ public final class CredentialManager {
             throw CredentialError.secretNotFound(label)
         }
 
-        // Move old value to history
+        // Move old value to history (preserving copy count)
         let historyEntry = CredentialSecretHistory(
             credentialSecretID: secret.id,
             encryptedSecret: secret.encryptedSecret,
             nonce: secret.nonce,
             replacedAt: Date(),
-            reason: reason
+            reason: reason,
+            copyCount: secret.copyCount
         )
 
         // Get vault encryption key
@@ -271,6 +272,7 @@ public final class CredentialManager {
         secret.encryptedSecret = ciphertext
         secret.nonce = nonce
         secret.updatedAt = Date()
+        secret.copyCount = 0  // Reset copy count for new value
         if let expiresAt {
             secret.expiresAt = expiresAt
         }
@@ -319,13 +321,14 @@ public final class CredentialManager {
         }
     }
 
-    /// Marks a secret as recently used.
+    /// Marks a secret as recently used and increments copy count.
     ///
     /// - Parameter secret: The secret that was used.
     /// - Throws: Database error if update fails.
     public func markSecretAsUsed(_ secret: CredentialSecret) async throws {
         var updated = secret
         updated.lastUsedAt = Date()
+        updated.copyCount += 1
         let secretToUpdate = updated
 
         try await database.write { db in
@@ -369,6 +372,20 @@ public final class CredentialManager {
         )
     }
 
+    /// Marks a historical secret as accessed (increments copy count).
+    ///
+    /// - Parameter historyEntry: The history entry that was accessed.
+    /// - Throws: Database error if update fails.
+    public func markHistoricalSecretAsUsed(_ historyEntry: CredentialSecretHistory) async throws {
+        var updated = historyEntry
+        updated.copyCount += 1
+        let entryToUpdate = updated
+
+        try await database.write { db in
+            try CredentialSecretHistory.update(entryToUpdate).execute(db)
+        }
+    }
+
     /// Revokes a secret (marks as revoked, adds to history).
     ///
     /// - Parameters:
@@ -391,13 +408,14 @@ public final class CredentialManager {
             throw CredentialError.secretNotFound(label)
         }
 
-        // Move to history
+        // Move to history (preserving copy count)
         let historyEntry = CredentialSecretHistory(
             credentialSecretID: secret.id,
             encryptedSecret: secret.encryptedSecret,
             nonce: secret.nonce,
             replacedAt: Date(),
-            reason: .compromised
+            reason: .compromised,
+            copyCount: secret.copyCount
         )
 
         // Mark as revoked

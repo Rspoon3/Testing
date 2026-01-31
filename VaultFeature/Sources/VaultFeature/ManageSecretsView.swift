@@ -27,14 +27,21 @@ public struct ManageSecretsView: View {
     public var body: some View {
         NavigationStack {
             List {
-                if viewModel.isLoading {
-                    loadingSection
-                } else if viewModel.secrets.isEmpty {
+                if viewModel.secrets.isEmpty {
                     emptySection
                 } else {
                     currentSecretsSection
 
-                    if !viewModel.allHistory.isEmpty {
+                    if viewModel.isLoading {
+                        Section {
+                            HStack {
+                                Spacer()
+                                ProgressView("Loading history...")
+                                Spacer()
+                            }
+                            .padding()
+                        }
+                    } else if !viewModel.allHistory.isEmpty {
                         historySection
                     }
                 }
@@ -46,12 +53,6 @@ public struct ManageSecretsView: View {
             .navigationTitle("Manage Secrets")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingAddSheet = true
@@ -120,17 +121,6 @@ public struct ManageSecretsView: View {
 
     // MARK: - Private Views
 
-    private var loadingSection: some View {
-        Section {
-            HStack {
-                Spacer()
-                ProgressView()
-                Spacer()
-            }
-            .padding()
-        }
-    }
-
     private var emptySection: some View {
         Section {
             VStack(spacing: 12) {
@@ -194,6 +184,14 @@ public struct ManageSecretsView: View {
                                 icon: "clock",
                                 label: "Last Used",
                                 value: viewModel.relativeTime(from: lastUsed)
+                            )
+                        }
+
+                        if secret.copyCount > 0 {
+                            metadataRow(
+                                icon: "doc.on.doc",
+                                label: "Copied",
+                                value: "\(secret.copyCount) time\(secret.copyCount == 1 ? "" : "s")"
                             )
                         }
 
@@ -278,6 +276,14 @@ public struct ManageSecretsView: View {
                             label: "Replaced",
                             value: viewModel.relativeTime(from: historyEntry.replacedAt)
                         )
+
+                        if historyEntry.copyCount > 0 {
+                            metadataRow(
+                                icon: "doc.on.doc",
+                                label: "Copied",
+                                value: "\(historyEntry.copyCount) time\(historyEntry.copyCount == 1 ? "" : "s")"
+                            )
+                        }
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)

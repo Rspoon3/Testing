@@ -2,6 +2,8 @@ import UIKit
 import TestDriveCore
 import TestDrivePersistence
 import Dependencies
+import SQLiteData
+import GRDB
 
 /// View model for managing secrets within a credential.
 ///
@@ -16,7 +18,9 @@ public final class ManageSecretsViewModel {
     public var credential: Credential
 
     /// All secrets for this credential.
-    public var secrets: [CredentialSecret] = []
+    /// Automatically updates when database changes.
+    @ObservationIgnored
+    @FetchAll var secrets: [CredentialSecret]
 
     /// All history entries for all secrets.
     public var allHistory: [CredentialSecretHistory] = []
@@ -60,17 +64,23 @@ public final class ManageSecretsViewModel {
         self.credential = credential
         self.credentialManager = credentialManager
         self.haptics = haptics
+
+        // Initialize @FetchAll with query for this credential's secrets
+        _secrets = FetchAll(
+            CredentialSecret
+                .where { $0.credentialID.eq(credential.id) }
+                .order { $0.sortOrder }
+        )
     }
 
     // MARK: - Public Methods
 
-    /// Loads all secrets for the credential.
+    /// Loads history for all secrets.
+    /// Secrets themselves are automatically loaded via @FetchAll.
     public func loadSecrets() async throws {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
-
-        secrets = try await credentialManager.fetchSecrets(for: credential)
 
         // Load all history for all secrets
         var allHistoryEntries: [CredentialSecretHistory] = []
@@ -106,7 +116,7 @@ public final class ManageSecretsViewModel {
         historyVisibility[id] = !isCurrentlyVisible
     }
 
-    /// Copies a historical secret to the clipboard.
+    /// Copies a historical secret to the clipboard and increments its copy count.
     ///
     /// - Parameter historyEntry: The history entry to copy.
     public func copyHistoricalSecret(_ historyEntry: CredentialSecretHistory) async {
@@ -116,7 +126,16 @@ public final class ManageSecretsViewModel {
 
         guard let value = decryptedHistory[historyEntry.id] else { return }
 
+        #if os(iOS)
         UIPasteboard.general.string = value
+        #endif
+
+        // Mark history entry as used (increments copy count)
+        try? await credentialManager.markHistoricalSecretAsUsed(historyEntry)
+
+        // Reload history to get updated copy count
+        try? await loadSecrets()
+
         haptics.success()
     }
 
@@ -235,16 +254,19 @@ public final class ManageSecretsViewModel {
     ///   - source: Source indices.
     ///   - destination: Destination index.
     public func moveSecrets(from source: IndexSet, to destination: Int) {
-        secrets.move(fromOffsets: source, toOffset: destination)
+        // Create mutable copy of secrets to calculate new order
+        var mutableSecrets = Array(secrets)
+        mutableSecrets.move(fromOffsets: source, toOffset: destination)
 
-        // Update sort order in database
+        // Update sort order in database (@FetchAll will automatically reload)
         Task {
             do {
-                let orderedLabels = secrets.map(\.secretLabel)
+                let orderedLabels = mutableSecrets.map(\.secretLabel)
                 try await credentialManager.reorderSecrets(
                     for: credential,
                     orderedLabels: orderedLabels
                 )
+                haptics.success()
             } catch {
                 errorMessage = error.localizedDescription
                 haptics.error()
