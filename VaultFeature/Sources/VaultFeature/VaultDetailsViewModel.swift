@@ -201,6 +201,12 @@ public final class VaultDetailsViewModel {
 
         searchTask?.cancel()
         searchTask = Task {
+            // Debounce: wait 300ms before executing search
+            try await Task.sleep(for: .seconds(0.3))
+
+            // If task was cancelled during sleep, exit early
+            guard !Task.isCancelled else { return }
+
             await withErrorReporting {
                 try await $keyRows.load(
                     KeyRowsRequest(vaultID: vaultID, searchText: searchText, ordering: ordering),
