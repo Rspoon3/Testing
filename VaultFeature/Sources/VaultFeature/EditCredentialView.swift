@@ -2,7 +2,7 @@ import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
-/// Sheet for creating or editing an credential.
+/// Sheet for creating or editing a credential with multiple secrets.
 public struct EditCredentialView: View {
 
     @State private var viewModel: EditCredentialViewModel
@@ -12,12 +12,12 @@ public struct EditCredentialView: View {
 
     // MARK: - Initializer
 
-    /// Creates a new edit key view.
+    /// Creates a new edit credential view.
     ///
     /// - Parameter viewModel: The view model for this view.
     public init(viewModel: EditCredentialViewModel) {
         self.viewModel = viewModel
-        self.isEditMode = viewModel.existingKey != nil
+        self.isEditMode = viewModel.existingCredential != nil
     }
 
     // MARK: - Body
@@ -27,7 +27,8 @@ public struct EditCredentialView: View {
             Form {
                 basicInfoSection
                 if !isEditMode {
-                    secretSection
+                    templateSection
+                    secretsSection
                 }
                 classificationSection
                 metadataSection
@@ -39,7 +40,7 @@ public struct EditCredentialView: View {
                     }
                 }
             }
-            .navigationTitle(isEditMode ? "Edit Key" : "New API Key")
+            .navigationTitle(isEditMode ? "Edit Credential" : "New Credential")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -55,6 +56,14 @@ public struct EditCredentialView: View {
                     .disabled(!viewModel.isValid || viewModel.isSaving)
                 }
             }
+            .sheet(isPresented: $viewModel.showingTemplatePicker) {
+                TemplatePickerSheet(
+                    onSelect: { template in
+                        viewModel.applyTemplate(template)
+                        viewModel.showingTemplatePicker = false
+                    }
+                )
+            }
         }
     }
 
@@ -63,6 +72,7 @@ public struct EditCredentialView: View {
     private var basicInfoSection: some View {
         Section("Basic Information") {
             TextField("Label", text: $viewModel.label)
+                .textInputAutocapitalization(.words)
 
             TextField("Website Domain", text: $viewModel.websiteDomain)
                 .textContentType(.URL)
@@ -70,26 +80,98 @@ public struct EditCredentialView: View {
                 .textInputAutocapitalization(.never)
 
             TextField("Company", text: $viewModel.company)
+                .textInputAutocapitalization(.words)
         }
     }
 
-    private var secretSection: some View {
+    private var templateSection: some View {
         Section {
-            SecureTextFieldView(
-                text: $viewModel.secret,
-                isVisible: $viewModel.isSecretVisible,
-                placeholder: "API Key Secret"
-            )
-
             Button {
-                viewModel.secret = viewModel.generateRandomSecret()
+                viewModel.showingTemplatePicker = true
             } label: {
-                Label("Generate Random Key", systemImage: "wand.and.stars")
+                Label("Use Template", systemImage: "doc.text.fill")
             }
         } header: {
-            Text("Secret")
+            Text("Quick Setup")
         } footer: {
-            Text("The secret will be encrypted and stored securely.")
+            Text("Choose a template to quickly set up common credential types like AWS, OAuth, or Twitter.")
+        }
+    }
+
+    private var secretsSection: some View {
+        Section {
+            ForEach($viewModel.secrets) { $secret in
+                VStack(alignment: .leading, spacing: 12) {
+                    // Secret label
+                    TextField("Secret Name (e.g., API Key, Client ID)", text: $secret.label)
+                        .font(.subheadline.weight(.medium))
+                        .textInputAutocapitalization(.words)
+
+                    // Secret value with visibility toggle
+                    HStack(spacing: 8) {
+                        if secret.isVisible {
+                            TextField("Value", text: $secret.value)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                        } else {
+                            SecureField("Value", text: $secret.value)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                        }
+
+                        Button {
+                            viewModel.toggleSecretVisibility(secret.id)
+                        } label: {
+                            Image(systemName: secret.isVisible ? "eye.slash" : "eye")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    // Action buttons
+                    HStack(spacing: 16) {
+                        Button {
+                            viewModel.generateRandomSecretFor(secret.id)
+                        } label: {
+                            Label("Generate", systemImage: "wand.and.stars")
+                                .font(.caption)
+                        }
+                        .buttonStyle(.borderless)
+
+                        Spacer()
+
+                        if viewModel.secrets.count > 1 {
+                            Button(role: .destructive) {
+                                if let index = viewModel.secrets.firstIndex(where: { $0.id == secret.id }) {
+                                    viewModel.removeSecret(at: index)
+                                }
+                            } label: {
+                                Label("Remove", systemImage: "trash")
+                                    .font(.caption)
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+            .onMove(perform: viewModel.moveSecrets)
+
+            Button {
+                viewModel.addSecret()
+            } label: {
+                Label("Add Secret", systemImage: "plus.circle.fill")
+            }
+        } header: {
+            HStack {
+                Text("Secrets")
+                Spacer()
+                if viewModel.secrets.count > 1 {
+                    EditButton()
+                        .font(.caption)
+                }
+            }
+        } footer: {
+            Text("Each credential can have multiple secrets. For example, AWS needs both an Access Key ID and Secret Access Key.")
         }
     }
 
