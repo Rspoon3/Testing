@@ -45,25 +45,9 @@ public final class VaultListViewModel {
                 baseQuery = baseQuery.where { $0.vault.name.contains(searchText) }
             }
 
-            // Execute both queries in single transaction
-            return try Value(
-                pinnedRows: baseQuery
-                    .where(\.isPinned)
-                    .order {
-                        switch ordering {
-                        case .name:
-                            $0.vault.name
-                        case .dateCreated:
-                            $0.vault.createdAt.desc()
-                        case .keyCount:
-                            $0.keyCount.desc()
-                        case .lastUpdated:
-                            $0.vault.updatedAt.desc()
-                        }
-                    }
-                    .fetchAll(db),
-                unpinnedRows: baseQuery
-                    .where { !$0.isPinned }
+            // Helper to apply ordering and fetch
+            func fetchWithOrdering(_ query: Where<VaultRow>) throws -> [VaultRow] {
+                try query
                     .order {
                         switch ordering {
                         case .name:
@@ -77,6 +61,12 @@ public final class VaultListViewModel {
                         }
                     }
                     .fetchAll(db)
+            }
+
+            // Execute both queries in single transaction
+            return try Value(
+                pinnedRows: fetchWithOrdering(baseQuery.where(\.isPinned)),
+                unpinnedRows: fetchWithOrdering(baseQuery.where { !$0.isPinned })
             )
         }
     }
