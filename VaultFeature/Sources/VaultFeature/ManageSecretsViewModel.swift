@@ -1,4 +1,4 @@
-import Foundation
+import UIKit
 import TestDriveCore
 import TestDrivePersistence
 import Dependencies
@@ -18,6 +18,15 @@ public final class ManageSecretsViewModel {
     /// All secrets for this credential.
     public var secrets: [CredentialSecret] = []
 
+    /// All history entries for all secrets.
+    public var allHistory: [CredentialSecretHistory] = []
+
+    /// Decrypted historical secret values (loaded on demand).
+    public var decryptedHistory: [UUID: String] = [:]
+
+    /// Visibility state for historical secrets.
+    public var historyVisibility: [UUID: Bool] = [:]
+
     /// Whether secrets are currently loading.
     public var isLoading = false
 
@@ -26,9 +35,6 @@ public final class ManageSecretsViewModel {
 
     /// Which secret is being updated (shows update sheet).
     public var secretBeingUpdated: CredentialSecret?
-
-    /// Which secret's history is being viewed.
-    public var secretViewingHistory: CredentialSecret?
 
     /// Secret to delete (shows confirmation alert).
     public var secretToDelete: CredentialSecret?
@@ -65,6 +71,69 @@ public final class ManageSecretsViewModel {
         defer { isLoading = false }
 
         secrets = try await credentialManager.fetchSecrets(for: credential)
+
+        // Load all history for all secrets
+        var allHistoryEntries: [CredentialSecretHistory] = []
+        for secret in secrets {
+            let history = try await credentialManager.getSecretHistory(for: secret)
+            allHistoryEntries.append(contentsOf: history)
+        }
+        // Sort by replacedAt descending (newest first)
+        allHistory = allHistoryEntries.sorted { $0.replacedAt > $1.replacedAt }
+    }
+
+    /// Decrypts a historical secret value.
+    ///
+    /// - Parameter historyEntry: The history entry to decrypt.
+    public func decryptHistoricalSecret(_ historyEntry: CredentialSecretHistory) async throws {
+        guard decryptedHistory[historyEntry.id] == nil else { return }
+
+        let decrypted = try await credentialManager.decryptHistoricalSecret(historyEntry, for: credential)
+        decryptedHistory[historyEntry.id] = decrypted
+    }
+
+    /// Toggles the visibility of a historical secret.
+    ///
+    /// - Parameter id: The history entry ID.
+    public func toggleHistoryVisibility(_ id: UUID) async {
+        guard let entry = allHistory.first(where: { $0.id == id }) else { return }
+
+        let isCurrentlyVisible = historyVisibility[id] ?? false
+        if !isCurrentlyVisible && decryptedHistory[id] == nil {
+            try? await decryptHistoricalSecret(entry)
+        }
+
+        historyVisibility[id] = !isCurrentlyVisible
+    }
+
+    /// Copies a historical secret to the clipboard.
+    ///
+    /// - Parameter historyEntry: The history entry to copy.
+    public func copyHistoricalSecret(_ historyEntry: CredentialSecretHistory) async {
+        if decryptedHistory[historyEntry.id] == nil {
+            try? await decryptHistoricalSecret(historyEntry)
+        }
+
+        guard let value = decryptedHistory[historyEntry.id] else { return }
+
+        UIPasteboard.general.string = value
+        haptics.success()
+    }
+
+    /// Gets the secret label for a history entry.
+    ///
+    /// - Parameter historyEntry: The history entry.
+    /// - Returns: The label of the secret this history belongs to.
+    public func getSecretLabel(for historyEntry: CredentialSecretHistory) -> String {
+        secrets.first(where: { $0.id == historyEntry.credentialSecretID })?.secretLabel ?? "Unknown"
+    }
+
+    /// Gets the created date of the parent secret for a history entry.
+    ///
+    /// - Parameter historyEntry: The history entry.
+    /// - Returns: The created date of the parent secret.
+    public func getParentSecretCreatedDate(for historyEntry: CredentialSecretHistory) -> Date? {
+        secrets.first(where: { $0.id == historyEntry.credentialSecretID })?.createdAt
     }
 
     /// Adds a new secret to the credential.

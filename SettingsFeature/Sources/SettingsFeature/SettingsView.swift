@@ -1,5 +1,4 @@
 import SwiftUI
-import TestDriveCore
 import TestDrivePersistence
 
 /// Settings screen for app configuration.
@@ -158,7 +157,7 @@ public struct SettingsView: View {
         } header: {
             Text("Debug")
         } footer: {
-            Text("Creates 5 test vaults with different key counts: Work APIs (1 key), Development (5 keys), Production (10 keys), Testing (15 keys), Personal (20 keys)")
+            Text("Creates 6 test vaults with 55+ credentials. Regular vaults have varied credentials with some history. The 'History Demo' vault showcases: frequently rotated keys (5 rotations), expired credentials, revoked secrets, compromise incidents, and mixed history across multiple secrets.")
         }
     }
     #endif

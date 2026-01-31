@@ -10,7 +10,6 @@ public struct ManageSecretsView: View {
     @State private var viewModel: ManageSecretsViewModel
     @State private var showingAddSheet = false
     @State private var showingUpdateSheet = false
-    @State private var showingHistorySheet = false
     @State private var showingDeleteAlert = false
     @Environment(\.dismiss) private var dismiss
 
@@ -33,7 +32,11 @@ public struct ManageSecretsView: View {
                 } else if viewModel.secrets.isEmpty {
                     emptySection
                 } else {
-                    secretsSection
+                    currentSecretsSection
+
+                    if !viewModel.allHistory.isEmpty {
+                        historySection
+                    }
                 }
 
                 if let errorMessage = viewModel.errorMessage {
@@ -95,12 +98,6 @@ public struct ManageSecretsView: View {
                     }
                 )
             }
-            .sheet(item: $viewModel.secretViewingHistory) { secret in
-                SecretHistoryView(
-                    secret: secret,
-                    viewModel: viewModel
-                )
-            }
             .alert("Delete Secret", isPresented: $showingDeleteAlert) {
                 Button("Cancel", role: .cancel) {
                     viewModel.secretToDelete = nil
@@ -154,7 +151,7 @@ public struct ManageSecretsView: View {
         }
     }
 
-    private var secretsSection: some View {
+    private var currentSecretsSection: some View {
         Section {
             ForEach(viewModel.secrets) { secret in
                 VStack(alignment: .leading, spacing: 12) {
@@ -230,14 +227,6 @@ public struct ManageSecretsView: View {
                                 .font(.caption)
                         }
                         .buttonStyle(.borderless)
-
-                        Button {
-                            viewModel.secretViewingHistory = secret
-                        } label: {
-                            Label("History", systemImage: "clock.arrow.circlepath")
-                                .font(.caption)
-                        }
-                        .buttonStyle(.borderless)
                     }
                 }
                 .padding(.vertical, 8)
@@ -250,7 +239,89 @@ public struct ManageSecretsView: View {
                 }
             }
         } header: {
-            Text("Secrets (\(viewModel.secrets.count))")
+            Text("Current Secrets (\(viewModel.secrets.count))")
+        }
+    }
+
+    private var historySection: some View {
+        Section {
+            ForEach(viewModel.allHistory) { historyEntry in
+                VStack(alignment: .leading, spacing: 12) {
+                    // Header with label and rotation reason
+                    HStack {
+                        Text(viewModel.getSecretLabel(for: historyEntry))
+                            .font(.headline)
+
+                        Spacer()
+
+                        Text(reasonLabel(historyEntry.reason))
+                            .font(.caption2)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(reasonColor(historyEntry.reason))
+                            .foregroundStyle(.white)
+                            .clipShape(Capsule())
+                    }
+
+                    // Metadata
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let createdAt = viewModel.getParentSecretCreatedDate(for: historyEntry) {
+                            metadataRow(
+                                icon: "calendar",
+                                label: "Created",
+                                value: viewModel.relativeTime(from: createdAt)
+                            )
+                        }
+
+                        metadataRow(
+                            icon: "arrow.clockwise",
+                            label: "Replaced",
+                            value: viewModel.relativeTime(from: historyEntry.replacedAt)
+                        )
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                    // Secret value with visibility toggle
+                    HStack(spacing: 8) {
+                        if viewModel.historyVisibility[historyEntry.id] == true {
+                            Text(viewModel.decryptedHistory[historyEntry.id] ?? "")
+                                .font(.body.monospaced())
+                                .textSelection(.enabled)
+                        } else {
+                            Text(String(repeating: "•", count: 32))
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Button {
+                            Task {
+                                await viewModel.toggleHistoryVisibility(historyEntry.id)
+                            }
+                        } label: {
+                            Image(systemName: viewModel.historyVisibility[historyEntry.id] == true ? "eye.slash" : "eye")
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.borderless)
+                    }
+
+                    // Copy action
+                    Button {
+                        Task {
+                            await viewModel.copyHistoricalSecret(historyEntry)
+                        }
+                    } label: {
+                        Label("Copy", systemImage: "doc.on.doc")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                }
+                .padding(.vertical, 8)
+            }
+        } header: {
+            Text("History (\(viewModel.allHistory.count))")
         }
     }
 
@@ -288,6 +359,24 @@ public struct ManageSecretsView: View {
         case "green": return .green
         case "gray": return .gray
         default: return .secondary
+        }
+    }
+
+    private func reasonLabel(_ reason: RotationReason) -> String {
+        switch reason {
+        case .userInitiated: return "User Updated"
+        case .rotated: return "Rotated"
+        case .expired: return "Expired"
+        case .compromised: return "Compromised"
+        }
+    }
+
+    private func reasonColor(_ reason: RotationReason) -> Color {
+        switch reason {
+        case .userInitiated: return .blue
+        case .rotated: return .green
+        case .expired: return .orange
+        case .compromised: return .red
         }
     }
 
@@ -510,89 +599,3 @@ private struct UpdateSecretSheet: View {
     }
 }
 
-// MARK: - Secret History View
-
-private struct SecretHistoryView: View {
-    let secret: CredentialSecret
-    let viewModel: ManageSecretsViewModel
-    @State private var history: [CredentialSecretHistory] = []
-    @State private var isLoading = false
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            List {
-                if isLoading {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
-                    .padding()
-                } else if history.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "clock.badge.questionmark")
-                            .font(.system(size: 48))
-                            .foregroundStyle(.secondary)
-
-                        Text("No History")
-                            .font(.headline)
-
-                        Text("This secret has not been rotated yet.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 32)
-                } else {
-                    Section {
-                        ForEach(history) { entry in
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Text(reasonLabel(entry.reason))
-                                        .font(.headline)
-
-                                    Spacer()
-
-                                    Text(entry.replacedAt, style: .date)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                Text(viewModel.relativeTime(from: entry.replacedAt))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(.vertical, 4)
-                        }
-                    } header: {
-                        Text("Rotation History")
-                    }
-                }
-            }
-            .navigationTitle("\(secret.secretLabel) History")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-            .task {
-                isLoading = true
-                history = (try? await viewModel.getHistory(for: secret)) ?? []
-                isLoading = false
-            }
-        }
-    }
-
-    private func reasonLabel(_ reason: RotationReason) -> String {
-        switch reason {
-        case .userInitiated: return "User Updated"
-        case .rotated: return "Scheduled Rotation"
-        case .expired: return "Expired"
-        case .compromised: return "Compromised"
-        }
-    }
-}

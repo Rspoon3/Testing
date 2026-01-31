@@ -81,7 +81,7 @@ public final class VaultDetailsViewModel {
                     }
                     .select { apiKey, preference, _ in
                         CredentialRow.Columns(
-                            apiKey: apiKey,
+                            credential: apiKey,
                             isPinned: preference.isPinned ?? false
                         )
                     }

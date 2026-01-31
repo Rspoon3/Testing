@@ -8,6 +8,7 @@ public struct CredentialDetailView: View {
     @State private var viewModel: CredentialDetailViewModel
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
+    @State private var showingManageSecrets = false
     @Environment(\.dismiss) private var dismiss
 
     // MARK: - Initializer
@@ -165,20 +166,25 @@ public struct CredentialDetailView: View {
                     }
                     .padding(.vertical, 4)
                 }
-
-                NavigationLink {
-                    ManageSecretsView(
-                        viewModel: ManageSecretsViewModel(
-                            credential: viewModel.key,
-                            credentialManager: viewModel.credentialManager
-                        )
-                    )
-                } label: {
-                    Label("Manage Secrets", systemImage: "gearshape")
-                }
             }
         } header: {
-            Text("Secrets")
+            HStack {
+                Text("Secrets")
+                Spacer()
+                Button("See More") {
+                    showingManageSecrets = true
+                }
+                .font(.subheadline)
+                .textCase(nil)
+            }
+        }
+        .navigationDestination(isPresented: $showingManageSecrets) {
+            ManageSecretsView(
+                viewModel: ManageSecretsViewModel(
+                    credential: viewModel.key,
+                    credentialManager: viewModel.credentialManager
+                )
+            )
         }
     }
 
