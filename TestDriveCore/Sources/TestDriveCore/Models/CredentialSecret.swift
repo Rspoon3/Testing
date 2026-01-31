@@ -1,5 +1,6 @@
 import Foundation
 import SQLiteData
+import StructuredQueriesCore
 
 /// Represents a single encrypted secret within a credential.
 ///
@@ -123,4 +124,21 @@ public enum SecretStatus: String, Sendable, Codable {
 
     /// Manually revoked or disabled.
     case revoked
+}
+
+// MARK: - QueryRepresentable Conformance
+
+extension SecretStatus: QueryRepresentable, QueryBindable, QueryExpression {
+    public typealias QueryOutput = Self
+    public typealias QueryValue = Self
+
+    public static var _columnWidth: Int { 1 }
+
+    public init(queryOutput: Self) {
+        self = queryOutput
+    }
+
+    public var queryOutput: Self {
+        self
+    }
 }

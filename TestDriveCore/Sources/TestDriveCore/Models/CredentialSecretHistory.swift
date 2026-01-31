@@ -1,5 +1,6 @@
 import Foundation
 import SQLiteData
+import StructuredQueriesCore
 
 /// Audit log entry for credential secret rotations and updates.
 ///
@@ -66,4 +67,21 @@ public enum RotationReason: String, Sendable, Codable {
 
     /// User-initiated change without specific reason.
     case userInitiated
+}
+
+// MARK: - QueryRepresentable Conformance
+
+extension RotationReason: QueryRepresentable, QueryBindable, QueryExpression {
+    public typealias QueryOutput = Self
+    public typealias QueryValue = Self
+
+    public static var _columnWidth: Int { 1 }
+
+    public init(queryOutput: Self) {
+        self = queryOutput
+    }
+
+    public var queryOutput: Self {
+        self
+    }
 }
