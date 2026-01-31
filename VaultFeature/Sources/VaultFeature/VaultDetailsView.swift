@@ -131,8 +131,7 @@ public struct VaultDetailsView: View {
             CredentialDetailView(
                 viewModel: CredentialDetailViewModel(
                     key: key,
-                    credentialManager: viewModel.credentialManager,
-                    clipboardManager: viewModel.clipboardManager
+                    credentialManager: viewModel.credentialManager
                 )
             )
         } label: {
