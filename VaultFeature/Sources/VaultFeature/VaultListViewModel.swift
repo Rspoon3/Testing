@@ -87,7 +87,7 @@ public final class VaultListViewModel {
     public var searchTask: Task<Void, Never>?
 
     public let vaultManager: VaultManager
-    private let apiKeyManager: APIKeyManager
+    private let credentialManager: CredentialManager
 
     // MARK: - Initializer
 
@@ -95,13 +95,13 @@ public final class VaultListViewModel {
     ///
     /// - Parameters:
     ///   - vaultManager: The vault manager for vault operations.
-    ///   - apiKeyManager: The API key manager for key operations.
+    ///   - credentialManager: The credential manager for key operations.
     public init(
         vaultManager: VaultManager,
-        apiKeyManager: APIKeyManager
+        credentialManager: CredentialManager
     ) {
         self.vaultManager = vaultManager
-        self.apiKeyManager = apiKeyManager
+        self.credentialManager = credentialManager
 
         // Initialize sorting preference from AppStorage
         _ordering = Shared(
@@ -166,9 +166,9 @@ public final class VaultListViewModel {
         }
     }
 
-    /// Returns the API key manager for navigation.
-    public func getAPIKeyManager() -> APIKeyManager {
-        apiKeyManager
+    /// Returns the credential manager for navigation.
+    public func getCredentialManager() -> CredentialManager {
+        credentialManager
     }
 
     /// Returns the vault manager for navigation.

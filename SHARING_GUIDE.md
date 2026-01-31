@@ -184,8 +184,8 @@ let secret = AES.GCM.open(
 ### What's Encrypted
 
 1. **API Key Secrets** (AES-256-GCM)
-   - Ciphertext: `APIKey.encryptedSecret`
-   - Nonce: `APIKey.nonce`
+   - Ciphertext: `Credential.encryptedSecret`
+   - Nonce: `Credential.nonce`
    - Key: Vault AES key (in Keychain)
 
 2. **Vault Keys** (Wrapped with derived keys)

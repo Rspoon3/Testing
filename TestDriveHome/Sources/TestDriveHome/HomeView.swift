@@ -9,7 +9,7 @@ public struct HomeView: View {
     @State private var encryption: EncryptionService
     @State private var keychain: KeychainService
     @State private var vaultManager: VaultManager
-    @State private var apiKeyManager: APIKeyManager
+    @State private var credentialManager: CredentialManager
     @State private var clipboardManager: ClipboardManager
 
     // MARK: - Initializer
@@ -19,13 +19,13 @@ public struct HomeView: View {
         let enc = EncryptionService()
         let key = KeychainService()
         let vm = VaultManager(encryption: enc, keychain: key)
-        let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+        let akm = CredentialManager(encryption: enc, vaultManager: vm)
         let cm = ClipboardManager()
 
         self.encryption = enc
         self.keychain = key
         self.vaultManager = vm
-        self.apiKeyManager = akm
+        self.credentialManager = akm
         self.clipboardManager = cm
     }
 
@@ -45,7 +45,7 @@ public struct HomeView: View {
         VaultListView(
             viewModel: VaultListViewModel(
                 vaultManager: vaultManager,
-                apiKeyManager: apiKeyManager
+                credentialManager: credentialManager
             )
         )
         .tabItem {
@@ -56,7 +56,7 @@ public struct HomeView: View {
     private var securityTab: some View {
         SecurityWarningsView(
             viewModel: SecurityWarningsViewModel(
-                apiKeyManager: apiKeyManager,
+                credentialManager: credentialManager,
                 clipboardManager: clipboardManager
             )
         )
@@ -70,7 +70,7 @@ public struct HomeView: View {
             viewModel: SettingsViewModel(
                 vaultManager: vaultManager,
                 clipboardManager: clipboardManager,
-                apiKeyManager: apiKeyManager
+                credentialManager: credentialManager
             )
         )
         .tabItem {

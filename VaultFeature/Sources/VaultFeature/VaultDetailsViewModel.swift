@@ -5,7 +5,7 @@ import SwiftUI
 import TestDriveCore
 import TestDrivePersistence
 
-public enum KeyOrdering: String, CaseIterable, Sendable {
+public enum CredentialOrdering: String, CaseIterable, Sendable {
     case name = "Name"
     case dateCreated = "Date Created"
     case lastUsed = "Last Used"
@@ -23,46 +23,76 @@ public enum KeyOrdering: String, CaseIterable, Sendable {
 
 /// View model for the vault details screen.
 ///
-/// Manages API key loading, searching, and deletion within a vault.
+/// Manages credential loading, searching, and deletion within a vault.
 @MainActor
 @Observable
 public final class VaultDetailsViewModel {
 
     struct KeyRowsRequest: FetchKeyRequest {
         struct Value {
-            var pinnedRows: [APIKeyRow] = []
-            var unpinnedRows: [APIKeyRow] = []
+            var pinnedRows: [CredentialRow] = []
+            var unpinnedRows: [CredentialRow] = []
         }
 
         let vaultID: UUID
-        let ordering: KeyOrdering
+        let searchText: String
+        let ordering: CredentialOrdering
 
         func fetch(_ db: Database) throws -> Value {
-            // Build base query for this vault
-            let baseQuery = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
+            // Helper to build complete query for pinned or unpinned rows
+            func fetchRows(isPinned: Bool) throws -> [CredentialRow] {
+                // Step 1: Start from base Credential table and filter by vault
+                let baseQuery = Credential.where { apiKey in
+                    apiKey.vaultID.eq(vaultID)
+                }
 
-            // Helper to apply ordering and fetch
-            func fetchWithOrdering(_ query: Where<APIKeyRow>) throws -> [APIKeyRow] {
-                try query
-                    .order {
-                        switch ordering {
-                        case .name:
-                            $0.apiKey.label
-                        case .dateCreated:
-                            $0.apiKey.createdAt.desc()
-                        case .lastUsed:
-                            $0.apiKey.lastUsedAt.desc(nulls: .last)
-                        case .environment:
-                            $0.apiKey.environment
+                // Step 2: Join with CredentialPreference to get pinned state
+                let withPreference = baseQuery
+                    .leftJoin(CredentialPreference.all) { $0.id.eq($1.credentialID) }
+
+                // Step 3: Join with FTS5 for search
+                let joined = withPreference
+                    .join(CredentialText.all) { $0.rowid.eq($2.rowid) }
+
+                // Step 4: Apply filters (pinned state and search)
+                let query = joined
+                    .where { apiKey, preference, apiKeyText in
+                        // Filter by pinned state
+                        let pinnedMatch = (preference.isPinned ?? false).eq(isPinned)
+
+                        // Filter by search text if provided
+                        if !searchText.isEmpty {
+                            pinnedMatch && apiKeyText.match(searchText.quoted())
+                        } else {
+                            pinnedMatch
                         }
                     }
-                    .fetchAll(db)
+                    .order { apiKey, _, apiKeyText in
+                        switch ordering {
+                        case .name:
+                            apiKey.label
+                        case .dateCreated:
+                            apiKey.createdAt.desc()
+                        case .lastUsed:
+                            apiKey.lastUsedAt.desc(nulls: .last)
+                        case .environment:
+                            apiKey.environment
+                        }
+                    }
+                    .select { apiKey, preference, _ in
+                        CredentialRow.Columns(
+                            apiKey: apiKey,
+                            isPinned: preference.isPinned ?? false
+                        )
+                    }
+
+                return try query.fetchAll(db)
             }
 
             // Execute both queries in single transaction
             return try Value(
-                pinnedRows: fetchWithOrdering(baseQuery.where(\.isPinned)),
-                unpinnedRows: fetchWithOrdering(baseQuery.where { !$0.isPinned })
+                pinnedRows: fetchRows(isPinned: true),
+                unpinnedRows: fetchRows(isPinned: false)
             )
         }
     }
@@ -73,9 +103,15 @@ public final class VaultDetailsViewModel {
     @ObservationIgnored @FetchOne(Vault.none)
     private var observedVault: Vault?
 
-    @ObservationIgnored @Shared var ordering: KeyOrdering
+    @ObservationIgnored @Shared var ordering: CredentialOrdering
 
-    public var searchText = ""
+    public var searchText = "" {
+        didSet {
+            if oldValue != searchText {
+                updateQuery()
+            }
+        }
+    }
     public var searchTask: Task<Void, Never>?
     public var errorMessage: String?
     public var isLoading = false
@@ -86,34 +122,19 @@ public final class VaultDetailsViewModel {
         observedVault ?? initialVault
     }
 
-    /// Pinned keys filtered by search text.
-    public var pinnedKeys: [APIKey] {
-        filterKeys(keyRows.pinnedRows.map(\.apiKey))
+    /// Pinned keys (search-filtered at database level).
+    public var pinnedKeys: [Credential] {
+        keyRows.pinnedRows.map(\.credential)
     }
 
-    /// Unpinned keys filtered by search text.
-    public var unpinnedKeys: [APIKey] {
-        filterKeys(keyRows.unpinnedRows.map(\.apiKey))
-    }
-
-    /// Filters keys based on search text.
-    private func filterKeys(_ keys: [APIKey]) -> [APIKey] {
-        if searchText.isEmpty {
-            return keys
-        }
-
-        let lowercased = searchText.lowercased()
-        return keys.filter { key in
-            key.label.lowercased().contains(lowercased) ||
-            key.websiteDomain?.lowercased().contains(lowercased) == true ||
-            key.company?.lowercased().contains(lowercased) == true ||
-            key.tags.contains { $0.lowercased().contains(lowercased) }
-        }
+    /// Unpinned keys (search-filtered at database level).
+    public var unpinnedKeys: [Credential] {
+        keyRows.unpinnedRows.map(\.credential)
     }
 
     private let initialVault: Vault
     public let vaultID: UUID
-    public let apiKeyManager: APIKeyManager
+    public let credentialManager: CredentialManager
     public let clipboardManager: ClipboardManager
     public let vaultManager: VaultManager
 
@@ -123,18 +144,18 @@ public final class VaultDetailsViewModel {
     ///
     /// - Parameters:
     ///   - vault: The vault to display keys from.
-    ///   - apiKeyManager: The API key manager.
+    ///   - credentialManager: The credential manager.
     ///   - clipboardManager: The clipboard manager.
     ///   - vaultManager: The vault manager.
     public init(
         vault: Vault,
-        apiKeyManager: APIKeyManager,
+        credentialManager: CredentialManager,
         clipboardManager: ClipboardManager,
         vaultManager: VaultManager
     ) {
         self.initialVault = vault
         self.vaultID = vault.id
-        self.apiKeyManager = apiKeyManager
+        self.credentialManager = credentialManager
         self.clipboardManager = clipboardManager
         self.vaultManager = vaultManager
 
@@ -151,15 +172,15 @@ public final class VaultDetailsViewModel {
         let currentOrdering = _ordering.wrappedValue
         _keyRows = Fetch(
             wrappedValue: KeyRowsRequest.Value(),
-            KeyRowsRequest(vaultID: vault.id, ordering: currentOrdering),
-            animation: .default
+            KeyRowsRequest(vaultID: vault.id, searchText: "", ordering: currentOrdering),
+            animation: .smooth(duration: 0.35)
         )
     }
 
     // MARK: - Public Helpers
 
     /// Updates the sorting order for keys.
-    public func orderingButtonTapped(_ ordering: KeyOrdering) async {
+    public func orderingButtonTapped(_ ordering: CredentialOrdering) async {
         $ordering.withLock { $0 = ordering }
         updateQuery()
     }
@@ -173,52 +194,86 @@ public final class VaultDetailsViewModel {
         isLoading = false
     }
 
-    /// Updates the key query based on current ordering.
+    /// Updates the key query based on search text and ordering.
     private func updateQuery() {
+        let searchText = self.searchText
         let ordering = self.ordering
 
         searchTask?.cancel()
         searchTask = Task {
+            // Debounce: wait 300ms before executing search
+            try? await Task.sleep(for: .seconds(0.3))
+
+            // If task was cancelled during sleep, exit early
+            guard !Task.isCancelled else { return }
+
             await withErrorReporting {
                 try await $keyRows.load(
-                    KeyRowsRequest(vaultID: vaultID, ordering: ordering),
+                    KeyRowsRequest(vaultID: vaultID, searchText: searchText, ordering: ordering),
                     animation: .default
                 )
             }
         }
     }
 
-    /// Deletes an API key.
+    /// Deletes an credential.
     ///
     /// - Parameter key: The key to delete.
-    public func deleteKey(_ key: APIKey) async throws {
-        try await apiKeyManager.deleteKey(key)
+    public func deleteKey(_ key: Credential) async throws {
+        try await credentialManager.deleteKey(key)
         // @FetchAll automatically updates keys array
     }
 
     /// Copies a key's secret to the clipboard.
     ///
     /// - Parameter key: The key whose secret to copy.
-    public func copySecret(_ key: APIKey) async throws {
-        let secret = try await apiKeyManager.getSecret(for: key)
+    public func copySecret(_ key: Credential) async throws {
+        let secret = try await credentialManager.getSecret(for: key)
         clipboardManager.copy(secret, label: key.label, keyID: key.id)
 
         // Mark key as used
-        try await apiKeyManager.markAsUsed(key)
+        try await credentialManager.markAsUsed(key)
         // @FetchAll automatically updates keys array
     }
 
-    /// Toggles the pinned state of an API key.
+    /// Toggles the pinned state of an credential.
     ///
     /// - Parameter key: The key to toggle.
-    public func togglePin(for key: APIKey) async {
+    public func togglePin(for key: Credential) async {
         await withErrorReporting {
-            try await apiKeyManager.toggleKeyPin(key)
+            try await credentialManager.toggleKeyPin(key)
         }
     }
 
     /// Shows the vault configuration screen.
     public func showVaultConfiguration() {
         vaultForm = Vault.Draft(vault)
+    }
+}
+
+// MARK: - String Extensions
+
+private extension String {
+    /// Wraps each word in quotes for FTS5 phrase matching with prefix support.
+    ///
+    /// This ensures multi-word searches use AND logic (all words must match)
+    /// rather than OR logic (any word matches). The last word gets a wildcard
+    /// suffix for prefix matching.
+    ///
+    /// Examples:
+    /// - "gi" becomes "gi*" (matches "GitHub")
+    /// - "stripe prod" becomes "\"stripe\" prod*" (matches "Stripe Production")
+    func quoted() -> String {
+        let words = split(separator: " ").map(String.init)
+        guard !words.isEmpty else { return self }
+
+        // Add wildcard to last word for prefix matching
+        if words.count == 1 {
+            return "\(words[0])*"
+        } else {
+            let quotedWords = words.dropLast().map { "\"\($0)\"" }
+            let lastWord = "\(words.last!)*"
+            return (quotedWords + [lastWord]).joined(separator: " ")
+        }
     }
 }

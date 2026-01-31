@@ -6,13 +6,13 @@ import Testing
 @testable import TestDrivePersistence
 @testable import TestDriveCore
 
-/// Tests for the APIKeyManager.
-@Suite struct APIKeyManagerTests {
+/// Tests for the CredentialManager.
+@Suite struct CredentialManagerTests {
 
     let encryption: EncryptionService
     let keychain: KeychainService
     let vaultManager: VaultManager
-    let apiKeyManager: APIKeyManager
+    let credentialManager: CredentialManager
 
     init() throws {
         // Set up in-memory database for testing
@@ -26,7 +26,7 @@ import Testing
             encryption: encryption,
             keychain: keychain
         )
-        self.apiKeyManager = APIKeyManager(
+        self.credentialManager = CredentialManager(
             encryption: encryption,
             vaultManager: vaultManager
         )
@@ -41,7 +41,7 @@ import Testing
             colorHex: "#FF0000"
         )
 
-        let apiKey = try await apiKeyManager.createKey(
+        let apiKey = try await credentialManager.createKey(
             label: "GitHub API Key",
             secret: "ghp_1234567890abcdef",
             vaultID: vault.id,
@@ -49,7 +49,7 @@ import Testing
             company: "GitHub",
             environment: .production,
             tags: ["git", "vcs"],
-            notes: "Production API key"
+            notes: "Production credential"
         )
 
         #expect(apiKey.label == "GitHub API Key")
@@ -57,12 +57,12 @@ import Testing
         #expect(apiKey.company == "GitHub")
         #expect(apiKey.environment == .production)
         #expect(apiKey.tags == ["git", "vcs"])
-        #expect(apiKey.notes == "Production API key")
+        #expect(apiKey.notes == "Production credential")
         #expect(apiKey.encryptedSecret.count > 0)
         #expect(apiKey.nonce.count == 12)
 
         // Clean up
-        try await apiKeyManager.deleteKey(apiKey)
+        try await credentialManager.deleteKey(apiKey)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -74,18 +74,18 @@ import Testing
         )
 
         let originalSecret = "sk-test-1234567890abcdef"
-        let apiKey = try await apiKeyManager.createKey(
+        let apiKey = try await credentialManager.createKey(
             label: "Test Key",
             secret: originalSecret,
             vaultID: vault.id
         )
 
-        let decryptedSecret = try await apiKeyManager.getSecret(for: apiKey)
+        let decryptedSecret = try await credentialManager.getSecret(for: apiKey)
 
         #expect(decryptedSecret == originalSecret)
 
         // Clean up
-        try await apiKeyManager.deleteKey(apiKey)
+        try await credentialManager.deleteKey(apiKey)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -98,7 +98,7 @@ import Testing
             colorHex: "#FF0000"
         )
 
-        let apiKey = try await apiKeyManager.createKey(
+        let apiKey = try await credentialManager.createKey(
             label: "Original Label",
             secret: "sk-test-123",
             vaultID: vault.id
@@ -108,16 +108,16 @@ import Testing
         updated.label = "Updated Label"
         updated.notes = "New notes"
 
-        try await apiKeyManager.updateKey(updated)
+        try await credentialManager.updateKey(updated)
 
-        let keys = try await apiKeyManager.fetchKeys(in: vault.id)
+        let keys = try await credentialManager.fetchKeys(in: vault.id)
         let found = keys.first { $0.id == apiKey.id }
 
         #expect(found?.label == "Updated Label")
         #expect(found?.notes == "New notes")
 
         // Clean up
-        try await apiKeyManager.deleteKey(apiKey)
+        try await credentialManager.deleteKey(apiKey)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -130,25 +130,25 @@ import Testing
             colorHex: "#FF0000"
         )
 
-        let key1 = try await apiKeyManager.createKey(
+        let key1 = try await credentialManager.createKey(
             label: "Key 1",
             secret: "secret1",
             vaultID: vault.id
         )
 
-        let key2 = try await apiKeyManager.createKey(
+        let key2 = try await credentialManager.createKey(
             label: "Key 2",
             secret: "secret2",
             vaultID: vault.id
         )
 
-        let keys = try await apiKeyManager.fetchKeys(in: vault.id)
+        let keys = try await credentialManager.fetchKeys(in: vault.id)
 
         #expect(keys.count == 2)
 
         // Clean up
-        try await apiKeyManager.deleteKey(key1)
-        try await apiKeyManager.deleteKey(key2)
+        try await credentialManager.deleteKey(key1)
+        try await credentialManager.deleteKey(key2)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -159,28 +159,28 @@ import Testing
             colorHex: "#FF0000"
         )
 
-        let key1 = try await apiKeyManager.createKey(
+        let key1 = try await credentialManager.createKey(
             label: "GitHub Token",
             secret: "secret1",
             vaultID: vault.id,
             websiteDomain: "github.com"
         )
 
-        let key2 = try await apiKeyManager.createKey(
+        let key2 = try await credentialManager.createKey(
             label: "GitLab Token",
             secret: "secret2",
             vaultID: vault.id,
             websiteDomain: "gitlab.com"
         )
 
-        let results = try await apiKeyManager.searchKeys(query: "github")
+        let results = try await credentialManager.searchKeys(query: "github")
 
         #expect(results.count == 1)
         #expect(results.first?.label == "GitHub Token")
 
         // Clean up
-        try await apiKeyManager.deleteKey(key1)
-        try await apiKeyManager.deleteKey(key2)
+        try await credentialManager.deleteKey(key1)
+        try await credentialManager.deleteKey(key2)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -191,22 +191,22 @@ import Testing
             colorHex: "#FF0000"
         )
 
-        let prodKey = try await apiKeyManager.createKey(
+        let prodKey = try await credentialManager.createKey(
             label: "Production Key",
             secret: "secret1",
             vaultID: vault.id,
             environment: .production
         )
 
-        let devKey = try await apiKeyManager.createKey(
+        let devKey = try await credentialManager.createKey(
             label: "Development Key",
             secret: "secret2",
             vaultID: vault.id,
             environment: .development
         )
 
-        let prodKeys = try await apiKeyManager.fetchKeys(environment: .production, in: vault.id)
-        let devKeys = try await apiKeyManager.fetchKeys(environment: .development, in: vault.id)
+        let prodKeys = try await credentialManager.fetchKeys(environment: .production, in: vault.id)
+        let devKeys = try await credentialManager.fetchKeys(environment: .development, in: vault.id)
 
         #expect(prodKeys.count == 1)
         #expect(devKeys.count == 1)
@@ -214,8 +214,8 @@ import Testing
         #expect(devKeys.first?.label == "Development Key")
 
         // Clean up
-        try await apiKeyManager.deleteKey(prodKey)
-        try await apiKeyManager.deleteKey(devKey)
+        try await credentialManager.deleteKey(prodKey)
+        try await credentialManager.deleteKey(devKey)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -226,28 +226,28 @@ import Testing
             colorHex: "#FF0000"
         )
 
-        let key1 = try await apiKeyManager.createKey(
+        let key1 = try await credentialManager.createKey(
             label: "Key 1",
             secret: "secret1",
             vaultID: vault.id,
             tags: ["api", "production"]
         )
 
-        let key2 = try await apiKeyManager.createKey(
+        let key2 = try await credentialManager.createKey(
             label: "Key 2",
             secret: "secret2",
             vaultID: vault.id,
             tags: ["database", "staging"]
         )
 
-        let apiKeys = try await apiKeyManager.fetchKeys(withTags: ["api"], in: vault.id)
+        let apiKeys = try await credentialManager.fetchKeys(withTags: ["api"], in: vault.id)
 
         #expect(apiKeys.count == 1)
         #expect(apiKeys.first?.label == "Key 1")
 
         // Clean up
-        try await apiKeyManager.deleteKey(key1)
-        try await apiKeyManager.deleteKey(key2)
+        try await credentialManager.deleteKey(key1)
+        try await credentialManager.deleteKey(key2)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -260,25 +260,25 @@ import Testing
             colorHex: "#FF0000"
         )
 
-        let key1 = try await apiKeyManager.createKey(
+        let key1 = try await credentialManager.createKey(
             label: "Key 1",
             secret: "secret1",
             vaultID: vault.id
         )
 
-        let key2 = try await apiKeyManager.createKey(
+        let key2 = try await credentialManager.createKey(
             label: "Key 2",
             secret: "secret2",
             vaultID: vault.id
         )
 
-        let count = try await apiKeyManager.keyCount(in: vault.id)
+        let count = try await credentialManager.keyCount(in: vault.id)
 
         #expect(count == 2)
 
         // Clean up
-        try await apiKeyManager.deleteKey(key1)
-        try await apiKeyManager.deleteKey(key2)
+        try await credentialManager.deleteKey(key1)
+        try await credentialManager.deleteKey(key2)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -291,7 +291,7 @@ import Testing
             colorHex: "#FF0000"
         )
 
-        let apiKey = try await apiKeyManager.createKey(
+        let apiKey = try await credentialManager.createKey(
             label: "Test Key",
             secret: "secret",
             vaultID: vault.id
@@ -299,15 +299,15 @@ import Testing
 
         #expect(apiKey.lastUsedAt == nil)
 
-        try await apiKeyManager.markAsUsed(apiKey)
+        try await credentialManager.markAsUsed(apiKey)
 
-        let keys = try await apiKeyManager.fetchKeys(in: vault.id)
+        let keys = try await credentialManager.fetchKeys(in: vault.id)
         let found = keys.first { $0.id == apiKey.id }
 
         #expect(found?.lastUsedAt != nil)
 
         // Clean up
-        try await apiKeyManager.deleteKey(apiKey)
+        try await credentialManager.deleteKey(apiKey)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -322,20 +322,20 @@ import Testing
 
         let pastDate = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
 
-        let expiredKey = try await apiKeyManager.createKey(
+        let expiredKey = try await credentialManager.createKey(
             label: "Expired Key",
             secret: "secret",
             vaultID: vault.id,
             rotateAt: pastDate
         )
 
-        let rotationKeys = try await apiKeyManager.fetchKeysNeedingRotation()
+        let rotationKeys = try await credentialManager.fetchKeysNeedingRotation()
 
         #expect(rotationKeys.count >= 1)
         #expect(rotationKeys.contains { $0.id == expiredKey.id })
 
         // Clean up
-        try await apiKeyManager.deleteKey(expiredKey)
+        try await credentialManager.deleteKey(expiredKey)
         try await vaultManager.deleteVault(vault)
     }
 
@@ -349,9 +349,9 @@ import Testing
             colorHex: "#007AFF"
         )
 
-        // Create API key
+        // Create credential
         let originalSecret = "sk-prod-9876543210fedcba"
-        let apiKey = try await apiKeyManager.createKey(
+        let apiKey = try await credentialManager.createKey(
             label: "Stripe API Key",
             secret: originalSecret,
             vaultID: vault.id,
@@ -363,7 +363,7 @@ import Testing
         )
 
         // Retrieve and verify secret
-        let decryptedSecret = try await apiKeyManager.getSecret(for: apiKey)
+        let decryptedSecret = try await credentialManager.getSecret(for: apiKey)
         #expect(decryptedSecret == originalSecret)
 
         // Verify metadata
@@ -373,12 +373,12 @@ import Testing
         #expect(apiKey.environment == .production)
 
         // Search for key
-        let searchResults = try await apiKeyManager.searchKeys(query: "stripe")
+        let searchResults = try await credentialManager.searchKeys(query: "stripe")
         #expect(searchResults.count >= 1)
         #expect(searchResults.contains { $0.id == apiKey.id })
 
         // Clean up
-        try await apiKeyManager.deleteKey(apiKey)
+        try await credentialManager.deleteKey(apiKey)
         try await vaultManager.deleteVault(vault)
     }
 }

@@ -75,7 +75,7 @@ struct TestDriveApp: App {
             $0.defaultDatabase = try! appDatabase()
             $0.defaultSyncEngine = try! SyncEngine(
                 for: $0.defaultDatabase,
-                tables: APIKey.self, Vault.self, VaultParticipant.self, WrappedVaultKey.self,
+                tables: Credential.self, Vault.self, VaultParticipant.self, WrappedVaultKey.self,
                 containerIdentifier: "iCloud.com.rspoon3.TestDrive",
                 delegate: syncEngineDelegate
             )

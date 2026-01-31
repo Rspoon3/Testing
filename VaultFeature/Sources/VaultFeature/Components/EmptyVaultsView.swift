@@ -9,7 +9,7 @@ struct EmptyVaultsView: View {
         ContentUnavailableView {
             Label("No Vaults", systemImage: "lock.slash")
         } description: {
-            Text("Create a vault to start storing API keys securely")
+            Text("Create a vault to start storing credentials securely")
         }
     }
 }

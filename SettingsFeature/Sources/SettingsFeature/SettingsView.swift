@@ -42,7 +42,7 @@ public struct SettingsView: View {
                     }
                 }
             } message: {
-                Text("This will permanently delete all vaults and API keys. This action cannot be undone.")
+                Text("This will permanently delete all vaults and credentials. This action cannot be undone.")
             }
             .sheet(isPresented: $showingShareSheet) {
                 if let url = viewModel.exportURL {
@@ -231,13 +231,13 @@ struct ShareSheet: UIViewControllerRepresentable {
     let key = KeychainService()
     let vm = VaultManager(encryption: enc, keychain: key)
     let clip = ClipboardManager()
-    let akm = APIKeyManager(encryption: enc, vaultManager: vm)
+    let akm = CredentialManager(encryption: enc, vaultManager: vm)
 
     return SettingsView(
         viewModel: SettingsViewModel(
             vaultManager: vm,
             clipboardManager: clip,
-            apiKeyManager: akm
+            credentialManager: akm
         )
     )
 }

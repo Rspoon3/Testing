@@ -173,7 +173,7 @@ public final class VaultManager {
     /// - Parameter vault: The vault to delete.
     /// - Throws: Database or keychain error if deletion fails.
     public func deleteVault(_ vault: Vault) async throws {
-        // Delete from database (cascade deletes API keys)
+        // Delete from database (cascade deletes credentials)
         try await database.write { db in
             try Vault.delete(vault).execute(db)
         }

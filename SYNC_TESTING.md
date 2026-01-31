@@ -207,7 +207,7 @@ This document outlines how to test iCloud sync functionality for the TestDrive A
 2. Select "TestDrive" app
 3. Navigate to CloudKit Dashboard
 4. View:
-   - Records (Vault, APIKey, VaultParticipant, WrappedVaultKey)
+   - Records (Vault, Credential, VaultParticipant, WrappedVaultKey)
    - Sync activity
    - Error logs
 
@@ -217,7 +217,7 @@ This document outlines how to test iCloud sync functionality for the TestDrive A
 recordType = "Vault"
 
 # Find keys in specific vault
-recordType = "APIKey" AND vaultID = "..."
+recordType = "Credential" AND vaultID = "..."
 
 # Find shared vaults
 recordType = "Vault" AND isShared = true

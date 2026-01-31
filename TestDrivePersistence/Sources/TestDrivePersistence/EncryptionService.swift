@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 
-/// Provides cryptographic operations for vault and API key encryption.
+/// Provides cryptographic operations for vault and credential encryption.
 ///
 /// This service handles all cryptographic primitives needed for end-to-end
 /// encrypted vault sharing:

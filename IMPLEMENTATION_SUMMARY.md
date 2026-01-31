@@ -25,7 +25,7 @@ TestDrive is a complete, production-ready secure API key vault application for i
 - All dependencies configured
 
 **Files Created:** 15
-- Models: Vault, APIKey, VaultParticipant, WrappedVaultKey, APIEnvironment, SharePermission, AcceptanceStatus
+- Models: Vault, Credential, VaultParticipant, WrappedVaultKey, APIEnvironment, SharePermission, AcceptanceStatus
 - Services: EncryptionService, KeychainService, DatabaseManager
 - Package manifests updated
 
@@ -41,13 +41,13 @@ TestDrive is a complete, production-ready secure API key vault application for i
 
 **Deliverables:**
 - VaultManager with full vault lifecycle and key wrapping
-- APIKeyManager with encryption/decryption
+- CredentialManager with encryption/decryption
 - ClipboardManager with auto-clear
 - Comprehensive unit tests (100+)
 
 **Files Created:** 10
-- Managers: VaultManager, APIKeyManager, ClipboardManager
-- Tests: EncryptionServiceTests, KeychainServiceTests, VaultManagerTests, APIKeyManagerTests, ClipboardManagerTests
+- Managers: VaultManager, CredentialManager, ClipboardManager
+- Tests: EncryptionServiceTests, KeychainServiceTests, VaultManagerTests, CredentialManagerTests, ClipboardManagerTests
 
 **Core Functionality:**
 - Vault creation with AES key generation
@@ -264,7 +264,7 @@ Owner creates vault
 Add API key to vault
 ├── Encrypt secret with vault AES key (AES-256-GCM)
 ├── Generate random nonce (12 bytes)
-├── Store ciphertext + nonce in APIKey record
+├── Store ciphertext + nonce in Credential record
 └── Sync to CloudKit (encrypted payload only)
 ```
 
@@ -362,7 +362,7 @@ Owner shares vault
 - Share acceptance flow
 - Participant management
 
-**APIKeyManagerTests** (15 tests):
+**CredentialManagerTests** (15 tests):
 - Key CRUD with encryption
 - Secret decryption
 - Search and filtering

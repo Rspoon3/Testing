@@ -75,7 +75,7 @@ SQLiteData automatically creates the schema, but here's what it creates:
 - isShared: Int64
 - ownerUserID: String (optional)
 
-**APIKey**
+**Credential**
 - id: String (indexed)
 - label: String
 - websiteDomain: String (optional)
@@ -110,8 +110,8 @@ SQLiteData automatically creates the schema, but here's what it creates:
 ### Indexes
 
 - Vault.id (queryable)
-- APIKey.id (queryable)
-- APIKey.vaultID (queryable)
+- Credential.id (queryable)
+- Credential.vaultID (queryable)
 - VaultParticipant.vaultID (queryable)
 - WrappedVaultKey.vaultID (queryable)
 
