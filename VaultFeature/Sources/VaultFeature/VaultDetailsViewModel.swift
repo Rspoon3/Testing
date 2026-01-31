@@ -41,41 +41,49 @@ public final class VaultDetailsViewModel {
         func fetch(_ db: Database) throws -> Value {
             // Helper to build query with pinned filter
             func fetchRows(isPinned: Bool) throws -> [APIKeyRow] {
-                // Start with vault filter
-                var query = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
-
-                // Add pinned filter (preference.isPinned is optional, defaults to false)
-                if isPinned {
-                    query = query.where { $0.preference.isPinned ?? false }
-                } else {
-                    query = query.where { !($0.preference.isPinned ?? false) }
-                }
+                // Build query: vault + pinned filter
+                let baseQuery = APIKeyRow
+                    .where { $0.apiKey.vaultID.eq(vaultID) }
+                    .where { isPinned ? ($0.preference.isPinned ?? false) : !($0.preference.isPinned ?? false) }
 
                 // Apply FTS5 search filter if search text provided
                 if !searchText.isEmpty {
-                    query = query
+                    return try baseQuery
                         .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
                         .where { _, apiKeyText in
                             apiKeyText.match(searchText)
                         }
                         .select { row, _ in row }
-                }
-
-                // Apply ordering and fetch
-                return try query
-                    .order {
-                        switch ordering {
-                        case .name:
-                            $0.apiKey.label
-                        case .dateCreated:
-                            $0.apiKey.createdAt.desc()
-                        case .lastUsed:
-                            $0.apiKey.lastUsedAt.desc(nulls: .last)
-                        case .environment:
-                            $0.apiKey.environment
+                        .order {
+                            switch ordering {
+                            case .name:
+                                $0.apiKey.label
+                            case .dateCreated:
+                                $0.apiKey.createdAt.desc()
+                            case .lastUsed:
+                                $0.apiKey.lastUsedAt.desc(nulls: .last)
+                            case .environment:
+                                $0.apiKey.environment
+                            }
                         }
-                    }
-                    .fetchAll(db)
+                        .fetchAll(db)
+                } else {
+                    // No search - just apply ordering
+                    return try baseQuery
+                        .order {
+                            switch ordering {
+                            case .name:
+                                $0.apiKey.label
+                            case .dateCreated:
+                                $0.apiKey.createdAt.desc()
+                            case .lastUsed:
+                                $0.apiKey.lastUsedAt.desc(nulls: .last)
+                            case .environment:
+                                $0.apiKey.environment
+                            }
+                        }
+                        .fetchAll(db)
+                }
             }
 
             // Execute both queries in single transaction
