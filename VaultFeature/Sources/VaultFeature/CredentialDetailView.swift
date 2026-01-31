@@ -166,10 +166,16 @@ public struct CredentialDetailView: View {
                     .padding(.vertical, 4)
                 }
 
-                // TODO: Add ManageSecretsView when created
-                // NavigationLink("Manage Secrets") {
-                //     ManageSecretsView(...)
-                // }
+                NavigationLink {
+                    ManageSecretsView(
+                        viewModel: ManageSecretsViewModel(
+                            credential: viewModel.key,
+                            credentialManager: viewModel.credentialManager
+                        )
+                    )
+                } label: {
+                    Label("Manage Secrets", systemImage: "gearshape")
+                }
             }
         } header: {
             Text("Secrets")
