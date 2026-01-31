@@ -45,10 +45,10 @@ public final class VaultDetailsViewModel {
                 var query = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
 
                 // Add pinned filter (preference.isPinned is optional, defaults to false)
-                query = query.where { row in
-                    isPinned
-                        ? (row.preference.isPinned ?? false)
-                        : !(row.preference.isPinned ?? false)
+                if isPinned {
+                    query = query.where { $0.preference.isPinned ?? false }
+                } else {
+                    query = query.where { !($0.preference.isPinned ?? false) }
                 }
 
                 // Apply FTS5 search filter if search text provided
