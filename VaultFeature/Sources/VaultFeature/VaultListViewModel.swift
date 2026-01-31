@@ -86,14 +86,6 @@ public final class VaultListViewModel {
 
     @ObservationIgnored @Shared var ordering: VaultOrdering
 
-    public var pinnedVaults: [Vault] {
-        vaultRows.pinnedRows.map(\.vault)
-    }
-
-    public var unpinnedVaults: [Vault] {
-        vaultRows.unpinnedRows.map(\.vault)
-    }
-
     public var vaultForm: Vault.Draft?
     public var searchText = "" {
         didSet {

@@ -23,7 +23,7 @@ public struct VaultListView: View {
     public var body: some View {
         NavigationStack {
             List {
-                if !viewModel.pinnedVaults.isEmpty {
+                if !viewModel.vaultRows.pinnedRows.isEmpty {
                     Section {
                         ForEach(viewModel.vaultRows.pinnedRows) { row in
                             NavigationLink {
