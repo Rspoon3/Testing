@@ -57,7 +57,7 @@ public func appDatabase() throws -> any DatabaseWriter {
     // Run migrations
     var migrator = DatabaseMigrator()
 
-    migrator.registerMigration("v1 - Create tables") { db in
+    migrator.registerMigration("v1 - Create tables and FTS5") { db in
         // Create vaults table
         try db.create(table: "vaults") { t in
             t.column("id", .blob).notNull().primaryKey()
@@ -140,9 +140,7 @@ public func appDatabase() throws -> any DatabaseWriter {
             t.foreignKey(["apiKeyID"], references: "apiKeys", columns: ["id"], onDelete: .cascade)
             t.uniqueKey(["apiKeyID"]) // One preferences record per API key
         }
-    }
 
-    migrator.registerMigration("v2 - Create FTS5 search index") { db in
         // Create FTS5 virtual table for full-text search
         try #sql(
             """

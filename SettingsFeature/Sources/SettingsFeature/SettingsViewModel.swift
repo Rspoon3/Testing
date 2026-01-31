@@ -233,20 +233,58 @@ public final class SettingsViewModel {
                 let companies = ["GitHub", "Stripe", "Amazon", "Google", "Salesforce"]
                 let environments: [APIEnvironment] = [.production, .development, .staging, .testing]
 
+                let notesOptions = [
+                    "Used for CI/CD deployments and automated workflows. Rate limit: 5000 req/hour",
+                    "Payment processing API key with webhook endpoints configured. Expires: Q2 2026",
+                    "OAuth credentials for third-party integration. Restricted to US-East-1 region",
+                    "Service account key for analytics dashboard. Read-only access to production data",
+                    "API token for monitoring and alerting services. Auto-generated on 2024-12-15",
+                    "Webhook secret for real-time event processing. Rotate every 90 days",
+                    "Client credentials for mobile app authentication. Scopes: read, write, admin",
+                    "Legacy API key - migrate to OAuth2 before end of quarter. Deprecated",
+                    "Emergency access key - only use for production incidents. Notify team lead",
+                    "Integration key for Slack notifications and team alerts. Channel: #engineering"
+                ]
+
+                let tagOptions = [
+                    ["ci-cd", "automation"],
+                    ["payments", "billing", "webhook"],
+                    ["oauth", "auth", "integration"],
+                    ["analytics", "readonly"],
+                    ["monitoring", "alerts"],
+                    ["webhook", "events", "realtime"],
+                    ["mobile", "ios", "android"],
+                    ["legacy", "deprecated", "migration"],
+                    ["emergency", "oncall", "critical"],
+                    ["slack", "notifications", "team"],
+                    ["api", "rest"],
+                    ["database", "storage"],
+                    ["cdn", "media"],
+                    ["email", "sendgrid"],
+                    ["sms", "twilio"]
+                ]
+
                 let domainIndex = i % domains.count
                 let envIndex = i % environments.count
+                let notesIndex = i % notesOptions.count
+                let tagsIndex = i % tagOptions.count
 
                 let secret = "test_secret_\(UUID().uuidString.prefix(8))"
+                let company = companies[domainIndex]
+                let environment = environments[envIndex]
+
+                // Create descriptive label with company and environment
+                let label = "\(company) \(environment.rawValue.capitalized)"
 
                 try await apiKeyManager.createKey(
-                    label: "API Key \(i)",
+                    label: label,
                     secret: secret,
                     vaultID: vault.id,
                     websiteDomain: domains[domainIndex],
-                    company: companies[domainIndex],
-                    environment: environments[envIndex],
-                    tags: ["test", "debug"],
-                    notes: "Test key \(i) of \(testVault.keyCount)"
+                    company: company,
+                    environment: environment,
+                    tags: tagOptions[tagsIndex],
+                    notes: notesOptions[notesIndex]
                 )
             }
         }

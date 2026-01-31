@@ -41,41 +41,52 @@ public final class VaultDetailsViewModel {
         func fetch(_ db: Database) throws -> Value {
             // Helper to build complete query for pinned or unpinned rows
             func fetchRows(isPinned: Bool) throws -> [APIKeyRow] {
-                // Step 1: Apply vault filter
-                let vaultRows = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
-
-                // Step 2: Apply pinned filter
-                let filteredRows = if isPinned {
-                    vaultRows.where { $0.isPinned }
-                } else {
-                    vaultRows.where { !$0.isPinned }
+                // Step 1: Start from base APIKey table and filter by vault
+                let baseQuery = APIKey.where { apiKey in
+                    apiKey.vaultID.eq(vaultID)
                 }
 
-                // Step 3: Join with FTS5 and apply search filter
-                let searchQuery = filteredRows
-                    .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
-                    .where { _, apiKeyText in
+                // Step 2: Join with APIKeyPreference to get pinned state
+                let withPreference = baseQuery
+                    .leftJoin(APIKeyPreference.all) { $0.id.eq($1.apiKeyID) }
+
+                // Step 3: Join with FTS5 for search
+                let joined = withPreference
+                    .join(APIKeyText.all) { $0.rowid.eq($2.rowid) }
+
+                // Step 4: Apply filters (pinned state and search)
+                let query = joined
+                    .where { apiKey, preference, apiKeyText in
+                        // Filter by pinned state
+                        let pinnedMatch = (preference.isPinned ?? false).eq(isPinned)
+
+                        // Filter by search text if provided
                         if !searchText.isEmpty {
-                            apiKeyText.match(searchText)
+                            pinnedMatch && apiKeyText.match(searchText.quoted())
+                        } else {
+                            pinnedMatch
                         }
                     }
-                    .select { row, _ in row }
-
-                // Step 4: Apply ordering and fetch
-                return try searchQuery
-                    .order {
+                    .order { apiKey, _, apiKeyText in
                         switch ordering {
                         case .name:
-                            $0.apiKey.label
+                            apiKey.label
                         case .dateCreated:
-                            $0.apiKey.createdAt.desc()
+                            apiKey.createdAt.desc()
                         case .lastUsed:
-                            $0.apiKey.lastUsedAt.desc(nulls: .last)
+                            apiKey.lastUsedAt.desc(nulls: .last)
                         case .environment:
-                            $0.apiKey.environment
+                            apiKey.environment
                         }
                     }
-                    .fetchAll(db)
+                    .select { apiKey, preference, _ in
+                        APIKeyRow.Columns(
+                            apiKey: apiKey,
+                            isPinned: preference.isPinned ?? false
+                        )
+                    }
+
+                return try query.fetchAll(db)
             }
 
             // Execute both queries in single transaction
@@ -231,5 +242,21 @@ public final class VaultDetailsViewModel {
     /// Shows the vault configuration screen.
     public func showVaultConfiguration() {
         vaultForm = Vault.Draft(vault)
+    }
+}
+
+// MARK: - String Extensions
+
+private extension String {
+    /// Wraps each word in quotes for exact FTS5 phrase matching.
+    ///
+    /// This ensures multi-word searches use AND logic (all words must match)
+    /// rather than OR logic (any word matches).
+    ///
+    /// Example: "stripe production" becomes "\"stripe\" \"production\""
+    func quoted() -> String {
+        split(separator: " ")
+            .map { "\"\($0)\"" }
+            .joined(separator: " ")
     }
 }
