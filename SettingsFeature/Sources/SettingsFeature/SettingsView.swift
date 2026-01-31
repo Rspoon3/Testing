@@ -158,7 +158,7 @@ public struct SettingsView: View {
         } header: {
             Text("Debug")
         } footer: {
-            Text("Creates 5 test API keys with 1-20 keys each: GitHub (1), AWS (5), Stripe (10), Firebase (15), Heroku (20)")
+            Text("Creates 5 test vaults with different key counts: Work APIs (1 key), Development (5 keys), Production (10 keys), Testing (15 keys), Personal (20 keys)")
         }
     }
     #endif

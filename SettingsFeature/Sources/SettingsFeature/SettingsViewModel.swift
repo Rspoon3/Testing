@@ -210,44 +210,45 @@ public final class SettingsViewModel {
     #if DEBUG
     /// Populates database with test data for debugging.
     public func populateTestData() async throws {
-        // Create a test vault if none exists
-        let vaults = try await vaultManager.fetchAllVaults()
-        let vault: Vault
-
-        if let existingVault = vaults.first {
-            vault = existingVault
-        } else {
-            // Create new vault
-            vault = try await vaultManager.createVault(
-                name: "Test Vault",
-                iconName: "wrench.and.screwdriver.fill",
-                colorHex: "#FF9500"
-            )
-        }
-
-        // Test data for 5 keys with various properties
-        let testKeys: [(label: String, domain: String, company: String, environment: APIEnvironment, keyCount: Int)] = [
-            ("GitHub API", "github.com", "GitHub", .production, 1),
-            ("AWS Keys", "aws.amazon.com", "Amazon", .production, 5),
-            ("Stripe Test", "stripe.com", "Stripe", .development, 10),
-            ("Firebase", "firebase.google.com", "Google", .staging, 15),
-            ("Heroku", "heroku.com", "Salesforce", .production, 20)
+        // Test vaults with different numbers of keys
+        let testVaults: [(name: String, icon: String, color: String, keyCount: Int)] = [
+            ("Work APIs", "briefcase.fill", "#007AFF", 1),
+            ("Development", "hammer.fill", "#34C759", 5),
+            ("Production", "server.rack", "#FF3B30", 10),
+            ("Testing", "flask.fill", "#FF9500", 15),
+            ("Personal", "person.fill", "#AF52DE", 20)
         ]
 
-        for testKey in testKeys {
-            // Create the key with test secret
-            let secret = "test_\(testKey.label.replacingOccurrences(of: " ", with: "_"))_secret_\(UUID().uuidString.prefix(8))"
-
-            try await apiKeyManager.createKey(
-                label: "\(testKey.label) (\(testKey.keyCount) keys)",
-                secret: secret,
-                vaultID: vault.id,
-                websiteDomain: testKey.domain,
-                company: testKey.company,
-                environment: testKey.environment,
-                tags: ["test", "debug"],
-                notes: "Test key with \(testKey.keyCount) refilled keys"
+        for testVault in testVaults {
+            // Create vault
+            let vault = try await vaultManager.createVault(
+                name: testVault.name,
+                iconName: testVault.icon,
+                colorHex: testVault.color
             )
+
+            // Create keys for this vault
+            for i in 1...testVault.keyCount {
+                let domains = ["github.com", "stripe.com", "aws.amazon.com", "firebase.google.com", "heroku.com"]
+                let companies = ["GitHub", "Stripe", "Amazon", "Google", "Salesforce"]
+                let environments: [APIEnvironment] = [.production, .development, .staging, .testing]
+
+                let domainIndex = i % domains.count
+                let envIndex = i % environments.count
+
+                let secret = "test_secret_\(UUID().uuidString.prefix(8))"
+
+                try await apiKeyManager.createKey(
+                    label: "API Key \(i)",
+                    secret: secret,
+                    vaultID: vault.id,
+                    websiteDomain: domains[domainIndex],
+                    company: companies[domainIndex],
+                    environment: environments[envIndex],
+                    tags: ["test", "debug"],
+                    notes: "Test key \(i) of \(testVault.keyCount)"
+                )
+            }
         }
     }
     #endif
