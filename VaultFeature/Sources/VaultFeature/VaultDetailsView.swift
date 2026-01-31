@@ -109,6 +109,7 @@ public struct VaultDetailsView: View {
                         .foregroundStyle(.primary)
                         .textCase(nil)
                 }
+                .animation(.default, value: viewModel.pinnedKeys.map(\.id))
             }
 
             Section {
@@ -121,6 +122,7 @@ public struct VaultDetailsView: View {
                     .foregroundStyle(.primary)
                     .textCase(nil)
             }
+            .animation(.default, value: viewModel.unpinnedKeys.map(\.id))
         }
     }
 

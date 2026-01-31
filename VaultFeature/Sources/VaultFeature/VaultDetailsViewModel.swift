@@ -204,7 +204,7 @@ public final class VaultDetailsViewModel {
             await withErrorReporting {
                 try await $keyRows.load(
                     KeyRowsRequest(vaultID: vaultID, searchText: searchText, ordering: ordering),
-                    animation: .smooth(duration: 0.35)
+                    animation: .default
                 )
             }
         }
