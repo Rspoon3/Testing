@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import TestDriveCore
 import TestDrivePersistence
 import Dependencies
@@ -35,8 +36,7 @@ public final class CredentialDetailViewModel {
     // MARK: - Dependencies
 
     public let credentialManager: CredentialManager
-    @Dependency(\.pasteboard) private var pasteboard
-    @Dependency(\.haptics) private var haptics
+    private let haptics: HapticFeedbackManager
 
     // MARK: - Initializer
 
@@ -45,9 +45,15 @@ public final class CredentialDetailViewModel {
     /// - Parameters:
     ///   - key: The credential to display.
     ///   - credentialManager: The credential manager for loading secrets.
-    public init(key: Credential, credentialManager: CredentialManager) {
+    ///   - haptics: The haptic feedback manager.
+    public init(
+        key: Credential,
+        credentialManager: CredentialManager,
+        haptics: HapticFeedbackManager = HapticFeedbackManager()
+    ) {
         self.key = key
         self.credentialManager = credentialManager
+        self.haptics = haptics
     }
 
     // MARK: - Public Methods
@@ -58,12 +64,7 @@ public final class CredentialDetailViewModel {
         isLoading = true
         defer { isLoading = false }
 
-        secrets = try await credentialManager.database.read { db in
-            try CredentialSecret
-                .where { $0.credentialID.eq(key.id) }
-                .order(by: \.sortOrder)
-                .fetchAll(db)
-        }
+        secrets = try await credentialManager.fetchSecrets(for: key)
     }
 
     /// Decrypts and caches a specific secret value (lazy loading).
@@ -105,7 +106,7 @@ public final class CredentialDetailViewModel {
         guard let value = decryptedSecrets[secret.id] else { return }
 
         // Copy to clipboard
-        pasteboard.copy(value)
+        UIPasteboard.general.string = value
 
         // Mark secret as used
         try? await credentialManager.markSecretAsUsed(secret)
