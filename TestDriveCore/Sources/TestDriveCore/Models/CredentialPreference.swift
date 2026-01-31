@@ -12,7 +12,7 @@ public struct CredentialPreference: Identifiable, Sendable, Equatable {
     public let id: UUID
 
     /// The credential these preferences apply to.
-    public var apiKeyID: UUID
+    public var credentialID: UUID
 
     /// Indicates if this credential is pinned to the top of the list.
     public var isPinned: Bool
@@ -23,15 +23,15 @@ public struct CredentialPreference: Identifiable, Sendable, Equatable {
     ///
     /// - Parameters:
     ///   - id: Unique identifier. Defaults to a new UUID.
-    ///   - apiKeyID: The credential these preferences apply to.
+    ///   - credentialID: The credential these preferences apply to.
     ///   - isPinned: Whether the credential is pinned.
     public init(
         id: UUID = UUID(),
-        apiKeyID: UUID,
+        credentialID: UUID,
         isPinned: Bool = false
     ) {
         self.id = id
-        self.apiKeyID = apiKeyID
+        self.credentialID = credentialID
         self.isPinned = isPinned
     }
 }

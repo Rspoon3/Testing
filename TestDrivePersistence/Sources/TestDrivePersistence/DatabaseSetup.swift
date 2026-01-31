@@ -42,7 +42,7 @@ public func appDatabase() throws -> any DatabaseWriter {
                 .leftJoin(CredentialPreference.all) { $0.id.eq($1.credentialID) }
                 .select {
                     CredentialRow.Columns(
-                        apiKey: $0,
+                        credential: $0,
                         isPinned: $1.isPinned ?? false
                     )
                 }

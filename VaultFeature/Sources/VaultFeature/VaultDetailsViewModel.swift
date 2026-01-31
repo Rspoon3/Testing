@@ -48,7 +48,7 @@ public final class VaultDetailsViewModel {
 
                 // Step 2: Join with CredentialPreference to get pinned state
                 let withPreference = baseQuery
-                    .leftJoin(CredentialPreference.all) { $0.id.eq($1.apiKeyID) }
+                    .leftJoin(CredentialPreference.all) { $0.id.eq($1.credentialID) }
 
                 // Step 3: Join with FTS5 for search
                 let joined = withPreference
@@ -124,12 +124,12 @@ public final class VaultDetailsViewModel {
 
     /// Pinned keys (search-filtered at database level).
     public var pinnedKeys: [Credential] {
-        keyRows.pinnedRows.map(\.apiKey)
+        keyRows.pinnedRows.map(\.credential)
     }
 
     /// Unpinned keys (search-filtered at database level).
     public var unpinnedKeys: [Credential] {
-        keyRows.unpinnedRows.map(\.apiKey)
+        keyRows.unpinnedRows.map(\.credential)
     }
 
     private let initialVault: Vault
