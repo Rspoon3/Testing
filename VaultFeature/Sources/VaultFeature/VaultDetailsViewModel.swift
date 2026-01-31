@@ -39,20 +39,18 @@ public final class VaultDetailsViewModel {
         let ordering: KeyOrdering
 
         func fetch(_ db: Database) throws -> Value {
-            // Build base query with vault filter and FTS5 join
-            let baseQuery = APIKeyRow
-                .where { $0.apiKey.vaultID.eq(vaultID) }
-                .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
-                .where { _, apiKeyText in
-                    if !searchText.isEmpty {
-                        apiKeyText.match(searchText)
+            // Helper to build complete query for pinned or unpinned rows
+            func fetchRows(isPinned: Bool) throws -> [APIKeyRow] {
+                try APIKeyRow
+                    .where { $0.apiKey.vaultID.eq(vaultID) }
+                    .where { isPinned ? $0.isPinned : !$0.isPinned }
+                    .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
+                    .where { _, apiKeyText in
+                        if !searchText.isEmpty {
+                            apiKeyText.match(searchText)
+                        }
                     }
-                }
-                .select { row, _ in row }
-
-            // Helper to apply ordering and fetch
-            func fetchWithOrdering(_ query: Where<APIKeyRow>) throws -> [APIKeyRow] {
-                try query
+                    .select { row, _ in row }
                     .order {
                         switch ordering {
                         case .name:
@@ -70,8 +68,8 @@ public final class VaultDetailsViewModel {
 
             // Execute both queries in single transaction
             return try Value(
-                pinnedRows: fetchWithOrdering(baseQuery.where(\.isPinned)),
-                unpinnedRows: fetchWithOrdering(baseQuery.where { !$0.isPinned })
+                pinnedRows: fetchRows(isPinned: true),
+                unpinnedRows: fetchRows(isPinned: false)
             )
         }
     }
