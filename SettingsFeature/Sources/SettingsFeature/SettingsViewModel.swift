@@ -218,7 +218,11 @@ public final class SettingsViewModel {
             vault = existingVault
         } else {
             // Create new vault
-            vault = try await vaultManager.createVault(name: "Test Vault")
+            vault = try await vaultManager.createVault(
+                name: "Test Vault",
+                iconName: "wrench.and.screwdriver.fill",
+                colorHex: "#FF9500"
+            )
         }
 
         // Test data for 5 keys with various properties
