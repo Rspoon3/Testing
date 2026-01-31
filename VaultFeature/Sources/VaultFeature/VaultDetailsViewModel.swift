@@ -39,18 +39,16 @@ public final class VaultDetailsViewModel {
         let ordering: KeyOrdering
 
         func fetch(_ db: Database) throws -> Value {
-            // Build base query for this vault
-            var baseQuery = APIKeyRow.where { $0.apiKey.vaultID.eq(vaultID) }
-
-            // Apply FTS5 search filter if search text provided
-            if !searchText.isEmpty {
-                baseQuery = baseQuery
-                    .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
-                    .where { _, apiKeyText in
+            // Build base query with vault filter and FTS5 join
+            let baseQuery = APIKeyRow
+                .where { $0.apiKey.vaultID.eq(vaultID) }
+                .join(APIKeyText.all) { $0.apiKey.rowid.eq($1.rowid) }
+                .where { _, apiKeyText in
+                    if !searchText.isEmpty {
                         apiKeyText.match(searchText)
                     }
-                    .select { row, _ in row }
-            }
+                }
+                .select { row, _ in row }
 
             // Helper to apply ordering and fetch
             func fetchWithOrdering(_ query: Where<APIKeyRow>) throws -> [APIKeyRow] {
