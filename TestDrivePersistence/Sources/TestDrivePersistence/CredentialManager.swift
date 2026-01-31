@@ -513,9 +513,11 @@ public final class CredentialManager {
     /// - Throws: Database error if fetch fails.
     public func fetchCredentialWithSecrets(_ credentialID: UUID) async throws -> CredentialWithSecrets? {
         try await database.read { db in
-            guard let credential = try Credential
+            let maybeCredential = try Credential
                 .where { $0.id.eq(credentialID) }
-                .fetchOne(db) else {
+                .fetchOne(db)
+
+            guard let credential = maybeCredential else {
                 return nil
             }
 
