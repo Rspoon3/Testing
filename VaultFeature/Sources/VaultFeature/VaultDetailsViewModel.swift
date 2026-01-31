@@ -248,15 +248,26 @@ public final class VaultDetailsViewModel {
 // MARK: - String Extensions
 
 private extension String {
-    /// Wraps each word in quotes for exact FTS5 phrase matching.
+    /// Wraps each word in quotes for FTS5 phrase matching with prefix support.
     ///
     /// This ensures multi-word searches use AND logic (all words must match)
-    /// rather than OR logic (any word matches).
+    /// rather than OR logic (any word matches). The last word gets a wildcard
+    /// suffix for prefix matching.
     ///
-    /// Example: "stripe production" becomes "\"stripe\" \"production\""
+    /// Examples:
+    /// - "gi" becomes "gi*" (matches "GitHub")
+    /// - "stripe prod" becomes "\"stripe\" prod*" (matches "Stripe Production")
     func quoted() -> String {
-        split(separator: " ")
-            .map { "\"\($0)\"" }
-            .joined(separator: " ")
+        let words = split(separator: " ").map(String.init)
+        guard !words.isEmpty else { return self }
+
+        // Add wildcard to last word for prefix matching
+        if words.count == 1 {
+            return "\(words[0])*"
+        } else {
+            let quotedWords = words.dropLast().map { "\"\($0)\"" }
+            let lastWord = "\(words.last!)*"
+            return (quotedWords + [lastWord]).joined(separator: " ")
+        }
     }
 }

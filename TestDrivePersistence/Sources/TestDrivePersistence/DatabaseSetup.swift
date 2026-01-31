@@ -142,6 +142,7 @@ public func appDatabase() throws -> any DatabaseWriter {
         }
 
         // Create FTS5 virtual table for full-text search
+        // Using porter tokenizer for better prefix matching (allows "Gi" to match "GitHub")
         try #sql(
             """
             CREATE VIRTUAL TABLE "apiKeyTexts" USING fts5(
@@ -149,7 +150,7 @@ public func appDatabase() throws -> any DatabaseWriter {
               "websiteDomain",
               "company",
               "notes",
-              tokenize='trigram'
+              tokenize='porter unicode61'
             )
             """
         )
