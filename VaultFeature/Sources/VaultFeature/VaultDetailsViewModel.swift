@@ -173,7 +173,7 @@ public final class VaultDetailsViewModel {
         _keyRows = Fetch(
             wrappedValue: KeyRowsRequest.Value(),
             KeyRowsRequest(vaultID: vault.id, searchText: "", ordering: currentOrdering),
-            animation: .default
+            animation: .smooth(duration: 0.35)
         )
     }
 
@@ -204,7 +204,7 @@ public final class VaultDetailsViewModel {
             await withErrorReporting {
                 try await $keyRows.load(
                     KeyRowsRequest(vaultID: vaultID, searchText: searchText, ordering: ordering),
-                    animation: .default
+                    animation: .smooth(duration: 0.35)
                 )
             }
         }
