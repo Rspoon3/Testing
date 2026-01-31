@@ -79,24 +79,23 @@ public final class CredentialManager {
         )
 
         // Encrypt and create secret records
-        var credentialSecrets: [CredentialSecret] = []
-        for (index, secretPair) in secrets.enumerated() {
+        let credentialSecrets: [CredentialSecret] = try secrets.enumerated().map { index, secretPair in
             let (ciphertext, nonce) = try encryption.encryptSecret(secretPair.value, with: vaultKey)
 
-            let secret = CredentialSecret(
+            return CredentialSecret(
                 credentialID: credential.id,
                 secretLabel: secretPair.label,
                 encryptedSecret: ciphertext,
                 nonce: nonce,
                 sortOrder: index
             )
-            credentialSecrets.append(secret)
         }
 
         // Save to database
+        let secretsToInsert = credentialSecrets
         try await database.write { db in
             try Credential.insert { credential }.execute(db)
-            for secret in credentialSecrets {
+            for secret in secretsToInsert {
                 try CredentialSecret.insert { secret }.execute(db)
             }
         }
@@ -189,10 +188,10 @@ public final class CredentialManager {
 
         // Get next sort order
         let maxSortOrder = try await database.read { db in
-            try CredentialSecret
+            let secrets = try CredentialSecret
                 .where { $0.credentialID.eq(credential.id) }
-                .select { max($0.sortOrder) }
-                .fetchOne(db) ?? -1
+                .fetchAll(db)
+            return secrets.map(\.sortOrder).max() ?? -1
         }
 
         let secret = CredentialSecret(
@@ -272,9 +271,10 @@ public final class CredentialManager {
             secret.status = .active
         }
 
+        let updatedSecret = secret
         try await database.write { db in
             try CredentialSecretHistory.insert { historyEntry }.execute(db)
-            try CredentialSecret.update(secret).execute(db)
+            try CredentialSecret.update(updatedSecret).execute(db)
         }
     }
 
@@ -312,9 +312,10 @@ public final class CredentialManager {
     public func markSecretAsUsed(_ secret: CredentialSecret) async throws {
         var updated = secret
         updated.lastUsedAt = Date()
+        let secretToUpdate = updated
 
         try await database.write { db in
-            try CredentialSecret.update(updated).execute(db)
+            try CredentialSecret.update(secretToUpdate).execute(db)
         }
     }
 
@@ -366,10 +367,11 @@ public final class CredentialManager {
         // Mark as revoked
         secret.status = .revoked
         secret.updatedAt = Date()
+        let revokedSecret = secret
 
         try await database.write { db in
             try CredentialSecretHistory.insert { historyEntry }.execute(db)
-            try CredentialSecret.update(secret).execute(db)
+            try CredentialSecret.update(revokedSecret).execute(db)
         }
     }
 
@@ -411,13 +413,13 @@ public final class CredentialManager {
         }
 
         // Get the vault key for decryption
-        let vaultKey = try await vaultManager.getVaultKey(vaultID: credential.vaultID)
+        let vaultKey = try await vaultManager.getVaultKey(for: credential.vaultID)
 
         // Decrypt the secret value
         return try encryption.decryptSecret(
-            secret.encryptedSecret,
+            ciphertext: secret.encryptedSecret,
             nonce: secret.nonce,
-            key: vaultKey
+            vaultKey: vaultKey
         )
     }
 
