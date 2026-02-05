@@ -19,7 +19,7 @@ struct MatrixArtView: View {
   private func render(at time: Double) -> some View {
     Canvas { context, size in
       let columnWidth = (size.width - CGFloat(columns - 1) * gutter) / CGFloat(columns)
-      let green = Color.green
+      let green = Color(red: 0.55, green: 1.0, blue: 0.65)
 
       for drop in drops {
         let x = CGFloat(drop.column) * (columnWidth + gutter) + columnWidth * 0.5 + drop.xOffset
@@ -33,7 +33,17 @@ struct MatrixArtView: View {
             .font(.system(size: drop.fontSize, weight: .medium, design: .monospaced))
             .foregroundStyle(green.opacity(drop.opacity))
           let charY = y + CGFloat(index) * lineHeight
-          context.draw(text, at: CGPoint(x: x, y: charY), anchor: .center)
+          let point = CGPoint(x: x, y: charY)
+
+          context.drawLayer { glow in
+            glow.blendMode = .plusLighter
+            glow.addFilter(.blur(radius: 8))
+            glow.addFilter(.shadow(color: green.opacity(1.0), radius: 18, x: 0, y: 0))
+            glow.addFilter(.shadow(color: green.opacity(0.8), radius: 28, x: 0, y: 0))
+            glow.draw(text, at: point, anchor: .center)
+          }
+
+          context.draw(text, at: point, anchor: .center)
         }
       }
     }
