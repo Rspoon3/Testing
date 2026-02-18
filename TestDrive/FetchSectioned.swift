@@ -3,6 +3,28 @@ import SQLiteData
 import StructuredQueriesCore
 import SwiftUI
 
+// MARK: - QueryCursor + sectioned
+
+extension QueryCursor {
+    /// Groups pre-sorted cursor rows into sections in a single O(n) pass.
+    func sectioned<SectionID: Hashable & Sendable>(
+        by sectionedBy: (Element) -> SectionID
+    ) throws -> [FetchSection<SectionID, Element>] where Element: Sendable {
+        var sections: [FetchSection<SectionID, Element>] = []
+        var currentID: SectionID?
+        while let row = try next() {
+            let id = sectionedBy(row)
+            if id == currentID {
+                sections[sections.count - 1].items.append(row)
+            } else {
+                sections.append(FetchSection(id: id, items: [row]))
+                currentID = id
+            }
+        }
+        return sections
+    }
+}
+
 // MARK: - SelectStatement + sectioned
 
 extension SelectStatement where Joins == (), QueryValue == () {
@@ -42,19 +64,7 @@ struct SectionedRequest<SectionID: Hashable & Sendable, Record: Sendable>: Fetch
     }
 
     func fetch(_ db: Database) throws -> [FetchSection<SectionID, Record>] {
-        let cursor = try _fetchCursor(db)
-        var sections: [FetchSection<SectionID, Record>] = []
-        var currentID: SectionID?
-        while let row = try cursor.next() {
-            let id = sectionedBy(row)
-            if id == currentID {
-                sections[sections.count - 1].items.append(row)
-            } else {
-                sections.append(FetchSection(id: id, items: [row]))
-                currentID = id
-            }
-        }
-        return sections
+        try _fetchCursor(db).sectioned(by: sectionedBy)
     }
 
     // MARK: - Hashable

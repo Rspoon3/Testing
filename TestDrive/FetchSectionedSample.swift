@@ -1,5 +1,7 @@
 import Combine
+import GRDB
 import SQLiteData
+import StructuredQueries
 import SwiftUI
 
 // MARK: - Sectioned by genre
@@ -21,24 +23,12 @@ struct SectionedByGenreView: View {
             ForEach(sections) { section in
                 Section(section.id) {
                     ForEach(section.items) { book in
-                        BookRow(book: book)
+                        Text(book.title)
                     }
                 }
             }
         }
         .navigationTitle("By Genre")
-    }
-
-    // MARK: - Private Views
-
-    private func BookRow(book: Book) -> some View {
-        VStack(alignment: .leading) {
-            Text(book.title)
-                .font(.headline)
-            Text(book.author)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
     }
 }
 
@@ -70,7 +60,7 @@ struct SectionedByPinnedView: View {
     }
 }
 
-// MARK: - Sectioned by release year (section transform)
+// MARK: - Sectioned by release year
 
 struct SectionedByYearView: View {
     @Fetch(
@@ -95,9 +85,6 @@ struct SectionedByYearView: View {
             }
         }
         .navigationTitle("By Year")
-        .onAppear {
-            print(sections)
-        }
     }
 
     // MARK: - Private Views
@@ -106,10 +93,57 @@ struct SectionedByYearView: View {
         VStack(alignment: .leading) {
             Text(book.title)
                 .font(.headline)
-            Text("\(book.author) · \(book.releaseDate.formatted(.dateTime.year()))")
+            Text(book.releaseDate.formatted(.dateTime.year()))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+// MARK: - Sectioned by author (join)
+
+@Selection
+nonisolated struct BookWithAuthor: Identifiable {
+    var id: Book.ID
+    var title: String
+    var authorName: String
+}
+
+struct SectionedByAuthorRequest: FetchKeyRequest {
+    func fetch(_ db: Database) throws -> [FetchSection<String, BookWithAuthor>] {
+        try Book
+            .join(Author.all) { $0.authorID.eq($1.id) }
+            .order { _, authors in authors.name.asc() }
+            .order { books, _ in books.title.asc() }
+            .select { books, authors in
+                BookWithAuthor.Columns(
+                    id: books.id,
+                    title: books.title,
+                    authorName: authors.name
+                )
+            }
+            .fetchCursor(db)
+            .sectioned(by: \.authorName)
+    }
+}
+
+struct SectionedByAuthorView: View {
+    @Fetch(SectionedByAuthorRequest(), animation: .default)
+    var sections: [FetchSection<String, BookWithAuthor>] = []
+
+    // MARK: - Body
+
+    var body: some View {
+        List {
+            ForEach(sections) { section in
+                Section(section.id) {
+                    ForEach(section.items) { row in
+                        Text(row.title)
+                    }
+                }
+            }
+        }
+        .navigationTitle("By Author")
     }
 }
 
@@ -173,5 +207,14 @@ struct ManualSectionedView: View {
     }
     NavigationStack {
         SectionedByPinnedView()
+    }
+}
+
+#Preview("By Author") {
+    let _ = prepareDependencies {
+        try! $0.bootstrapDatabase()
+    }
+    NavigationStack {
+        SectionedByAuthorView()
     }
 }

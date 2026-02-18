@@ -7,17 +7,16 @@ struct ContentView: View {
     @Dependency(\.defaultDatabase) private var database
     @State private var timer: Timer?
 
-    private let randomBooks: [(String, String, String, Int, Date)] = [
-        ("Refactoring", "Martin Fowler", "Software", 448, makeDate(1999, 7, 8)),
-        ("Domain-Driven Design", "Eric Evans", "Software", 560, makeDate(2008, 8, 30)),
-        ("The Art of Computer Programming", "Donald Knuth", "Computer Science", 672, makeDate(2017, 1, 1)),
-        ("Code Complete", "Steve McConnell", "Software", 960, makeDate(1999, 5, 1)),
-        ("Peopleware", "Tom DeMarco & Timothy Lister", "Management", 264, makeDate(2008, 2, 1)),
-        ("Working Effectively with Legacy Code", "Michael Feathers", "Software", 456, makeDate(2017, 9, 22)),
-        ("Introduction to Algorithms", "Thomas Cormen", "Computer Science", 1312, makeDate(1999, 7, 1)),
-        ("The Phoenix Project", "Gene Kim", "Management", 432, makeDate(2008, 1, 10)),
-        ("Compilers: Principles, Techniques, and Tools", "Alfred Aho", "Computer Science", 1009, makeDate(2017, 1, 1)),
-        ("Team Topologies", "Matthew Skelton", "Management", 240, makeDate(2019, 9, 17)),
+    private let randomBooks: [(String, String, Int, Date)] = [
+        ("Refactoring", "Software", 448, makeDate(1999, 7, 8)),
+        ("Domain-Driven Design", "Software", 560, makeDate(2008, 8, 30)),
+        ("The Art of Computer Programming", "Computer Science", 672, makeDate(2017, 1, 1)),
+        ("Code Complete", "Software", 960, makeDate(1999, 5, 1)),
+        ("Peopleware", "Management", 264, makeDate(2008, 2, 1)),
+        ("Working Effectively with Legacy Code", "Software", 456, makeDate(2017, 9, 22)),
+        ("Introduction to Algorithms", "Computer Science", 1312, makeDate(1999, 7, 1)),
+        ("Compilers: Principles, Techniques, and Tools", "Computer Science", 1009, makeDate(2017, 1, 1)),
+        ("Team Topologies", "Management", 240, makeDate(2019, 9, 17)),
     ]
 
     // MARK: - Body
@@ -39,6 +38,11 @@ struct ContentView: View {
                     SectionedByYearView()
                 }
             }
+            Tab("Author", systemImage: "person.2") {
+                NavigationStack {
+                    SectionedByAuthorView()
+                }
+            }
             Tab("Manual", systemImage: "arrow.down.circle") {
                 NavigationStack {
                     ManualSectionedView()
@@ -56,14 +60,16 @@ struct ContentView: View {
             let book = randomBooks.randomElement()!
             withErrorReporting {
                 try database.write { db in
+                    let authors = try Author.fetchAll(db)
+                    guard let author = authors.randomElement() else { return }
                     try Book.insert {
                         Book.Draft(
+                            authorID: author.id,
                             title: book.0,
-                            author: book.1,
-                            genre: book.2,
-                            pageCount: book.3,
+                            genre: book.1,
+                            pageCount: book.2,
                             isPinned: Bool.random(),
-                            releaseDate: book.4
+                            releaseDate: book.3
                         )
                     }
                     .execute(db)
