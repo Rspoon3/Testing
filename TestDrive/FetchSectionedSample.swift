@@ -1,23 +1,19 @@
-import Foundation
 import SQLiteData
 import SwiftUI
 
 // MARK: - Sectioned by genre
 
-struct SectionedByGenreRequest: FetchKeyRequest {
-    var sortDescriptors: [Foundation.SortDescriptor<Book>] = [
-        Foundation.SortDescriptor(\.genre, order: .forward),
-        Foundation.SortDescriptor(\.title, order: .forward),
-    ]
-
-    func fetch(_ db: Database) throws -> [FetchSection<String, Book>] {
-        let books = try Book.all.fetchAll(db).sorted(using: sortDescriptors)
-        return FetchSection.sections(from: books, by: \.genre)
-    }
-}
-
 struct SectionedByGenreView: View {
-    @Fetch(SectionedByGenreRequest(), animation: .default) var sections: [FetchSection<String, Book>] = []
+    @FetchSectioned(
+        Book.where(\.isPinned),
+        sectionIdentifier: \.genre,
+        sortDescriptors: [
+            SortDescriptor(\.genre, order: .forward),
+            SortDescriptor(\.title, order: .forward),
+        ],
+        animation: .default
+    )
+    var sections: [FetchSection<String, Book>]
 
     // MARK: - Body
 
@@ -49,18 +45,17 @@ struct SectionedByGenreView: View {
 
 // MARK: - Sectioned by pinned status
 
-struct SectionedByPinnedRequest: FetchKeyRequest {
-    func fetch(_ db: Database) throws -> [FetchSection<Bool, Book>] {
-        let books = try Book.all
-            .order { $0.isPinned.desc() }
-            .order(by: \.title)
-            .fetchAll(db)
-        return FetchSection.sections(from: books, by: \.isPinned)
-    }
-}
-
 struct SectionedByPinnedView: View {
-    @Fetch(SectionedByPinnedRequest(), animation: .default) var sections: [FetchSection<Bool, Book>] = []
+    @FetchSectioned(
+        Book.all,
+        sectionIdentifier: \.isPinned,
+        sortDescriptors: [
+            SortDescriptor(\.isPinned, order: .reverse),
+            SortDescriptor(\.title, order: .forward),
+        ],
+        animation: .default
+    )
+    var sections: [FetchSection<Bool, Book>]
 
     // MARK: - Body
 
