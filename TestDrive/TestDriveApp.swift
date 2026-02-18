@@ -8,6 +8,10 @@
 import Dependencies
 import SwiftUI
 
+enum AppConfig {
+    static let enableTimers = false
+}
+
 @main
 struct TestDriveApp: App {
     init() {

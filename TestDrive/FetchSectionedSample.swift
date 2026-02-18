@@ -70,6 +70,49 @@ struct SectionedByPinnedView: View {
     }
 }
 
+// MARK: - Sectioned by release year (section transform)
+
+struct SectionedByYearView: View {
+    @Fetch(
+        Book.all
+            .order { $0.releaseYear.desc() }
+            .order { $0.title.asc() }
+            .sectioned(by: \.releaseYear),
+        animation: .default
+    )
+    var sections: [FetchSection<Int, Book>] = []
+
+    // MARK: - Body
+
+    var body: some View {
+        List {
+            ForEach(sections) { section in
+                Section("\(section.id)") {
+                    ForEach(section.items) { book in
+                        BookRow(book: book)
+                    }
+                }
+            }
+        }
+        .navigationTitle("By Year")
+        .onAppear {
+            print(sections)
+        }
+    }
+
+    // MARK: - Private Views
+
+    private func BookRow(book: Book) -> some View {
+        VStack(alignment: .leading) {
+            Text(book.title)
+                .font(.headline)
+            Text("\(book.author) · \(book.releaseDate.formatted(.dateTime.year()))")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
 // MARK: - Manual fetch with .task
 
 struct ManualSectionedView: View {
@@ -91,6 +134,7 @@ struct ManualSectionedView: View {
         .navigationTitle("Manual")
         .task { await loadData() }
         .onReceive(Timer.publish(every: 3, on: .main, in: .common).autoconnect()) { _ in
+            guard AppConfig.enableTimers else { return }
             Task { await loadData() }
         }
     }
