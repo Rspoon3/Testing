@@ -4,16 +4,14 @@ import SwiftUI
 // MARK: - Sectioned by genre
 
 struct SectionedByGenreView: View {
-    @FetchSectioned(
-        Book.where(\.isPinned),
-        sectionIdentifier: \.genre,
-        sortDescriptors: [
-            SortDescriptor(\.genre, order: .forward),
-            SortDescriptor(\.title, order: .forward),
-        ],
+    @Fetch(
+        Book.where(\.isPinned)
+            .order { $0.genre.asc() }
+            .order { $0.title.asc() }
+            .sectioned(by: \.genre),
         animation: .default
     )
-    var sections: [FetchSection<String, Book>]
+    var sections: [FetchSection<String, Book>] = []
 
     // MARK: - Body
 
@@ -46,16 +44,14 @@ struct SectionedByGenreView: View {
 // MARK: - Sectioned by pinned status
 
 struct SectionedByPinnedView: View {
-    @FetchSectioned(
-        Book.all,
-        sectionIdentifier: \.isPinned,
-        sortDescriptors: [
-            SortDescriptor(\.isPinned, order: .reverse),
-            SortDescriptor(\.title, order: .forward),
-        ],
+    @Fetch(
+        Book.all
+            .order { $0.isPinned.desc() }
+            .order { $0.title.asc() }
+            .sectioned(by: \.isPinned),
         animation: .default
     )
-    var sections: [FetchSection<Bool, Book>]
+    var sections: [FetchSection<Bool, Book>] = []
 
     // MARK: - Body
 
