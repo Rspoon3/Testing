@@ -1,3 +1,4 @@
+import Combine
 import SQLiteData
 import SwiftUI
 
@@ -66,6 +67,48 @@ struct SectionedByPinnedView: View {
             }
         }
         .navigationTitle("Pinned")
+    }
+}
+
+// MARK: - Manual fetch with .task
+
+struct ManualSectionedView: View {
+    @Dependency(\.defaultDatabase) private var database
+    @State private var sections: [FetchSection<String, Book>] = []
+
+    // MARK: - Body
+
+    var body: some View {
+        List {
+            ForEach(sections) { section in
+                Section(section.id) {
+                    ForEach(section.items) { book in
+                        Text(book.title)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Manual")
+        .task { await loadData() }
+        .onReceive(Timer.publish(every: 3, on: .main, in: .common).autoconnect()) { _ in
+            Task { await loadData() }
+        }
+    }
+
+    // MARK: - Private Helpers
+
+    private func loadData() async {
+        await withErrorReporting {
+            let result = try await database.read { db in
+                try Book
+                    .where(\.isPinned)
+                    .order { $0.genre.asc() }
+                    .order { $0.title.asc() }
+                    .sectioned(by: \.genre)
+                    .fetch(db)
+            }
+            withAnimation { sections = result }
+        }
     }
 }
 

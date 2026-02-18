@@ -34,6 +34,11 @@ struct ContentView: View {
                     SectionedByPinnedView()
                 }
             }
+            Tab("Manual", systemImage: "arrow.down.circle") {
+                NavigationStack {
+                    ManualSectionedView()
+                }
+            }
         }
         .onAppear { startTimer() }
         .onDisappear { timer?.invalidate() }

@@ -17,7 +17,7 @@ extension SelectStatement where Joins == (), QueryValue == () {
     ///         .sectioned(by: \.genre)
     /// ) var sections: [FetchSection<String, Book>] = []
     /// ```
-    func sectioned<SectionID: Hashable & Sendable>(
+    nonisolated func sectioned<SectionID: Hashable & Sendable>(
         by keyPath: KeyPath<From.QueryOutput, SectionID>
     ) -> SectionedRequest<SectionID, From.QueryOutput> where From.QueryOutput: Sendable {
         SectionedRequest(self, sectionedBy: { $0[keyPath: keyPath] })
