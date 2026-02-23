@@ -38,7 +38,11 @@ struct TestDriveTests {
             deviceID: deviceAID,
             deviceWrapKey: deviceAWrapKey
         )
-        let deviceAStore = EnvelopeStore(database: database, ark: arkOnDeviceA)
+        let deviceAStore = EnvelopeStore(
+            database: database,
+            ark: arkOnDeviceA,
+            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+        )
 
         let vaultID = try deviceAStore.createVault(name: "Primary Vault")
         let credentialID = try deviceAStore.createCredential(vaultID: vaultID, label: "Stripe")
@@ -75,7 +79,11 @@ struct TestDriveTests {
             deviceID: deviceBID,
             deviceWrapKey: deviceBWrapKey
         )
-        let deviceBStore = EnvelopeStore(database: database, ark: arkOnDeviceB)
+        let deviceBStore = EnvelopeStore(
+            database: database,
+            ark: arkOnDeviceB,
+            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+        )
         let revealedOnDeviceB = try deviceBStore.revealSecret(secretID: secretID)
         #expect(String(decoding: revealedOnDeviceB, as: UTF8.self) == "sk_test_123")
         let revealedLicenseOnDeviceB = try deviceBStore.revealSecret(
@@ -88,7 +96,11 @@ struct TestDriveTests {
             accountID: accountID,
             syncWrapKey: syncWrapKey
         )
-        let syncStore = EnvelopeStore(database: database, ark: arkFromSync)
+        let syncStore = EnvelopeStore(
+            database: database,
+            ark: arkFromSync,
+            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+        )
         let revealedFromSync = try syncStore.revealSecret(secretID: secretID)
         #expect(String(decoding: revealedFromSync, as: UTF8.self) == "sk_test_123")
         let revealedLicenseFromSync = try syncStore.revealSecret(

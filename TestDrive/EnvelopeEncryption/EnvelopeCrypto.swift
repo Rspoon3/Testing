@@ -51,6 +51,36 @@ enum EnvelopeCrypto {
     }
 }
 
+/// Deterministic key identifiers persisted alongside wrapped/encrypted blobs.
+enum EnvelopeKeyID {
+    static let cryptoVersion = 1
+    static let implicitAccountARK = "ark:account:implicit"
+
+    static func accountARK(accountID: UUID) -> String {
+        "ark:account:\(accountID.uuidString)"
+    }
+
+    static func recoveryWrapKey(accountID: UUID) -> String {
+        "wrap:recovery:\(accountID.uuidString)"
+    }
+
+    static func syncWrapKey(accountID: UUID) -> String {
+        "wrap:sync:\(accountID.uuidString)"
+    }
+
+    static func deviceWrapKey(accountID: UUID, deviceID: UUID) -> String {
+        "wrap:device:\(accountID.uuidString):\(deviceID.uuidString)"
+    }
+
+    static func vaultKey(vaultID: UUID) -> String {
+        "key:vault:\(vaultID.uuidString)"
+    }
+
+    static func itemKey(itemID: UUID) -> String {
+        "key:item:\(itemID.uuidString)"
+    }
+}
+
 /// Deterministic AAD namespaces used by the envelope stack.
 ///
 /// AAD prevents ciphertext/key-swapping across contexts.

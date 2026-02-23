@@ -23,11 +23,18 @@ final class EnvelopeStore {
     let database: DatabaseQueue
     /// Account root key available in memory for current unlock session.
     let ark: SymmetricKey
+    /// Identifier of the account root key in use for this session.
+    let arkKeyID: String
 
     /// Creates a store with an unlocked ARK.
-    init(database: DatabaseQueue, ark: SymmetricKey) {
+    init(
+        database: DatabaseQueue,
+        ark: SymmetricKey,
+        arkKeyID: String = EnvelopeKeyID.implicitAccountARK
+    ) {
         self.database = database
         self.ark = ark
+        self.arkKeyID = arkKeyID
     }
 
     /// Opens a persistent SQLite database and migrates the envelope schema.
@@ -38,6 +45,9 @@ final class EnvelopeStore {
         )
         let database = try DatabaseQueue(path: url.path)
         var migrator = DatabaseMigrator()
+        #if DEBUG
+            migrator.eraseDatabaseOnSchemaChange = true
+        #endif
 
         migrator.registerMigration("Create account metadata and envelope tables") { db in
             try #sql(
@@ -45,7 +55,12 @@ final class EnvelopeStore {
                 CREATE TABLE "accountRootWrapRows" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "recoverySalt" BLOB NOT NULL,
+                  "arkKeyID" TEXT NOT NULL,
+                  "recoveryWrappedByKeyID" TEXT NOT NULL,
+                  "recoveryCryptoVersion" INTEGER NOT NULL,
                   "wrappedARKByRecovery" BLOB NOT NULL,
+                  "syncWrappedByKeyID" TEXT,
+                  "syncCryptoVersion" INTEGER,
                   "wrappedARKBySync" BLOB
                 ) STRICT
                 """
@@ -57,6 +72,9 @@ final class EnvelopeStore {
                 CREATE TABLE "deviceEnrollmentRows" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "accountID" TEXT NOT NULL REFERENCES "accountRootWrapRows"("id") ON DELETE CASCADE,
+                  "arkKeyID" TEXT NOT NULL,
+                  "wrappedByKeyID" TEXT NOT NULL,
+                  "cryptoVersion" INTEGER NOT NULL,
                   "wrappedARKByDevice" BLOB NOT NULL
                 ) STRICT
                 """
@@ -68,6 +86,9 @@ final class EnvelopeStore {
                 CREATE TABLE "vaults" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "name" TEXT NOT NULL,
+                  "keyID" TEXT NOT NULL,
+                  "wrappedByKeyID" TEXT NOT NULL,
+                  "cryptoVersion" INTEGER NOT NULL,
                   "wrappedVaultKeyByARK" BLOB NOT NULL
                 ) STRICT
                 """
@@ -82,6 +103,9 @@ final class EnvelopeStore {
                   "title" TEXT NOT NULL,
                   "type" TEXT NOT NULL,
                   "payloadVersion" INTEGER NOT NULL,
+                  "keyID" TEXT NOT NULL,
+                  "wrappedByKeyID" TEXT NOT NULL,
+                  "cryptoVersion" INTEGER NOT NULL,
                   "wrappedItemKeyByVaultKey" BLOB NOT NULL,
                   "createdAt" TEXT NOT NULL,
                   "updatedAt" TEXT NOT NULL
@@ -102,6 +126,8 @@ final class EnvelopeStore {
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "itemID" TEXT NOT NULL REFERENCES "vaultItems"("id") ON DELETE CASCADE,
                   "fieldName" TEXT NOT NULL,
+                  "keyID" TEXT NOT NULL,
+                  "wrappedByKeyID" TEXT NOT NULL,
                   "cryptoVersion" INTEGER NOT NULL,
                   "ciphertext" BLOB NOT NULL,
                   "createdAt" TEXT NOT NULL,
@@ -150,6 +176,8 @@ final class EnvelopeStore {
                   "label" TEXT NOT NULL,
                   "fileName" TEXT NOT NULL,
                   "mimeType" TEXT,
+                  "keyID" TEXT NOT NULL,
+                  "wrappedByKeyID" TEXT NOT NULL,
                   "cryptoVersion" INTEGER NOT NULL,
                   "ciphertext" BLOB NOT NULL,
                   "createdAt" TEXT NOT NULL,
@@ -188,13 +216,21 @@ final class EnvelopeStore {
     func createVault(name: String) throws -> Vault.ID {
         let vaultID = UUID()
         let vaultKey = SymmetricKey(size: .bits256)
+        let vaultKeyID = EnvelopeKeyID.vaultKey(vaultID: vaultID)
         let wrappedVaultKey = try EnvelopeCrypto.wrapKey(
             vaultKey,
             wrappingKey: ark,
             aad: EnvelopeAAD.vaultKey(vaultID: vaultID)
         )
 
-        let vault = Vault(id: vaultID, name: name, wrappedVaultKeyByARK: wrappedVaultKey)
+        let vault = Vault(
+            id: vaultID,
+            name: name,
+            keyID: vaultKeyID,
+            wrappedByKeyID: arkKeyID,
+            cryptoVersion: EnvelopeKeyID.cryptoVersion,
+            wrappedVaultKeyByARK: wrappedVaultKey
+        )
         try database.write { db in
             try Vault.insert {
                 vault
@@ -280,6 +316,7 @@ final class EnvelopeStore {
         payloadVersion: Int = 1
     ) throws -> Credential.ID {
         let vault = try loadVault(vaultID: vaultID)
+        let vaultKeyID = vault.keyID
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
@@ -287,6 +324,7 @@ final class EnvelopeStore {
         )
 
         let itemID = UUID()
+        let itemKeyID = EnvelopeKeyID.itemKey(itemID: itemID)
         let itemKey = SymmetricKey(size: .bits256)
         let wrappedItemKey = try EnvelopeCrypto.wrapKey(
             itemKey,
@@ -300,6 +338,9 @@ final class EnvelopeStore {
             title: label,
             type: type,
             payloadVersion: payloadVersion,
+            keyID: itemKeyID,
+            wrappedByKeyID: vaultKeyID,
+            cryptoVersion: EnvelopeKeyID.cryptoVersion,
             wrappedItemKeyByVaultKey: wrappedItemKey
         )
         try database.write { db in
@@ -344,6 +385,8 @@ final class EnvelopeStore {
             id: fieldID,
             itemID: credentialID,
             fieldName: label,
+            keyID: item.keyID,
+            wrappedByKeyID: item.wrappedByKeyID,
             cryptoVersion: cryptoVersion,
             ciphertext: ciphertext
         )
@@ -407,6 +450,8 @@ final class EnvelopeStore {
             label: label,
             fileName: fileName,
             mimeType: mimeType?.trimmedForValidation,
+            keyID: item.keyID,
+            wrappedByKeyID: item.wrappedByKeyID,
             cryptoVersion: cryptoVersion,
             ciphertext: ciphertext
         )

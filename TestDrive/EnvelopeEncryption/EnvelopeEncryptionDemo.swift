@@ -67,7 +67,11 @@ enum EnvelopeEncryptionDemo {
             ark = recoveredARK
         }
 
-        return EnvelopeStore(database: database, ark: ark)
+        return EnvelopeStore(
+            database: database,
+            ark: ark,
+            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+        )
     }
 
     /// Runs the demo and returns the revealed secret string.
@@ -125,7 +129,11 @@ enum EnvelopeEncryptionDemo {
             arkOnDeviceA = recoveredARK
         }
 
-        let deviceAStore = EnvelopeStore(database: database, ark: arkOnDeviceA)
+        let deviceAStore = EnvelopeStore(
+            database: database,
+            ark: arkOnDeviceA,
+            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+        )
 
         let vaultID = try deviceAStore.createVault(name: "Main Vault")
         let apiCredential = try deviceAStore.createCredential(
@@ -223,7 +231,11 @@ enum EnvelopeEncryptionDemo {
             deviceID: deviceBID,
             deviceWrapKey: deviceBWrapKey
         )
-        let deviceBStore = EnvelopeStore(database: database, ark: arkOnDeviceB)
+        let deviceBStore = EnvelopeStore(
+            database: database,
+            ark: arkOnDeviceB,
+            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+        )
         let revealed = try deviceBStore.revealSecret(secretID: apiCredential.initialSecretFieldID)
         let revealedLicense = try deviceBStore.revealSecret(secretID: softwareLicense.initialSecretFieldID)
         let revealedUsername = try deviceBStore.revealSecret(secretID: usernamePassword.initialSecretFieldID)

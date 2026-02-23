@@ -31,8 +31,18 @@ struct AccountRootWrapRow: Identifiable {
     let id: UUID
     /// Salt used to derive the recovery wrap key.
     var recoverySalt: Data
+    /// Identifier of the wrapped ARK key material.
+    var arkKeyID: String
+    /// Identifier for the key that wrapped `wrappedARKByRecovery`.
+    var recoveryWrappedByKeyID: String
+    /// Ciphertext format/algorithm version for `wrappedARKByRecovery`.
+    var recoveryCryptoVersion: Int
     /// ARK wrapped by the recovery-derived wrap key.
     var wrappedARKByRecovery: Data
+    /// Identifier for the key that wrapped `wrappedARKBySync`.
+    var syncWrappedByKeyID: String?
+    /// Ciphertext format/algorithm version for `wrappedARKBySync`.
+    var syncCryptoVersion: Int?
     /// Optional ARK wrapped by a sync wrap key.
     var wrappedARKBySync: Data?
 }
@@ -44,6 +54,12 @@ struct DeviceEnrollmentRow: Identifiable {
     let id: UUID
     /// Owning account identifier.
     var accountID: UUID
+    /// Identifier of the wrapped ARK key material.
+    var arkKeyID: String
+    /// Identifier for the key that wrapped `wrappedARKByDevice`.
+    var wrappedByKeyID: String
+    /// Ciphertext format/algorithm version.
+    var cryptoVersion: Int
     /// ARK wrapped for this specific device wrap key.
     var wrappedARKByDevice: Data
 }
@@ -57,6 +73,12 @@ struct Vault: Identifiable {
     let id: UUID
     /// User-facing vault name.
     var name: String
+    /// Identifier of the wrapped vault key.
+    var keyID: String
+    /// Identifier for the key that wrapped `wrappedVaultKeyByARK`.
+    var wrappedByKeyID: String
+    /// Ciphertext format/algorithm version.
+    var cryptoVersion: Int
     /// Vault key wrapped by ARK.
     var wrappedVaultKeyByARK: Data
 }
@@ -76,6 +98,12 @@ struct VaultItem: Identifiable {
     var type: VaultItemType
     /// Payload schema version for this item type.
     var payloadVersion: Int
+    /// Identifier of the wrapped credential/item key.
+    var keyID: String
+    /// Identifier for the key that wrapped `wrappedItemKeyByVaultKey`.
+    var wrappedByKeyID: String
+    /// Ciphertext format/algorithm version.
+    var cryptoVersion: Int
     /// Item key wrapped by the vault key.
     var wrappedItemKeyByVaultKey: Data
     /// Item creation timestamp.
@@ -93,6 +121,10 @@ struct GenericItemSecretField: Identifiable {
     var itemID: VaultItem.ID
     /// User-facing secret field label (for example `apiKey` or `password`).
     var fieldName: String
+    /// Identifier for the direct key that encrypted `ciphertext`.
+    var keyID: String
+    /// Identifier for the key that wraps the direct field-encryption key.
+    var wrappedByKeyID: String
     /// Ciphertext format/algorithm version.
     var cryptoVersion: Int
     /// AES-GCM combined representation encrypted by the item key.
@@ -135,6 +167,10 @@ struct CredentialSecretFile: Identifiable {
     var fileName: String
     /// Optional media type (`application/x-pkcs8`, etc.).
     var mimeType: String?
+    /// Identifier for the direct key that encrypted `ciphertext`.
+    var keyID: String
+    /// Identifier for the key that wraps the direct file-encryption key.
+    var wrappedByKeyID: String
     /// Ciphertext format/algorithm version.
     var cryptoVersion: Int
     /// AES-GCM combined representation encrypted by the credential key.

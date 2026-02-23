@@ -9,8 +9,18 @@ struct AccountRootWraps {
     let accountID: UUID
     /// Salt used when deriving the recovery wrap key from recovery code.
     var recoverySalt: Data
+    /// Identifier of the wrapped ARK key material.
+    var arkKeyID: String
+    /// Identifier of the recovery-derived key used to wrap ARK.
+    var recoveryWrappedByKeyID: String
+    /// Ciphertext format/algorithm version for the recovery wrap.
+    var recoveryCryptoVersion: Int
     /// ARK wrapped by recovery-derived key.
     var wrappedARKByRecovery: Data
+    /// Identifier of the sync key used to wrap ARK.
+    var syncWrappedByKeyID: String?
+    /// Ciphertext format/algorithm version for the sync wrap.
+    var syncCryptoVersion: Int?
     /// Optional ARK wrapped by sync key (for iCloud Keychain convenience path).
     var wrappedARKBySync: Data?
 }
@@ -21,6 +31,12 @@ struct DeviceEnrollment {
     let accountID: UUID
     /// Device identifier for this enrollment.
     let deviceID: UUID
+    /// Identifier of the wrapped ARK key material.
+    let arkKeyID: String
+    /// Identifier of the device wrap key used for wrapping.
+    let wrappedByKeyID: String
+    /// Ciphertext format/algorithm version.
+    let cryptoVersion: Int
     /// ARK wrapped for this specific device's local wrap key.
     let wrappedARKByDevice: Data
 }
@@ -104,6 +120,11 @@ enum AccountKeyCoordinator {
         syncWrapKey: SymmetricKey? = nil
     ) throws -> AccountBootstrapResult {
         let ark = SymmetricKey(size: .bits256)
+        let arkKeyID = EnvelopeKeyID.accountARK(accountID: accountID)
+        let recoveryWrappedByKeyID = EnvelopeKeyID.recoveryWrapKey(accountID: accountID)
+        let syncWrappedByKeyID = syncWrapKey.map { _ in
+            EnvelopeKeyID.syncWrapKey(accountID: accountID)
+        }
 
         let recoverySalt = RecoveryWrapKeyDeriver.makeSalt()
         let recoveryWrapKey = RecoveryWrapKeyDeriver.derive(
@@ -127,7 +148,12 @@ enum AccountKeyCoordinator {
         let rootWraps = AccountRootWraps(
             accountID: accountID,
             recoverySalt: recoverySalt,
+            arkKeyID: arkKeyID,
+            recoveryWrappedByKeyID: recoveryWrappedByKeyID,
+            recoveryCryptoVersion: EnvelopeKeyID.cryptoVersion,
             wrappedARKByRecovery: wrappedARKByRecovery,
+            syncWrappedByKeyID: syncWrappedByKeyID,
+            syncCryptoVersion: wrappedARKBySync == nil ? nil : EnvelopeKeyID.cryptoVersion,
             wrappedARKBySync: wrappedARKBySync
         )
 
@@ -235,6 +261,9 @@ enum AccountKeyCoordinator {
         return DeviceEnrollment(
             accountID: accountID,
             deviceID: deviceID,
+            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID),
+            wrappedByKeyID: EnvelopeKeyID.deviceWrapKey(accountID: accountID, deviceID: deviceID),
+            cryptoVersion: EnvelopeKeyID.cryptoVersion,
             wrappedARKByDevice: wrappedARKByDevice
         )
     }
