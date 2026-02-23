@@ -5,7 +5,9 @@ import Security
 
 /// Keychain-backed storage for local wrap keys.
 ///
-/// This sample stores 256-bit symmetric keys as ThisDeviceOnly keychain items.
+/// On devices with a Secure Enclave, the 256-bit device wrap key is encrypted
+/// (ECIES) using a hardware-bound P-256 private key. On Simulator, falls back
+/// to raw Keychain storage.
 enum KeychainWrapKeyStore {
     /// Authentication behavior used when loading/creating a device wrap key.
     struct DeviceAccessPolicy {
@@ -40,26 +42,33 @@ enum KeychainWrapKeyStore {
         case unexpectedStatus(OSStatus)
         case invalidStoredData
         case accessControlCreationFailed
+        case secureEnclaveKeyCreationFailed
+        case encryptionFailed
+        case decryptionFailed
+        case publicKeyCopyFailed
     }
 
     private static let service = "com.testdrive.envelope.wrap-keys"
+    private static let seService = "com.testdrive.envelope.se-keys"
+
+    // MARK: - Public API
 
     /// Loads or creates a device wrap key for one account/device pair.
     ///
-    /// Device keys are protected with `SecAccessControl` and authentication gates.
+    /// On Secure Enclave-capable hardware the wrap key is encrypted with an
+    /// SE-bound P-256 key. On Simulator falls back to raw Keychain storage.
     static func loadOrCreateDeviceWrapKey(
         accountID: UUID,
         deviceID: UUID,
         policy: DeviceAccessPolicy = .biometricDefault()
     ) throws -> SymmetricKey {
         let account = "device|\(accountID.uuidString)|\(deviceID.uuidString)"
-        if let existing = try loadDeviceKey(account: account, policy: policy) {
-            return existing
-        }
 
-        let key = SymmetricKey(size: .bits256)
-        try saveDeviceKey(key: key, account: account, policy: policy)
-        return key
+        if SecureEnclave.isAvailable {
+            return try loadOrCreateDeviceWrapKeySE(account: account, policy: policy)
+        } else {
+            return try loadOrCreateDeviceWrapKeyLegacy(account: account, policy: policy)
+        }
     }
 
     /// Loads or creates an optional sync wrap key for one account.
@@ -67,21 +76,206 @@ enum KeychainWrapKeyStore {
         try loadOrCreate(account: "sync|\(accountID.uuidString)")
     }
 
-    private static func loadOrCreate(account: String) throws -> SymmetricKey {
-        if let existing = try load(account: account) {
+    // MARK: - Secure Enclave Path
+
+    /// Loads or creates a device wrap key protected by a Secure Enclave P-256 key.
+    private static func loadOrCreateDeviceWrapKeySE(
+        account: String,
+        policy: DeviceAccessPolicy
+    ) throws -> SymmetricKey {
+        let sePrivateKey = try loadOrCreateSEPrivateKey(account: account, policy: policy)
+
+        if let encryptedBlob = try loadEncryptedBlob(account: account) {
+            return try decryptWithSEPrivateKey(encryptedBlob, privateKey: sePrivateKey)
+        }
+
+        let key = SymmetricKey(size: .bits256)
+        guard let publicKey = SecKeyCopyPublicKey(sePrivateKey) else {
+            throw StoreError.publicKeyCopyFailed
+        }
+        let encryptedBlob = try encryptWithSEPublicKey(key, publicKey: publicKey)
+        try saveEncryptedBlob(encryptedBlob, account: account)
+        return key
+    }
+
+    /// Queries or creates a Secure Enclave P-256 private key with biometric access control.
+    private static func loadOrCreateSEPrivateKey(
+        account: String,
+        policy: DeviceAccessPolicy
+    ) throws -> SecKey {
+        let tag = "com.testdrive.envelope.se.\(account)"
+        let tagData = Data(tag.utf8)
+
+        // Try to load existing key
+        let loadQuery: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrApplicationTag as String: tagData,
+            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+            kSecReturnRef as String: true,
+        ]
+
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(loadQuery as CFDictionary, &result)
+        if status == errSecSuccess, let key = result {
+            // swiftlint:disable:next force_cast
+            return key as! SecKey
+        }
+
+        // Create new SE key
+        let flags: SecAccessControlCreateFlags = {
+            switch policy.requirement {
+            case .biometryCurrentSet:
+                return [.privateKeyUsage, .biometryCurrentSet]
+            case .userPresence:
+                return [.privateKeyUsage, .userPresence]
+            }
+        }()
+
+        var accessControlError: Unmanaged<CFError>?
+        guard let accessControl = SecAccessControlCreateWithFlags(
+            nil,
+            kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+            flags,
+            &accessControlError
+        ) else {
+            _ = accessControlError?.takeRetainedValue()
+            throw StoreError.accessControlCreationFailed
+        }
+
+        let attributes: [String: Any] = [
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeySizeInBits as String: 256,
+            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+            kSecPrivateKeyAttrs as String: [
+                kSecAttrIsPermanent as String: true,
+                kSecAttrApplicationTag as String: tagData,
+                kSecAttrAccessControl as String: accessControl,
+            ],
+        ]
+
+        var creationError: Unmanaged<CFError>?
+        guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &creationError) else {
+            _ = creationError?.takeRetainedValue()
+            throw StoreError.secureEnclaveKeyCreationFailed
+        }
+
+        return privateKey
+    }
+
+    /// Encrypts a symmetric key using the Secure Enclave public key via ECIES.
+    private static func encryptWithSEPublicKey(
+        _ key: SymmetricKey,
+        publicKey: SecKey
+    ) throws -> Data {
+        let plaintext = key.withUnsafeBytes { Data($0) }
+        var error: Unmanaged<CFError>?
+        guard let ciphertext = SecKeyCreateEncryptedData(
+            publicKey,
+            .eciesEncryptionCofactorVariableIVX963SHA256AESGCM,
+            plaintext as CFData,
+            &error
+        ) else {
+            _ = error?.takeRetainedValue()
+            throw StoreError.encryptionFailed
+        }
+        return ciphertext as Data
+    }
+
+    /// Decrypts an ECIES blob using the Secure Enclave private key.
+    private static func decryptWithSEPrivateKey(
+        _ ciphertext: Data,
+        privateKey: SecKey
+    ) throws -> SymmetricKey {
+        var error: Unmanaged<CFError>?
+        guard let plaintext = SecKeyCreateDecryptedData(
+            privateKey,
+            .eciesEncryptionCofactorVariableIVX963SHA256AESGCM,
+            ciphertext as CFData,
+            &error
+        ) else {
+            _ = error?.takeRetainedValue()
+            throw StoreError.decryptionFailed
+        }
+        return SymmetricKey(data: plaintext as Data)
+    }
+
+    /// Loads an ECIES-encrypted wrap key blob from Keychain.
+    private static func loadEncryptedBlob(account: String) throws -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: seService,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        switch status {
+        case errSecSuccess:
+            return result as? Data
+        case errSecItemNotFound:
+            return nil
+        default:
+            throw StoreError.unexpectedStatus(status)
+        }
+    }
+
+    /// Saves an ECIES-encrypted wrap key blob to Keychain.
+    private static func saveEncryptedBlob(_ blob: Data, account: String) throws {
+        let item: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: seService,
+            kSecAttrAccount as String: account,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+            kSecValueData as String: blob,
+        ]
+
+        let addStatus = SecItemAdd(item as CFDictionary, nil)
+        if addStatus == errSecSuccess {
+            return
+        }
+        if addStatus == errSecDuplicateItem {
+            let deleteQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: seService,
+                kSecAttrAccount as String: account,
+            ]
+            let deleteStatus = SecItemDelete(deleteQuery as CFDictionary)
+            guard deleteStatus == errSecSuccess || deleteStatus == errSecItemNotFound else {
+                throw StoreError.unexpectedStatus(deleteStatus)
+            }
+            let retryStatus = SecItemAdd(item as CFDictionary, nil)
+            guard retryStatus == errSecSuccess else {
+                throw StoreError.unexpectedStatus(retryStatus)
+            }
+            return
+        }
+
+        throw StoreError.unexpectedStatus(addStatus)
+    }
+
+    // MARK: - Legacy Path (Simulator Fallback)
+
+    /// Loads or creates a device wrap key using raw Keychain storage (no Secure Enclave).
+    private static func loadOrCreateDeviceWrapKeyLegacy(
+        account: String,
+        policy: DeviceAccessPolicy
+    ) throws -> SymmetricKey {
+        if let existing = try loadDeviceKeyLegacy(account: account, policy: policy) {
             return existing
         }
 
         let key = SymmetricKey(size: .bits256)
-        try save(
-            key: key,
-            account: account,
-            accessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        )
+        try saveDeviceKeyLegacy(key: key, account: account, policy: policy)
         return key
     }
 
-    private static func loadDeviceKey(account: String, policy: DeviceAccessPolicy) throws -> SymmetricKey? {
+    private static func loadDeviceKeyLegacy(
+        account: String,
+        policy: DeviceAccessPolicy
+    ) throws -> SymmetricKey? {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -113,34 +307,7 @@ enum KeychainWrapKeyStore {
         }
     }
 
-    private static func load(account: String) throws -> SymmetricKey? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-
-        var result: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        switch status {
-        case errSecSuccess:
-            guard
-                let data = result as? Data,
-                data.count == 32
-            else {
-                throw StoreError.invalidStoredData
-            }
-            return SymmetricKey(data: data)
-        case errSecItemNotFound:
-            return nil
-        default:
-            throw StoreError.unexpectedStatus(status)
-        }
-    }
-
-    private static func saveDeviceKey(
+    private static func saveDeviceKeyLegacy(
         key: SymmetricKey,
         account: String,
         policy: DeviceAccessPolicy
@@ -196,6 +363,49 @@ enum KeychainWrapKeyStore {
         }
 
         throw StoreError.unexpectedStatus(addStatus)
+    }
+
+    // MARK: - Sync Key Helpers
+
+    private static func loadOrCreate(account: String) throws -> SymmetricKey {
+        if let existing = try load(account: account) {
+            return existing
+        }
+
+        let key = SymmetricKey(size: .bits256)
+        try save(
+            key: key,
+            account: account,
+            accessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        )
+        return key
+    }
+
+    private static func load(account: String) throws -> SymmetricKey? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        switch status {
+        case errSecSuccess:
+            guard
+                let data = result as? Data,
+                data.count == 32
+            else {
+                throw StoreError.invalidStoredData
+            }
+            return SymmetricKey(data: data)
+        case errSecItemNotFound:
+            return nil
+        default:
+            throw StoreError.unexpectedStatus(status)
+        }
     }
 
     private static func save(

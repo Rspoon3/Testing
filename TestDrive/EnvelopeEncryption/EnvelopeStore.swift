@@ -96,7 +96,21 @@ final class EnvelopeStore {
         }
 
         try migrator.migrate(database)
+        applyFileProtection(at: url)
         return database
+    }
+
+    /// Applies `FileProtectionType.complete` to the database file and its parent directory.
+    ///
+    /// This makes the file inaccessible when the device is locked, protecting plaintext
+    /// metadata such as vault names and credential labels.
+    private static func applyFileProtection(at url: URL) {
+        let fileManager = FileManager.default
+        let attributes: [FileAttributeKey: Any] = [
+            .protectionKey: FileProtectionType.complete
+        ]
+        try? fileManager.setAttributes(attributes, ofItemAtPath: url.path)
+        try? fileManager.setAttributes(attributes, ofItemAtPath: url.deletingLastPathComponent().path)
     }
 
     /// Creates a vault and generates a new vault key wrapped by ARK.
