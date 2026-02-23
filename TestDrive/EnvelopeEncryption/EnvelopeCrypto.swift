@@ -60,13 +60,35 @@ enum EnvelopeAAD {
         Data("vault:\(vaultID.uuidString)|vaultKey|v1".utf8)
     }
 
-    /// AAD for a credential key wrapped by its vault key.
-    static func credentialKey(vaultID: UUID, credentialID: UUID) -> Data {
-        Data("vault:\(vaultID.uuidString)|credential:\(credentialID.uuidString)|key|v1".utf8)
+    /// AAD for an item key wrapped by its vault key.
+    static func itemKey(vaultID: UUID, itemID: UUID) -> Data {
+        Data("vault:\(vaultID.uuidString)|item:\(itemID.uuidString)|key|v1".utf8)
     }
 
-    /// AAD for a secret payload encrypted by a credential key.
-    static func secret(credentialID: UUID, secretName: String) -> Data {
-        Data("credential:\(credentialID.uuidString)|secret:\(secretName)|v1".utf8)
+    /// AAD for a generic item field encrypted by an item key.
+    static func itemField(
+        itemID: UUID,
+        itemType: VaultItemType,
+        fieldName: String,
+        cryptoVersion: Int
+    ) -> Data {
+        Data(
+            "item:\(itemID.uuidString)|type:\(itemType.rawValue)|field:\(fieldName)|crypto:\(cryptoVersion)|v1"
+                .utf8
+        )
+    }
+
+    /// AAD for an encrypted credential file payload.
+    static func itemFile(
+        itemID: UUID,
+        itemType: VaultItemType,
+        label: String,
+        fileName: String,
+        cryptoVersion: Int
+    ) -> Data {
+        Data(
+            "item:\(itemID.uuidString)|type:\(itemType.rawValue)|fileLabel:\(label)|fileName:\(fileName)|crypto:\(cryptoVersion)|v1"
+                .utf8
+        )
     }
 }

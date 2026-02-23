@@ -128,74 +128,70 @@ enum EnvelopeEncryptionDemo {
         let deviceAStore = EnvelopeStore(database: database, ark: arkOnDeviceA)
 
         let vaultID = try deviceAStore.createVault(name: "Main Vault")
-        let credentialID = try deviceAStore.createCredential(vaultID: vaultID, label: "Stripe Prod")
-        let secretID = try deviceAStore.addSecret(
-            credentialID: credentialID,
-            name: "apiKey",
-            plaintext: Data("sk_live_demo".utf8)
-        )
-        let softwareLicenseID = try deviceAStore.createSoftwareLicense(
+        let apiCredential = try deviceAStore.createCredential(
             vaultID: vaultID,
-            title: "Xcode Cloud Team Plan",
-            publisher: "Apple",
-            productName: "Xcode Cloud"
+            label: "Stripe Prod",
+            type: .genericSecret,
+            initialSecretLabel: "apiKey",
+            initialSecretPlaintext: Data("sk_live_demo".utf8),
+            environment: "production",
+            links: ["https://dashboard.stripe.com"],
+            associatedEmails: ["payments@example.com"],
+            notes: "Primary payments key."
         )
-        let softwareLicenseFieldID = try deviceAStore.addSoftwareLicenseField(
-            itemID: softwareLicenseID,
-            fieldName: "licenseKey",
-            plaintext: Data("LICENSE-APPLE-DEMO-1234".utf8)
-        )
-        let usernamePasswordID = try deviceAStore.createUsernamePassword(
+        let softwareLicense = try deviceAStore.createCredential(
             vaultID: vaultID,
-            title: "GitHub Login",
-            service: "GitHub",
-            loginURL: "https://github.com/login"
+            label: "Xcode Cloud Team Plan",
+            type: .softwareLicense,
+            initialSecretLabel: "licenseKey",
+            initialSecretPlaintext: Data("LICENSE-APPLE-DEMO-1234".utf8),
+            links: ["https://developer.apple.com/xcode-cloud/"],
+            associatedEmails: ["ios@example.com"]
         )
-        let usernameFieldID = try deviceAStore.addUsernamePasswordField(
-            itemID: usernamePasswordID,
-            fieldName: "username",
-            plaintext: Data("dev@example.com".utf8)
+        let usernamePassword = try deviceAStore.createCredential(
+            vaultID: vaultID,
+            label: "GitHub Login",
+            type: .usernamePassword,
+            initialSecretLabel: "username",
+            initialSecretPlaintext: Data("dev@example.com".utf8),
+            links: ["https://github.com/login"]
         )
-        let passwordFieldID = try deviceAStore.addUsernamePasswordField(
-            itemID: usernamePasswordID,
-            fieldName: "password",
+        let passwordFieldID = try deviceAStore.addSecret(
+            credentialID: usernamePassword.credentialID,
+            name: "password",
             plaintext: Data("super-secret-password".utf8)
         )
-        let patID = try deviceAStore.createPersonalAccessToken(
+        let personalAccessToken = try deviceAStore.createCredential(
             vaultID: vaultID,
-            title: "GitHub PAT",
-            provider: "GitHub",
-            tokenName: "CI Token",
-            scopesHint: "repo, workflow"
+            label: "GitHub PAT",
+            type: .personalAccessToken,
+            initialSecretLabel: "token",
+            initialSecretPlaintext: Data("ghp_demo_personal_access_token".utf8),
+            notes: "Scopes: repo, workflow"
         )
-        let patFieldID = try deviceAStore.addPersonalAccessTokenField(
-            itemID: patID,
-            fieldName: "token",
-            plaintext: Data("ghp_demo_personal_access_token".utf8)
-        )
-        let databaseCredentialID = try deviceAStore.createDatabaseCredential(
+        let databaseCredential = try deviceAStore.createCredential(
             vaultID: vaultID,
-            title: "Prod Postgres",
-            engine: "postgres",
-            host: "db.example.com",
-            port: 5432,
-            databaseName: "app_prod"
+            label: "Prod Postgres",
+            type: .databaseCredential,
+            initialSecretLabel: "password",
+            initialSecretPlaintext: Data("postgres-password-demo".utf8),
+            environment: "production",
+            links: ["postgres://db.example.com:5432/app_prod"]
         )
-        let databasePasswordFieldID = try deviceAStore.addDatabaseCredentialField(
-            itemID: databaseCredentialID,
-            fieldName: "password",
-            plaintext: Data("postgres-password-demo".utf8)
-        )
-        let signingID = try deviceAStore.createMobileReleaseSigning(
+        let signingCredential = try deviceAStore.createCredential(
             vaultID: vaultID,
-            title: "iOS App Store Signing",
-            platform: "iOS",
-            appIdentifier: "com.example.app",
-            teamOrOrgIdentifier: "ABCDE12345"
+            label: "iOS App Store Signing",
+            type: .mobileReleaseSigning,
+            initialSecretLabel: "issuerID",
+            initialSecretPlaintext: Data("00000000-0000-0000-0000-000000000000".utf8),
+            associatedEmails: ["release@example.com"],
+            notes: "Team ID: ABCDE12345, App ID: com.example.app"
         )
-        let signingFieldID = try deviceAStore.addMobileReleaseSigningField(
-            itemID: signingID,
-            fieldName: "p8Key",
+        let p8FileID = try deviceAStore.addSecretFile(
+            credentialID: signingCredential.credentialID,
+            label: "App Store Connect API Key",
+            fileName: "AuthKey_ABC123DEFG.p8",
+            mimeType: "application/x-pkcs8",
             plaintext: Data("-----BEGIN PRIVATE KEY-----demo-----END PRIVATE KEY-----".utf8)
         )
 
@@ -228,15 +224,16 @@ enum EnvelopeEncryptionDemo {
             deviceWrapKey: deviceBWrapKey
         )
         let deviceBStore = EnvelopeStore(database: database, ark: arkOnDeviceB)
-        let revealed = try deviceBStore.revealSecret(secretID: secretID)
-        let revealedLicense = try deviceBStore.revealSoftwareLicenseField(fieldID: softwareLicenseFieldID)
-        let revealedUsername = try deviceBStore.revealUsernamePasswordField(fieldID: usernameFieldID)
-        let revealedPassword = try deviceBStore.revealUsernamePasswordField(fieldID: passwordFieldID)
-        let revealedPAT = try deviceBStore.revealPersonalAccessTokenField(fieldID: patFieldID)
-        let revealedDatabasePassword = try deviceBStore.revealDatabaseCredentialField(
-            fieldID: databasePasswordFieldID
+        let revealed = try deviceBStore.revealSecret(secretID: apiCredential.initialSecretFieldID)
+        let revealedLicense = try deviceBStore.revealSecret(secretID: softwareLicense.initialSecretFieldID)
+        let revealedUsername = try deviceBStore.revealSecret(secretID: usernamePassword.initialSecretFieldID)
+        let revealedPassword = try deviceBStore.revealSecret(secretID: passwordFieldID)
+        let revealedPAT = try deviceBStore.revealSecret(secretID: personalAccessToken.initialSecretFieldID)
+        let revealedDatabasePassword = try deviceBStore.revealSecret(
+            secretID: databaseCredential.initialSecretFieldID
         )
-        let revealedSigning = try deviceBStore.revealMobileReleaseSigningField(fieldID: signingFieldID)
+        let revealedIssuerID = try deviceBStore.revealSecret(secretID: signingCredential.initialSecretFieldID)
+        let revealedP8File = try deviceBStore.revealSecretFile(fileID: p8FileID)
 
         _ = try AccountKeyCoordinator.unlockARKFromSync(
             metadataStore: metadataStore,
@@ -251,7 +248,8 @@ enum EnvelopeEncryptionDemo {
             "password=\(String(decoding: revealedPassword, as: UTF8.self))",
             "pat=\(String(decoding: revealedPAT, as: UTF8.self))",
             "dbPassword=\(String(decoding: revealedDatabasePassword, as: UTF8.self))",
-            "signingKey=\(String(decoding: revealedSigning, as: UTF8.self))"
+            "issuerID=\(String(decoding: revealedIssuerID, as: UTF8.self))",
+            "p8Bytes=\(revealedP8File.count)"
         ]
         .joined(separator: ", ")
     }

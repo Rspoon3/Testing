@@ -47,6 +47,13 @@ struct TestDriveTests {
             name: "apiKey",
             plaintext: Data("sk_test_123".utf8)
         )
+        let softwareLicense = try deviceAStore.createCredential(
+            vaultID: vaultID,
+            label: "JetBrains All Products",
+            type: .softwareLicense,
+            initialSecretLabel: "licenseKey",
+            initialSecretPlaintext: Data("JETBRAINS-DEMO-LICENSE".utf8)
+        )
 
         let recoveredARK = try AccountKeyCoordinator.recoverARK(
             metadataStore: metadataStore,
@@ -71,6 +78,10 @@ struct TestDriveTests {
         let deviceBStore = EnvelopeStore(database: database, ark: arkOnDeviceB)
         let revealedOnDeviceB = try deviceBStore.revealSecret(secretID: secretID)
         #expect(String(decoding: revealedOnDeviceB, as: UTF8.self) == "sk_test_123")
+        let revealedLicenseOnDeviceB = try deviceBStore.revealSecret(
+            secretID: softwareLicense.initialSecretFieldID
+        )
+        #expect(String(decoding: revealedLicenseOnDeviceB, as: UTF8.self) == "JETBRAINS-DEMO-LICENSE")
 
         let arkFromSync = try AccountKeyCoordinator.unlockARKFromSync(
             metadataStore: metadataStore,
@@ -80,6 +91,10 @@ struct TestDriveTests {
         let syncStore = EnvelopeStore(database: database, ark: arkFromSync)
         let revealedFromSync = try syncStore.revealSecret(secretID: secretID)
         #expect(String(decoding: revealedFromSync, as: UTF8.self) == "sk_test_123")
+        let revealedLicenseFromSync = try syncStore.revealSecret(
+            secretID: softwareLicense.initialSecretFieldID
+        )
+        #expect(String(decoding: revealedLicenseFromSync, as: UTF8.self) == "JETBRAINS-DEMO-LICENSE")
         #expect(bootstrap.rootWraps.accountID == accountID)
     }
 

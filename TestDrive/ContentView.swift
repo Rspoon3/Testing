@@ -2,8 +2,9 @@ import SwiftUI
 
 struct ContentView: View {
     var session: EncryptionSession
-    @State private var demoOutput = ""
     @State private var unlockError: String?
+    @State private var loadError: String?
+    @State private var credentialSummaries: [EnvelopeStore.CredentialSummary] = []
 
     // MARK: - Body
 
@@ -18,118 +19,48 @@ struct ContentView: View {
     // MARK: - Private Views
 
     private var unlockedView: some View {
-        VStack {
-            Text("SQLiteData Envelope Encryption")
-                .font(.headline)
-            Text(demoOutput)
-                .font(.footnote.monospaced())
-                .multilineTextAlignment(.center)
+        Group {
+            if let store = session.store {
+                NavigationStack {
+                    List {
+                        if let loadError {
+                            Section("Load Error") {
+                                Text(loadError)
+                                    .foregroundStyle(.red)
+                            }
+                        }
+
+                        Section("Credential Examples") {
+                            ForEach(credentialSummaries) { summary in
+                                NavigationLink {
+                                    CredentialDetailView(store: store, credentialID: summary.id)
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(summary.label)
+                                        Text(summary.type.rawValue)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle("Credential Catalog")
+                }
+            } else {
+                ProgressView("Unlocking...")
+            }
         }
-        .padding()
-        .task {
+        .task(id: session.isUnlocked) {
             guard let store = session.store else { return }
             do {
                 let databaseURL = try EnvelopePaths.defaultDatabaseURL()
                 print("Database: \(databaseURL.path)")
-
-                let vaultID = try store.createVault(name: "Main Vault")
-                let credentialID = try store.createCredential(vaultID: vaultID, label: "Stripe Prod")
-                let secretID = try store.addSecret(
-                    credentialID: credentialID,
-                    name: "apiKey",
-                    plaintext: Data("sk_live_demo".utf8)
-                )
-                let revealed = try store.revealSecret(secretID: secretID)
-
-                let softwareLicenseID = try store.createSoftwareLicense(
-                    vaultID: vaultID,
-                    title: "Xcode Cloud Team Plan",
-                    publisher: "Apple",
-                    productName: "Xcode Cloud"
-                )
-                let softwareLicenseFieldID = try store.addSoftwareLicenseField(
-                    itemID: softwareLicenseID,
-                    fieldName: "licenseKey",
-                    plaintext: Data("LICENSE-APPLE-DEMO-1234".utf8)
-                )
-                let revealedLicense = try store.revealSoftwareLicenseField(fieldID: softwareLicenseFieldID)
-
-                let usernamePasswordID = try store.createUsernamePassword(
-                    vaultID: vaultID,
-                    title: "GitHub Login",
-                    service: "GitHub",
-                    loginURL: "https://github.com/login"
-                )
-                let usernameFieldID = try store.addUsernamePasswordField(
-                    itemID: usernamePasswordID,
-                    fieldName: "username",
-                    plaintext: Data("dev@example.com".utf8)
-                )
-                let passwordFieldID = try store.addUsernamePasswordField(
-                    itemID: usernamePasswordID,
-                    fieldName: "password",
-                    plaintext: Data("super-secret-password".utf8)
-                )
-                let revealedUsername = try store.revealUsernamePasswordField(fieldID: usernameFieldID)
-                let revealedPassword = try store.revealUsernamePasswordField(fieldID: passwordFieldID)
-
-                let patID = try store.createPersonalAccessToken(
-                    vaultID: vaultID,
-                    title: "GitHub PAT",
-                    provider: "GitHub",
-                    tokenName: "CI Token",
-                    scopesHint: "repo, workflow"
-                )
-                let patFieldID = try store.addPersonalAccessTokenField(
-                    itemID: patID,
-                    fieldName: "token",
-                    plaintext: Data("ghp_demo_personal_access_token".utf8)
-                )
-                let revealedPAT = try store.revealPersonalAccessTokenField(fieldID: patFieldID)
-
-                let databaseCredentialID = try store.createDatabaseCredential(
-                    vaultID: vaultID,
-                    title: "Prod Postgres",
-                    engine: "postgres",
-                    host: "db.example.com",
-                    port: 5432,
-                    databaseName: "app_prod"
-                )
-                let databasePasswordFieldID = try store.addDatabaseCredentialField(
-                    itemID: databaseCredentialID,
-                    fieldName: "password",
-                    plaintext: Data("postgres-password-demo".utf8)
-                )
-                let revealedDatabasePassword = try store.revealDatabaseCredentialField(
-                    fieldID: databasePasswordFieldID
-                )
-
-                let signingID = try store.createMobileReleaseSigning(
-                    vaultID: vaultID,
-                    title: "iOS App Store Signing",
-                    platform: "iOS",
-                    appIdentifier: "com.example.app",
-                    teamOrOrgIdentifier: "ABCDE12345"
-                )
-                let signingFieldID = try store.addMobileReleaseSigningField(
-                    itemID: signingID,
-                    fieldName: "p8Key",
-                    plaintext: Data("-----BEGIN PRIVATE KEY-----demo-----END PRIVATE KEY-----".utf8)
-                )
-                let revealedSigning = try store.revealMobileReleaseSigningField(fieldID: signingFieldID)
-
-                demoOutput = [
-                    "Decrypted secret: \(String(decoding: revealed, as: UTF8.self))",
-                    "Decrypted license: \(String(decoding: revealedLicense, as: UTF8.self))",
-                    "Username: \(String(decoding: revealedUsername, as: UTF8.self))",
-                    "Password: \(String(decoding: revealedPassword, as: UTF8.self))",
-                    "PAT: \(String(decoding: revealedPAT, as: UTF8.self))",
-                    "DB password: \(String(decoding: revealedDatabasePassword, as: UTF8.self))",
-                    "Signing key: \(String(decoding: revealedSigning, as: UTF8.self))"
-                ]
-                .joined(separator: "\n")
+                credentialSummaries = try store.ensureDemoCredentialCatalog()
+                loadError = nil
             } catch {
-                demoOutput = "Demo failed: \(error)"
+                credentialSummaries = []
+                loadError = "Failed to load demo credentials: \(error)"
             }
         }
     }
@@ -166,9 +97,95 @@ struct ContentView: View {
         do {
             try session.unlock()
             unlockError = nil
-            demoOutput = ""
+            loadError = nil
         } catch {
             unlockError = "Unlock failed: \(error.localizedDescription)"
+        }
+    }
+}
+
+private struct CredentialDetailView: View {
+    let store: EnvelopeStore
+    let credentialID: Credential.ID
+
+    @State private var detail: EnvelopeStore.CredentialDetail?
+    @State private var errorMessage: String?
+
+    var body: some View {
+        Form {
+            if let detail {
+                Section("Credential") {
+                    LabeledContent("Label", value: detail.label)
+                    LabeledContent("Type", value: detail.type.rawValue)
+                }
+
+                Section("Secret Fields") {
+                    ForEach(detail.secretFields) { secret in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(secret.label)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(secret.value)
+                                .font(.body.monospaced())
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+
+                if !detail.attributes.isEmpty {
+                    Section("Attributes") {
+                        ForEach(detail.attributes) { attribute in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("\(attribute.kind.rawValue): \(attribute.name)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text(attribute.value)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+
+                if !detail.files.isEmpty {
+                    Section("Files") {
+                        ForEach(detail.files) { file in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(file.label)
+                                    .font(.headline)
+                                Text(file.fileName)
+                                    .font(.caption.monospaced())
+                                if let mimeType = file.mimeType {
+                                    Text(mimeType)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Text("Decrypted bytes: \(file.decryptedByteCount)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+            } else if let errorMessage {
+                Section("Error") {
+                    Text(errorMessage)
+                        .foregroundStyle(.red)
+                }
+            } else {
+                ProgressView("Loading credential…")
+                
+            }
+        }
+        .navigationTitle(detail?.label ?? "Credential")
+        .task(id: credentialID) {
+            do {
+                detail = try store.loadCredentialDetail(credentialID: credentialID)
+                errorMessage = nil
+            } catch {
+                detail = nil
+                errorMessage = "Failed to load credential details: \(error)"
+            }
         }
     }
 }

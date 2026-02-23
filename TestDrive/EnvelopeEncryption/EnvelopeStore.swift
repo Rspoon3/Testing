@@ -13,7 +13,9 @@ final class EnvelopeStore {
         case vaultNotFound
         case itemNotFound
         case secretFieldNotFound
-        case typedItemMetadataNotFound
+        case invalidCredential
+        case invalidSecretField
+        case invalidAttribute
         case unsupportedItemType
     }
 
@@ -78,7 +80,7 @@ final class EnvelopeStore {
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "vaultID" TEXT NOT NULL REFERENCES "vaults"("id") ON DELETE CASCADE,
                   "title" TEXT NOT NULL,
-                  "typeRawValue" TEXT NOT NULL,
+                  "type" TEXT NOT NULL,
                   "payloadVersion" INTEGER NOT NULL,
                   "wrappedItemKeyByVaultKey" BLOB NOT NULL,
                   "createdAt" TEXT NOT NULL,
@@ -116,7 +118,53 @@ final class EnvelopeStore {
             .execute(db)
         }
 
-        registerTypedItemMigrations(on: &migrator)
+        migrator.registerMigration("Add credential attributes table") { db in
+            try #sql(
+                """
+                CREATE TABLE "credentialAttributes" (
+                  "id" TEXT PRIMARY KEY NOT NULL,
+                  "credentialID" TEXT NOT NULL REFERENCES "vaultItems"("id") ON DELETE CASCADE,
+                  "kindRawValue" TEXT NOT NULL,
+                  "name" TEXT NOT NULL,
+                  "value" TEXT NOT NULL,
+                  "createdAt" TEXT NOT NULL,
+                  "updatedAt" TEXT NOT NULL
+                ) STRICT
+                """
+            )
+            .execute(db)
+            try #sql(
+                """
+                CREATE INDEX "index_credentialAttributes_on_credentialID" ON "credentialAttributes"("credentialID")
+                """
+            )
+            .execute(db)
+        }
+
+        migrator.registerMigration("Add credential secret files table") { db in
+            try #sql(
+                """
+                CREATE TABLE "credentialSecretFiles" (
+                  "id" TEXT PRIMARY KEY NOT NULL,
+                  "credentialID" TEXT NOT NULL REFERENCES "vaultItems"("id") ON DELETE CASCADE,
+                  "label" TEXT NOT NULL,
+                  "fileName" TEXT NOT NULL,
+                  "mimeType" TEXT,
+                  "cryptoVersion" INTEGER NOT NULL,
+                  "ciphertext" BLOB NOT NULL,
+                  "createdAt" TEXT NOT NULL,
+                  "updatedAt" TEXT NOT NULL
+                ) STRICT
+                """
+            )
+            .execute(db)
+            try #sql(
+                """
+                CREATE INDEX "index_credentialSecretFiles_on_credentialID" ON "credentialSecretFiles"("credentialID")
+                """
+            )
+            .execute(db)
+        }
 
         try migrator.migrate(database)
         applyFileProtection(at: url)
@@ -156,18 +204,81 @@ final class EnvelopeStore {
         return vaultID
     }
 
-    /// Creates a generic credential item and generates an item key wrapped by its vault key.
-    func createCredential(vaultID: Vault.ID, label: String) throws -> Credential.ID {
-        try createItem(vaultID: vaultID, title: label, type: .genericSecret)
+    /// Creates a credential with at least one secret field.
+    ///
+    /// This is the preferred creation API because it enforces the minimum payload.
+    func createCredential(
+        vaultID: Vault.ID,
+        label: String,
+        type: VaultItemType = .genericSecret,
+        initialSecretLabel: String,
+        initialSecretPlaintext: Data,
+        environment: String? = nil,
+        links: [String] = [],
+        associatedEmails: [String] = [],
+        notes: String? = nil,
+        payloadVersion: Int = 1
+    ) throws -> (credentialID: Credential.ID, initialSecretFieldID: Secret.ID) {
+        guard !label.trimmedForValidation.isEmpty else {
+            throw StoreError.invalidCredential
+        }
+        guard !initialSecretLabel.trimmedForValidation.isEmpty else {
+            throw StoreError.invalidSecretField
+        }
+
+        let credentialID = try createCredentialRecord(
+            vaultID: vaultID,
+            label: label,
+            type: type,
+            payloadVersion: payloadVersion
+        )
+        let initialSecretFieldID = try addSecret(
+            credentialID: credentialID,
+            name: initialSecretLabel,
+            plaintext: initialSecretPlaintext
+        )
+        try addCredentialAttributes(
+            credentialID: credentialID,
+            environment: environment,
+            links: links,
+            associatedEmails: associatedEmails,
+            notes: notes
+        )
+        return (credentialID, initialSecretFieldID)
     }
 
-    /// Creates a generic item entry and wraps a per-item key with the containing vault key.
+    /// Creates a credential row and wraps a per-credential key with the containing vault key.
+    ///
+    /// Use this only when a secret field will be inserted immediately afterwards.
+    func createCredential(vaultID: Vault.ID, label: String) throws -> Credential.ID {
+        guard !label.trimmedForValidation.isEmpty else {
+            throw StoreError.invalidCredential
+        }
+        return try createCredentialRecord(vaultID: vaultID, label: label, type: .genericSecret)
+    }
+
+    /// Backward-compatible generic creation API.
     func createItem(
         vaultID: Vault.ID,
         title: String,
         type: VaultItemType,
         payloadVersion: Int = 1
     ) throws -> VaultItem.ID {
+        try createCredentialRecord(
+            vaultID: vaultID,
+            label: title,
+            type: type,
+            payloadVersion: payloadVersion
+        )
+    }
+
+    /// Internal credential row creation helper used by all creation entry points.
+    private func createCredentialRecord(
+        vaultID: Vault.ID,
+        label: String,
+        type: VaultItemType,
+        payloadVersion: Int = 1
+    ) throws -> Credential.ID {
         let vault = try loadVault(vaultID: vaultID)
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
@@ -183,17 +294,17 @@ final class EnvelopeStore {
             aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID)
         )
 
-        let item = VaultItem(
+        let credential = VaultItem(
             id: itemID,
             vaultID: vaultID,
-            title: title,
-            typeRawValue: type.rawValue,
+            title: label,
+            type: type,
             payloadVersion: payloadVersion,
             wrappedItemKeyByVaultKey: wrappedItemKey
         )
         try database.write { db in
             try VaultItem.insert {
-                item
+                credential
             }
             .execute(db)
         }
@@ -202,24 +313,28 @@ final class EnvelopeStore {
 
     /// Encrypts and stores a secret under the credential key.
     func addSecret(credentialID: Credential.ID, name: String, plaintext: Data) throws -> Secret.ID {
-        try addSecretField(itemID: credentialID, fieldName: name, plaintext: plaintext)
+        try addSecretField(credentialID: credentialID, label: name, plaintext: plaintext)
     }
 
-    /// Encrypts and stores one field value for a generic item.
+    /// Encrypts and stores one secret field value for a credential.
     func addSecretField(
-        itemID: VaultItem.ID,
-        fieldName: String,
+        credentialID: Credential.ID,
+        label: String,
         plaintext: Data,
         cryptoVersion: Int = 1
-    ) throws -> GenericItemSecretField.ID {
-        let (item, itemType, itemKey) = try loadItemAndKey(itemID: itemID)
+    ) throws -> CredentialSecretField.ID {
+        guard !label.trimmedForValidation.isEmpty else {
+            throw StoreError.invalidSecretField
+        }
+
+        let (item, itemType, itemKey) = try loadItemAndKey(itemID: credentialID)
         let ciphertext = try EnvelopeCrypto.seal(
             plaintext,
             using: itemKey,
             aad: EnvelopeAAD.itemField(
                 itemID: item.id,
                 itemType: itemType,
-                fieldName: fieldName,
+                fieldName: label,
                 cryptoVersion: cryptoVersion
             )
         )
@@ -227,8 +342,8 @@ final class EnvelopeStore {
         let fieldID = UUID()
         let field = GenericItemSecretField(
             id: fieldID,
-            itemID: itemID,
-            fieldName: fieldName,
+            itemID: credentialID,
+            fieldName: label,
             cryptoVersion: cryptoVersion,
             ciphertext: ciphertext
         )
@@ -239,6 +354,137 @@ final class EnvelopeStore {
             .execute(db)
         }
         return fieldID
+    }
+
+    /// Backward-compatible alias for generic secret-field insertion.
+    func addSecretField(
+        itemID: VaultItem.ID,
+        fieldName: String,
+        plaintext: Data,
+        cryptoVersion: Int = 1
+    ) throws -> GenericItemSecretField.ID {
+        try addSecretField(
+            credentialID: itemID,
+            label: fieldName,
+            plaintext: plaintext,
+            cryptoVersion: cryptoVersion
+        )
+    }
+
+    /// Encrypts and stores one credential file payload.
+    func addSecretFile(
+        credentialID: Credential.ID,
+        label: String,
+        fileName: String,
+        mimeType: String? = nil,
+        plaintext: Data,
+        cryptoVersion: Int = 1
+    ) throws -> CredentialSecretFile.ID {
+        guard !label.trimmedForValidation.isEmpty else {
+            throw StoreError.invalidSecretField
+        }
+        guard !fileName.trimmedForValidation.isEmpty else {
+            throw StoreError.invalidSecretField
+        }
+
+        let (item, itemType, itemKey) = try loadItemAndKey(itemID: credentialID)
+        let ciphertext = try EnvelopeCrypto.seal(
+            plaintext,
+            using: itemKey,
+            aad: EnvelopeAAD.itemFile(
+                itemID: item.id,
+                itemType: itemType,
+                label: label,
+                fileName: fileName,
+                cryptoVersion: cryptoVersion
+            )
+        )
+
+        let fileID = UUID()
+        let secretFile = CredentialSecretFile(
+            id: fileID,
+            credentialID: credentialID,
+            label: label,
+            fileName: fileName,
+            mimeType: mimeType?.trimmedForValidation,
+            cryptoVersion: cryptoVersion,
+            ciphertext: ciphertext
+        )
+        try database.write { db in
+            try CredentialSecretFile.insert {
+                secretFile
+            }
+            .execute(db)
+        }
+        return fileID
+    }
+
+    /// Stores one non-secret metadata value for a credential.
+    func addCredentialAttribute(
+        credentialID: Credential.ID,
+        kind: CredentialAttributeKind,
+        name: String? = nil,
+        value: String
+    ) throws -> CredentialAttribute.ID {
+        let normalizedValue = value.trimmedForValidation
+        guard !normalizedValue.isEmpty else {
+            throw StoreError.invalidAttribute
+        }
+        let normalizedName = name?.trimmedForValidation ?? ""
+
+        let attributeID = UUID()
+        let attribute = CredentialAttribute(
+            id: attributeID,
+            credentialID: credentialID,
+            kindRawValue: kind.rawValue,
+            name: normalizedName.isEmpty ? kind.defaultAttributeName : normalizedName,
+            value: normalizedValue
+        )
+        try database.write { db in
+            try CredentialAttribute.insert {
+                attribute
+            }
+            .execute(db)
+        }
+        return attributeID
+    }
+
+    /// Bulk metadata helper for common optional credential fields.
+    func addCredentialAttributes(
+        credentialID: Credential.ID,
+        environment: String? = nil,
+        links: [String] = [],
+        associatedEmails: [String] = [],
+        notes: String? = nil
+    ) throws {
+        if let environment, !environment.trimmedForValidation.isEmpty {
+            _ = try addCredentialAttribute(
+                credentialID: credentialID,
+                kind: .environment,
+                value: environment
+            )
+        }
+        for link in links where !link.trimmedForValidation.isEmpty {
+            _ = try addCredentialAttribute(
+                credentialID: credentialID,
+                kind: .link,
+                value: link
+            )
+        }
+        for email in associatedEmails where !email.trimmedForValidation.isEmpty {
+            _ = try addCredentialAttribute(
+                credentialID: credentialID,
+                kind: .associatedEmail,
+                value: email
+            )
+        }
+        if let notes, !notes.trimmedForValidation.isEmpty {
+            _ = try addCredentialAttribute(
+                credentialID: credentialID,
+                kind: .note,
+                value: notes
+            )
+        }
     }
 
     /// Reveals a secret by unwrapping keys down the hierarchy and decrypting payload.
@@ -262,6 +508,23 @@ final class EnvelopeStore {
         )
     }
 
+    /// Reveals one encrypted credential file payload.
+    func revealSecretFile(fileID: CredentialSecretFile.ID) throws -> Data {
+        let secretFile = try loadSecretFile(fileID: fileID)
+        let (item, itemType, itemKey) = try loadItemAndKey(itemID: secretFile.credentialID)
+        return try EnvelopeCrypto.open(
+            secretFile.ciphertext,
+            using: itemKey,
+            aad: EnvelopeAAD.itemFile(
+                itemID: item.id,
+                itemType: itemType,
+                label: secretFile.label,
+                fileName: secretFile.fileName,
+                cryptoVersion: secretFile.cryptoVersion
+            )
+        )
+    }
+
     /// Loads one vault row by ID.
     func loadVault(vaultID: Vault.ID) throws -> Vault {
         guard let vault = try database.read({ db in
@@ -279,9 +542,7 @@ final class EnvelopeStore {
         }) else {
             throw StoreError.itemNotFound
         }
-        guard let itemType = VaultItemType(rawValue: item.typeRawValue) else {
-            throw StoreError.unsupportedItemType
-        }
+        let itemType = item.type
 
         let vault = try loadVault(vaultID: item.vaultID)
         let vaultKey = try EnvelopeCrypto.unwrapKey(
@@ -308,4 +569,37 @@ final class EnvelopeStore {
         return secret
     }
 
+    /// Loads one credential secret file row by ID.
+    private func loadSecretFile(fileID: CredentialSecretFile.ID) throws -> CredentialSecretFile {
+        guard let secretFile = try database.read({ db in
+            try CredentialSecretFile.where { $0.id.eq(fileID) }.fetchOne(db)
+        }) else {
+            throw StoreError.secretFieldNotFound
+        }
+        return secretFile
+    }
+
+}
+
+extension CredentialAttributeKind {
+    var defaultAttributeName: String {
+        switch self {
+        case .environment:
+            return "environment"
+        case .link:
+            return "link"
+        case .associatedEmail:
+            return "email"
+        case .note:
+            return "note"
+        case .custom:
+            return "custom"
+        }
+    }
+}
+
+private extension String {
+    var trimmedForValidation: String {
+        trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
