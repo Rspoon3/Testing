@@ -14,6 +14,21 @@ The implementation follows a nesting-doll key hierarchy:
 
 This preserves a zero-knowledge data model for persisted records.
 
+## Pyramid diagram
+
+```text
+                 DeviceWrapKey / RecoveryWrapKey / SyncWrapKey
+                                   (outer wraps)
+                                            │
+                                           ARK
+                                            │ wraps
+                                       Vault Key
+                                            │ wraps
+                                    Credential Key (DEK)
+                                            │ encrypts
+                                     Secret Ciphertext
+```
+
 ## Implementation mapping
 
 - Tables and persisted encrypted blobs:
