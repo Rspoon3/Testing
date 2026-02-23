@@ -55,13 +55,18 @@ final class EnvelopeStore {
                 CREATE TABLE "accountRootWrapRows" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "recoverySalt" BLOB NOT NULL,
-                  "arkKeyID" TEXT NOT NULL,
-                  "recoveryWrappedByKeyID" TEXT NOT NULL,
-                  "recoveryCryptoVersion" INTEGER NOT NULL,
-                  "wrappedARKByRecovery" BLOB NOT NULL,
-                  "syncWrappedByKeyID" TEXT,
-                  "syncCryptoVersion" INTEGER,
-                  "wrappedARKBySync" BLOB
+                  "arkKeyID" TEXT NOT NULL CHECK (length("arkKeyID") > 0),
+                  "recoveryWrappedByKeyID" TEXT NOT NULL CHECK (length("recoveryWrappedByKeyID") > 0),
+                  "recoveryCryptoVersion" INTEGER NOT NULL CHECK ("recoveryCryptoVersion" > 0),
+                  "wrappedARKByRecovery" BLOB NOT NULL CHECK (length("wrappedARKByRecovery") > 0),
+                  "syncWrappedByKeyID" TEXT CHECK ("syncWrappedByKeyID" IS NULL OR length("syncWrappedByKeyID") > 0),
+                  "syncCryptoVersion" INTEGER CHECK ("syncCryptoVersion" IS NULL OR "syncCryptoVersion" > 0),
+                  "wrappedARKBySync" BLOB CHECK ("wrappedARKBySync" IS NULL OR length("wrappedARKBySync") > 0),
+                  CHECK (
+                    ("wrappedARKBySync" IS NULL AND "syncWrappedByKeyID" IS NULL AND "syncCryptoVersion" IS NULL)
+                    OR
+                    ("wrappedARKBySync" IS NOT NULL AND "syncWrappedByKeyID" IS NOT NULL AND "syncCryptoVersion" IS NOT NULL)
+                  )
                 ) STRICT
                 """
             )
@@ -72,10 +77,10 @@ final class EnvelopeStore {
                 CREATE TABLE "deviceEnrollmentRows" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "accountID" TEXT NOT NULL REFERENCES "accountRootWrapRows"("id") ON DELETE CASCADE,
-                  "arkKeyID" TEXT NOT NULL,
-                  "wrappedByKeyID" TEXT NOT NULL,
-                  "cryptoVersion" INTEGER NOT NULL,
-                  "wrappedARKByDevice" BLOB NOT NULL
+                  "arkKeyID" TEXT NOT NULL CHECK (length("arkKeyID") > 0),
+                  "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
+                  "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "wrappedARKByDevice" BLOB NOT NULL CHECK (length("wrappedARKByDevice") > 0)
                 ) STRICT
                 """
             )
@@ -85,11 +90,11 @@ final class EnvelopeStore {
                 """
                 CREATE TABLE "vaults" (
                   "id" TEXT PRIMARY KEY NOT NULL,
-                  "name" TEXT NOT NULL,
-                  "keyID" TEXT NOT NULL,
-                  "wrappedByKeyID" TEXT NOT NULL,
-                  "cryptoVersion" INTEGER NOT NULL,
-                  "wrappedVaultKeyByARK" BLOB NOT NULL
+                  "name" TEXT NOT NULL CHECK (length("name") > 0),
+                  "keyID" TEXT NOT NULL CHECK (length("keyID") > 0),
+                  "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
+                  "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "wrappedVaultKeyByARK" BLOB NOT NULL CHECK (length("wrappedVaultKeyByARK") > 0)
                 ) STRICT
                 """
             )
@@ -100,13 +105,13 @@ final class EnvelopeStore {
                 CREATE TABLE "vaultItems" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "vaultID" TEXT NOT NULL REFERENCES "vaults"("id") ON DELETE CASCADE,
-                  "title" TEXT NOT NULL,
+                  "title" TEXT NOT NULL CHECK (length("title") > 0),
                   "type" TEXT NOT NULL,
-                  "payloadVersion" INTEGER NOT NULL,
-                  "keyID" TEXT NOT NULL,
-                  "wrappedByKeyID" TEXT NOT NULL,
-                  "cryptoVersion" INTEGER NOT NULL,
-                  "wrappedItemKeyByVaultKey" BLOB NOT NULL,
+                  "payloadVersion" INTEGER NOT NULL CHECK ("payloadVersion" > 0),
+                  "keyID" TEXT NOT NULL CHECK (length("keyID") > 0),
+                  "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
+                  "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "wrappedItemKeyByVaultKey" BLOB NOT NULL CHECK (length("wrappedItemKeyByVaultKey") > 0),
                   "createdAt" TEXT NOT NULL,
                   "updatedAt" TEXT NOT NULL
                 ) STRICT
@@ -125,11 +130,11 @@ final class EnvelopeStore {
                 CREATE TABLE "genericItemSecretFields" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "itemID" TEXT NOT NULL REFERENCES "vaultItems"("id") ON DELETE CASCADE,
-                  "fieldName" TEXT NOT NULL,
-                  "keyID" TEXT NOT NULL,
-                  "wrappedByKeyID" TEXT NOT NULL,
-                  "cryptoVersion" INTEGER NOT NULL,
-                  "ciphertext" BLOB NOT NULL,
+                  "fieldName" TEXT NOT NULL CHECK (length("fieldName") > 0),
+                  "keyID" TEXT NOT NULL CHECK (length("keyID") > 0),
+                  "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
+                  "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "ciphertext" BLOB NOT NULL CHECK (length("ciphertext") > 0),
                   "createdAt" TEXT NOT NULL,
                   "updatedAt" TEXT NOT NULL
                 ) STRICT
@@ -173,13 +178,13 @@ final class EnvelopeStore {
                 CREATE TABLE "credentialSecretFiles" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "credentialID" TEXT NOT NULL REFERENCES "vaultItems"("id") ON DELETE CASCADE,
-                  "label" TEXT NOT NULL,
-                  "fileName" TEXT NOT NULL,
+                  "label" TEXT NOT NULL CHECK (length("label") > 0),
+                  "fileName" TEXT NOT NULL CHECK (length("fileName") > 0),
                   "mimeType" TEXT,
-                  "keyID" TEXT NOT NULL,
-                  "wrappedByKeyID" TEXT NOT NULL,
-                  "cryptoVersion" INTEGER NOT NULL,
-                  "ciphertext" BLOB NOT NULL,
+                  "keyID" TEXT NOT NULL CHECK (length("keyID") > 0),
+                  "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
+                  "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "ciphertext" BLOB NOT NULL CHECK (length("ciphertext") > 0),
                   "createdAt" TEXT NOT NULL,
                   "updatedAt" TEXT NOT NULL
                 ) STRICT
@@ -220,7 +225,8 @@ final class EnvelopeStore {
         let wrappedVaultKey = try EnvelopeCrypto.wrapKey(
             vaultKey,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID)
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID),
+            cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
         let vault = Vault(
@@ -320,7 +326,8 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID)
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID),
+            cryptoVersion: vault.cryptoVersion
         )
 
         let itemID = UUID()
@@ -329,7 +336,8 @@ final class EnvelopeStore {
         let wrappedItemKey = try EnvelopeCrypto.wrapKey(
             itemKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID)
+            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID),
+            cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
         let credential = VaultItem(
@@ -377,7 +385,8 @@ final class EnvelopeStore {
                 itemType: itemType,
                 fieldName: label,
                 cryptoVersion: cryptoVersion
-            )
+            ),
+            cryptoVersion: cryptoVersion
         )
 
         let fieldID = UUID()
@@ -440,7 +449,8 @@ final class EnvelopeStore {
                 label: label,
                 fileName: fileName,
                 cryptoVersion: cryptoVersion
-            )
+            ),
+            cryptoVersion: cryptoVersion
         )
 
         let fileID = UUID()
@@ -549,7 +559,8 @@ final class EnvelopeStore {
                 itemType: itemType,
                 fieldName: field.fieldName,
                 cryptoVersion: field.cryptoVersion
-            )
+            ),
+            cryptoVersion: field.cryptoVersion
         )
     }
 
@@ -566,7 +577,8 @@ final class EnvelopeStore {
                 label: secretFile.label,
                 fileName: secretFile.fileName,
                 cryptoVersion: secretFile.cryptoVersion
-            )
+            ),
+            cryptoVersion: secretFile.cryptoVersion
         )
     }
 
@@ -593,12 +605,14 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vault.id)
+            aad: EnvelopeAAD.vaultKey(vaultID: vault.id),
+            cryptoVersion: vault.cryptoVersion
         )
         let itemKey = try EnvelopeCrypto.unwrapKey(
             item.wrappedItemKeyByVaultKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.itemKey(vaultID: vault.id, itemID: item.id)
+            aad: EnvelopeAAD.itemKey(vaultID: vault.id, itemID: item.id),
+            cryptoVersion: item.cryptoVersion
         )
 
         return (item, itemType, itemKey)

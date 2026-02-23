@@ -99,6 +99,8 @@ enum AccountKeyCoordinator {
     enum Error: Swift.Error {
         /// Requested sync unlock but no sync-wrapped ARK exists.
         case missingSyncWrap
+        /// Sync wrap exists but required version metadata is missing.
+        case invalidSyncWrapMetadata
     }
 
     /// Creates a new account root and all initial wraps.
@@ -134,14 +136,16 @@ enum AccountKeyCoordinator {
         let wrappedARKByRecovery = try EnvelopeCrypto.wrapKey(
             ark,
             wrappingKey: recoveryWrapKey,
-            aad: AccountRootAAD.arkByRecovery(accountID: accountID)
+            aad: AccountRootAAD.arkByRecovery(accountID: accountID),
+            cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
         let wrappedARKBySync = try syncWrapKey.map {
             try EnvelopeCrypto.wrapKey(
                 ark,
                 wrappingKey: $0,
-                aad: AccountRootAAD.arkBySync(accountID: accountID)
+                aad: AccountRootAAD.arkBySync(accountID: accountID),
+                cryptoVersion: EnvelopeKeyID.cryptoVersion
             )
         }
 
@@ -188,7 +192,8 @@ enum AccountKeyCoordinator {
         return try EnvelopeCrypto.unwrapKey(
             rootWraps.wrappedARKByRecovery,
             wrappingKey: recoveryWrapKey,
-            aad: AccountRootAAD.arkByRecovery(accountID: rootWraps.accountID)
+            aad: AccountRootAAD.arkByRecovery(accountID: rootWraps.accountID),
+            cryptoVersion: rootWraps.recoveryCryptoVersion
         )
     }
 
@@ -207,10 +212,14 @@ enum AccountKeyCoordinator {
         guard let wrappedARKBySync = rootWraps.wrappedARKBySync else {
             throw Error.missingSyncWrap
         }
+        guard let syncCryptoVersion = rootWraps.syncCryptoVersion else {
+            throw Error.invalidSyncWrapMetadata
+        }
         return try EnvelopeCrypto.unwrapKey(
             wrappedARKBySync,
             wrappingKey: syncWrapKey,
-            aad: AccountRootAAD.arkBySync(accountID: rootWraps.accountID)
+            aad: AccountRootAAD.arkBySync(accountID: rootWraps.accountID),
+            cryptoVersion: syncCryptoVersion
         )
     }
 
@@ -256,7 +265,8 @@ enum AccountKeyCoordinator {
         let wrappedARKByDevice = try EnvelopeCrypto.wrapKey(
             ark,
             wrappingKey: deviceWrapKey,
-            aad: AccountRootAAD.arkByDevice(accountID: accountID, deviceID: deviceID)
+            aad: AccountRootAAD.arkByDevice(accountID: accountID, deviceID: deviceID),
+            cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
         return DeviceEnrollment(
             accountID: accountID,
@@ -287,7 +297,8 @@ enum AccountKeyCoordinator {
         try EnvelopeCrypto.unwrapKey(
             enrollment.wrappedARKByDevice,
             wrappingKey: deviceWrapKey,
-            aad: AccountRootAAD.arkByDevice(accountID: enrollment.accountID, deviceID: enrollment.deviceID)
+            aad: AccountRootAAD.arkByDevice(accountID: enrollment.accountID, deviceID: enrollment.deviceID),
+            cryptoVersion: enrollment.cryptoVersion
         )
     }
 }

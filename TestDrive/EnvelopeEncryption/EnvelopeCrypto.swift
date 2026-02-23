@@ -9,6 +9,8 @@ enum EnvelopeCrypto {
     enum CryptoError: Error {
         /// Returned when CryptoKit cannot provide the combined sealed-box representation.
         case missingCombinedRepresentation
+        /// Returned when a ciphertext/wrap references an unsupported crypto version.
+        case unsupportedCryptoVersion(Int)
     }
 
     /// Encrypts raw bytes with AEAD and returns the AES-GCM combined representation.
@@ -19,6 +21,25 @@ enum EnvelopeCrypto {
     ///   - aad: Associated authenticated data that binds context to the ciphertext.
     /// - Returns: Combined AES-GCM bytes (`nonce || ciphertext || tag`).
     static func seal(_ plaintext: Data, using key: SymmetricKey, aad: Data) throws -> Data {
+        try seal(plaintext, using: key, aad: aad, cryptoVersion: 1)
+    }
+
+    /// Encrypts raw bytes with an explicit crypto-version dispatch.
+    static func seal(
+        _ plaintext: Data,
+        using key: SymmetricKey,
+        aad: Data,
+        cryptoVersion: Int
+    ) throws -> Data {
+        switch cryptoVersion {
+        case 1:
+            return try sealV1(plaintext, using: key, aad: aad)
+        default:
+            throw CryptoError.unsupportedCryptoVersion(cryptoVersion)
+        }
+    }
+
+    private static func sealV1(_ plaintext: Data, using key: SymmetricKey, aad: Data) throws -> Data {
         let sealed = try AES.GCM.seal(plaintext, using: key, authenticating: aad)
         guard let combined = sealed.combined else {
             throw CryptoError.missingCombinedRepresentation
@@ -33,6 +54,25 @@ enum EnvelopeCrypto {
     ///   - key: Symmetric decryption key.
     ///   - aad: Associated authenticated data used during encryption.
     static func open(_ combined: Data, using key: SymmetricKey, aad: Data) throws -> Data {
+        try open(combined, using: key, aad: aad, cryptoVersion: 1)
+    }
+
+    /// Decrypts AES-GCM combined bytes with explicit crypto-version dispatch.
+    static func open(
+        _ combined: Data,
+        using key: SymmetricKey,
+        aad: Data,
+        cryptoVersion: Int
+    ) throws -> Data {
+        switch cryptoVersion {
+        case 1:
+            return try openV1(combined, using: key, aad: aad)
+        default:
+            throw CryptoError.unsupportedCryptoVersion(cryptoVersion)
+        }
+    }
+
+    private static func openV1(_ combined: Data, using key: SymmetricKey, aad: Data) throws -> Data {
         let box = try AES.GCM.SealedBox(combined: combined)
         return try AES.GCM.open(box, using: key, authenticating: aad)
     }
@@ -41,12 +81,37 @@ enum EnvelopeCrypto {
     ///
     /// The wrapped output is AEAD-protected bytes that can be persisted.
     static func wrapKey(_ innerKey: SymmetricKey, wrappingKey: SymmetricKey, aad: Data) throws -> Data {
-        try seal(innerKey.withUnsafeBytes { Data($0) }, using: wrappingKey, aad: aad)
+        try wrapKey(innerKey, wrappingKey: wrappingKey, aad: aad, cryptoVersion: 1)
+    }
+
+    /// Wraps an inner symmetric key with explicit crypto-version dispatch.
+    static func wrapKey(
+        _ innerKey: SymmetricKey,
+        wrappingKey: SymmetricKey,
+        aad: Data,
+        cryptoVersion: Int
+    ) throws -> Data {
+        try seal(
+            innerKey.withUnsafeBytes { Data($0) },
+            using: wrappingKey,
+            aad: aad,
+            cryptoVersion: cryptoVersion
+        )
     }
 
     /// Unwraps a previously wrapped symmetric key.
     static func unwrapKey(_ wrappedKey: Data, wrappingKey: SymmetricKey, aad: Data) throws -> SymmetricKey {
-        let keyData = try open(wrappedKey, using: wrappingKey, aad: aad)
+        try unwrapKey(wrappedKey, wrappingKey: wrappingKey, aad: aad, cryptoVersion: 1)
+    }
+
+    /// Unwraps a previously wrapped symmetric key with explicit crypto-version dispatch.
+    static func unwrapKey(
+        _ wrappedKey: Data,
+        wrappingKey: SymmetricKey,
+        aad: Data,
+        cryptoVersion: Int
+    ) throws -> SymmetricKey {
+        let keyData = try open(wrappedKey, using: wrappingKey, aad: aad, cryptoVersion: cryptoVersion)
         return SymmetricKey(data: keyData)
     }
 }
