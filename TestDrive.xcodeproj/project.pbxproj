@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		949E48552F4CC051000F3D4F /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 949E48542F4CC051000F3D4F /* SQLiteData */; };
+		949E48572F4CC051000F3D4F /* SQLiteDataTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 949E48562F4CC051000F3D4F /* SQLiteDataTestSupport */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9483721C2EAE6B2F0094674D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -39,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				949E48552F4CC051000F3D4F /* SQLiteData in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,6 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				949E48572F4CC051000F3D4F /* SQLiteDataTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +97,7 @@
 			);
 			name = TestDrive;
 			packageProductDependencies = (
+				949E48542F4CC051000F3D4F /* SQLiteData */,
 			);
 			productName = TestDrive;
 			productReference = 9483720E2EAE6B2E0094674D /* TestDrive.app */;
@@ -113,6 +121,7 @@
 			);
 			name = TestDriveTests;
 			packageProductDependencies = (
+				949E48562F4CC051000F3D4F /* SQLiteDataTestSupport */,
 			);
 			productName = TestDriveTests;
 			productReference = 9483721B2EAE6B2F0094674D /* TestDriveTests.xctest */;
@@ -146,6 +155,9 @@
 			);
 			mainGroup = 948372052EAE6B2E0094674D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				949E48532F4CC051000F3D4F /* XCRemoteSwiftPackageReference "sqlite-data" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9483720F2EAE6B2E0094674D /* Products */;
 			projectDirPath = "";
@@ -460,6 +472,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		949E48532F4CC051000F3D4F /* XCRemoteSwiftPackageReference "sqlite-data" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/sqlite-data.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		949E48542F4CC051000F3D4F /* SQLiteData */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 949E48532F4CC051000F3D4F /* XCRemoteSwiftPackageReference "sqlite-data" */;
+			productName = SQLiteData;
+		};
+		949E48562F4CC051000F3D4F /* SQLiteDataTestSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 949E48532F4CC051000F3D4F /* XCRemoteSwiftPackageReference "sqlite-data" */;
+			productName = SQLiteDataTestSupport;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 948372062EAE6B2E0094674D /* Project object */;
 }
