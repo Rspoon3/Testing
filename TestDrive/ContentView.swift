@@ -8,14 +8,25 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var demoOutput = "Running envelope encryption demo..."
+
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("SQLiteData Envelope Encryption")
+                .font(.headline)
+            Text(demoOutput)
+                .font(.footnote.monospaced())
+                .multilineTextAlignment(.center)
         }
         .padding()
+        .task {
+            do {
+                let output = try EnvelopeEncryptionDemo.run()
+                demoOutput = "Decrypted secret: \(output)"
+            } catch {
+                demoOutput = "Demo failed: \(error)"
+            }
+        }
     }
 }
 
