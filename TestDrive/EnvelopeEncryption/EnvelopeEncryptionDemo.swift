@@ -134,6 +134,70 @@ enum EnvelopeEncryptionDemo {
             name: "apiKey",
             plaintext: Data("sk_live_demo".utf8)
         )
+        let softwareLicenseID = try deviceAStore.createSoftwareLicense(
+            vaultID: vaultID,
+            title: "Xcode Cloud Team Plan",
+            publisher: "Apple",
+            productName: "Xcode Cloud"
+        )
+        let softwareLicenseFieldID = try deviceAStore.addSoftwareLicenseField(
+            itemID: softwareLicenseID,
+            fieldName: "licenseKey",
+            plaintext: Data("LICENSE-APPLE-DEMO-1234".utf8)
+        )
+        let usernamePasswordID = try deviceAStore.createUsernamePassword(
+            vaultID: vaultID,
+            title: "GitHub Login",
+            service: "GitHub",
+            loginURL: "https://github.com/login"
+        )
+        let usernameFieldID = try deviceAStore.addUsernamePasswordField(
+            itemID: usernamePasswordID,
+            fieldName: "username",
+            plaintext: Data("dev@example.com".utf8)
+        )
+        let passwordFieldID = try deviceAStore.addUsernamePasswordField(
+            itemID: usernamePasswordID,
+            fieldName: "password",
+            plaintext: Data("super-secret-password".utf8)
+        )
+        let patID = try deviceAStore.createPersonalAccessToken(
+            vaultID: vaultID,
+            title: "GitHub PAT",
+            provider: "GitHub",
+            tokenName: "CI Token",
+            scopesHint: "repo, workflow"
+        )
+        let patFieldID = try deviceAStore.addPersonalAccessTokenField(
+            itemID: patID,
+            fieldName: "token",
+            plaintext: Data("ghp_demo_personal_access_token".utf8)
+        )
+        let databaseCredentialID = try deviceAStore.createDatabaseCredential(
+            vaultID: vaultID,
+            title: "Prod Postgres",
+            engine: "postgres",
+            host: "db.example.com",
+            port: 5432,
+            databaseName: "app_prod"
+        )
+        let databasePasswordFieldID = try deviceAStore.addDatabaseCredentialField(
+            itemID: databaseCredentialID,
+            fieldName: "password",
+            plaintext: Data("postgres-password-demo".utf8)
+        )
+        let signingID = try deviceAStore.createMobileReleaseSigning(
+            vaultID: vaultID,
+            title: "iOS App Store Signing",
+            platform: "iOS",
+            appIdentifier: "com.example.app",
+            teamOrOrgIdentifier: "ABCDE12345"
+        )
+        let signingFieldID = try deviceAStore.addMobileReleaseSigningField(
+            itemID: signingID,
+            fieldName: "p8Key",
+            plaintext: Data("-----BEGIN PRIVATE KEY-----demo-----END PRIVATE KEY-----".utf8)
+        )
 
         let recoveredARK = try AccountKeyCoordinator.recoverARK(
             metadataStore: metadataStore,
@@ -165,6 +229,14 @@ enum EnvelopeEncryptionDemo {
         )
         let deviceBStore = EnvelopeStore(database: database, ark: arkOnDeviceB)
         let revealed = try deviceBStore.revealSecret(secretID: secretID)
+        let revealedLicense = try deviceBStore.revealSoftwareLicenseField(fieldID: softwareLicenseFieldID)
+        let revealedUsername = try deviceBStore.revealUsernamePasswordField(fieldID: usernameFieldID)
+        let revealedPassword = try deviceBStore.revealUsernamePasswordField(fieldID: passwordFieldID)
+        let revealedPAT = try deviceBStore.revealPersonalAccessTokenField(fieldID: patFieldID)
+        let revealedDatabasePassword = try deviceBStore.revealDatabaseCredentialField(
+            fieldID: databasePasswordFieldID
+        )
+        let revealedSigning = try deviceBStore.revealMobileReleaseSigningField(fieldID: signingFieldID)
 
         _ = try AccountKeyCoordinator.unlockARKFromSync(
             metadataStore: metadataStore,
@@ -172,6 +244,15 @@ enum EnvelopeEncryptionDemo {
             syncWrapKey: syncWrapKey
         )
 
-        return String(decoding: revealed, as: UTF8.self)
+        return [
+            "apiKey=\(String(decoding: revealed, as: UTF8.self))",
+            "licenseKey=\(String(decoding: revealedLicense, as: UTF8.self))",
+            "username=\(String(decoding: revealedUsername, as: UTF8.self))",
+            "password=\(String(decoding: revealedPassword, as: UTF8.self))",
+            "pat=\(String(decoding: revealedPAT, as: UTF8.self))",
+            "dbPassword=\(String(decoding: revealedDatabasePassword, as: UTF8.self))",
+            "signingKey=\(String(decoding: revealedSigning, as: UTF8.self))"
+        ]
+        .joined(separator: ", ")
     }
 }

@@ -1,6 +1,20 @@
 import Foundation
 import SQLiteData
 
+/// Supported high-level item families.
+///
+/// Concrete tables can be added per type in future migrations
+/// (for example username/password, SSH keys, software licenses).
+enum VaultItemType: String, Codable {
+    case genericSecret
+    case usernamePassword
+    case sshKey
+    case personalAccessToken
+    case databaseCredential
+    case mobileReleaseSigning
+    case softwareLicense
+}
+
 /// Persisted account-level wraps for the ARK.
 @Table
 struct AccountRootWrapRow: Identifiable {
@@ -38,30 +52,49 @@ struct Vault: Identifiable {
     var wrappedVaultKeyByARK: Data
 }
 
-/// Per-credential metadata and wrapped item key.
+/// Per-item metadata and wrapped item key.
 ///
-/// The credential key (item key / DEK) is encrypted by the containing vault key.
+/// The item key (DEK) is encrypted by the containing vault key.
 @Table
-struct Credential: Identifiable {
-    /// Stable credential identifier.
+struct VaultItem: Identifiable {
+    /// Stable item identifier.
     let id: UUID
     /// Owning vault.
     var vaultID: Vault.ID
-    /// User-facing label for the credential.
-    var label: String
-    /// Credential key wrapped by the vault key.
-    var wrappedCredentialKeyByVaultKey: Data
+    /// User-facing item title.
+    var title: String
+    /// Logical item type discriminator.
+    var typeRawValue: String
+    /// Payload schema version for this item type.
+    var payloadVersion: Int
+    /// Item key wrapped by the vault key.
+    var wrappedItemKeyByVaultKey: Data
+    /// Item creation timestamp.
+    var createdAt: Date = .init()
+    /// Last update timestamp.
+    var updatedAt: Date = .init()
 }
 
-/// Encrypted secret payload for one credential field/value.
+/// Encrypted field payload for the built-in generic item demo type.
+///
+/// Future item families can define dedicated per-type tables while reusing `VaultItem`.
 @Table
-struct Secret: Identifiable {
-    /// Stable secret identifier.
+struct GenericItemSecretField: Identifiable {
+    /// Stable field identifier.
     let id: UUID
-    /// Owning credential.
-    var credentialID: Credential.ID
-    /// Logical secret name (for example `apiKey`).
-    var name: String
-    /// AES-GCM combined representation encrypted by the credential key.
+    /// Owning item.
+    var itemID: VaultItem.ID
+    /// Logical field name (for example `apiKey`).
+    var fieldName: String
+    /// Ciphertext format/algorithm version.
+    var cryptoVersion: Int
+    /// AES-GCM combined representation encrypted by the item key.
     var ciphertext: Data
+    /// Field creation timestamp.
+    var createdAt: Date = .init()
+    /// Last update timestamp.
+    var updatedAt: Date = .init()
 }
+
+typealias Credential = VaultItem
+typealias Secret = GenericItemSecretField

@@ -3,16 +3,18 @@ import Foundation
 import GRDB
 import SQLiteData
 
-/// Minimal SQLiteData-backed repository that persists wrapped keys and encrypted secrets.
+/// Minimal SQLiteData-backed repository that persists wrapped keys and encrypted item fields.
 ///
 /// Hierarchy:
-/// ARK -> VaultKey -> CredentialKey -> Secret ciphertext
+/// ARK -> VaultKey -> ItemKey -> Item field ciphertext
 final class EnvelopeStore {
     /// Store-level errors.
     enum StoreError: Error {
         case vaultNotFound
-        case credentialNotFound
-        case secretNotFound
+        case itemNotFound
+        case secretFieldNotFound
+        case typedItemMetadataNotFound
+        case unsupportedItemType
     }
 
     /// Backing SQLite database connection.
@@ -72,28 +74,49 @@ final class EnvelopeStore {
 
             try #sql(
                 """
-                CREATE TABLE "credentials" (
+                CREATE TABLE "vaultItems" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "vaultID" TEXT NOT NULL REFERENCES "vaults"("id") ON DELETE CASCADE,
-                  "label" TEXT NOT NULL,
-                  "wrappedCredentialKeyByVaultKey" BLOB NOT NULL
+                  "title" TEXT NOT NULL,
+                  "typeRawValue" TEXT NOT NULL,
+                  "payloadVersion" INTEGER NOT NULL,
+                  "wrappedItemKeyByVaultKey" BLOB NOT NULL,
+                  "createdAt" TEXT NOT NULL,
+                  "updatedAt" TEXT NOT NULL
                 ) STRICT
+                """
+            )
+            .execute(db)
+            try #sql(
+                """
+                CREATE INDEX "index_vaultItems_on_vaultID" ON "vaultItems"("vaultID")
                 """
             )
             .execute(db)
 
             try #sql(
                 """
-                CREATE TABLE "secrets" (
+                CREATE TABLE "genericItemSecretFields" (
                   "id" TEXT PRIMARY KEY NOT NULL,
-                  "credentialID" TEXT NOT NULL REFERENCES "credentials"("id") ON DELETE CASCADE,
-                  "name" TEXT NOT NULL,
-                  "ciphertext" BLOB NOT NULL
+                  "itemID" TEXT NOT NULL REFERENCES "vaultItems"("id") ON DELETE CASCADE,
+                  "fieldName" TEXT NOT NULL,
+                  "cryptoVersion" INTEGER NOT NULL,
+                  "ciphertext" BLOB NOT NULL,
+                  "createdAt" TEXT NOT NULL,
+                  "updatedAt" TEXT NOT NULL
                 ) STRICT
                 """
             )
             .execute(db)
+            try #sql(
+                """
+                CREATE INDEX "index_genericItemSecretFields_on_itemID" ON "genericItemSecretFields"("itemID")
+                """
+            )
+            .execute(db)
         }
+
+        registerTypedItemMigrations(on: &migrator)
 
         try migrator.migrate(database)
         applyFileProtection(at: url)
@@ -133,8 +156,18 @@ final class EnvelopeStore {
         return vaultID
     }
 
-    /// Creates a credential and generates a credential key wrapped by its vault key.
+    /// Creates a generic credential item and generates an item key wrapped by its vault key.
     func createCredential(vaultID: Vault.ID, label: String) throws -> Credential.ID {
+        try createItem(vaultID: vaultID, title: label, type: .genericSecret)
+    }
+
+    /// Creates a generic item entry and wraps a per-item key with the containing vault key.
+    func createItem(
+        vaultID: Vault.ID,
+        title: String,
+        type: VaultItemType,
+        payloadVersion: Int = 1
+    ) throws -> VaultItem.ID {
         let vault = try loadVault(vaultID: vaultID)
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
@@ -142,67 +175,95 @@ final class EnvelopeStore {
             aad: EnvelopeAAD.vaultKey(vaultID: vaultID)
         )
 
-        let credentialID = UUID()
-        let credentialKey = SymmetricKey(size: .bits256)
-        let wrappedCredentialKey = try EnvelopeCrypto.wrapKey(
-            credentialKey,
+        let itemID = UUID()
+        let itemKey = SymmetricKey(size: .bits256)
+        let wrappedItemKey = try EnvelopeCrypto.wrapKey(
+            itemKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.credentialKey(vaultID: vaultID, credentialID: credentialID)
+            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID)
         )
 
-        let credential = Credential(
-            id: credentialID,
+        let item = VaultItem(
+            id: itemID,
             vaultID: vaultID,
-            label: label,
-            wrappedCredentialKeyByVaultKey: wrappedCredentialKey
+            title: title,
+            typeRawValue: type.rawValue,
+            payloadVersion: payloadVersion,
+            wrappedItemKeyByVaultKey: wrappedItemKey
         )
         try database.write { db in
-            try Credential.insert {
-                credential
+            try VaultItem.insert {
+                item
             }
             .execute(db)
         }
-        return credentialID
+        return itemID
     }
 
     /// Encrypts and stores a secret under the credential key.
     func addSecret(credentialID: Credential.ID, name: String, plaintext: Data) throws -> Secret.ID {
-        let (credential, credentialKey) = try loadCredentialAndKey(credentialID: credentialID)
+        try addSecretField(itemID: credentialID, fieldName: name, plaintext: plaintext)
+    }
+
+    /// Encrypts and stores one field value for a generic item.
+    func addSecretField(
+        itemID: VaultItem.ID,
+        fieldName: String,
+        plaintext: Data,
+        cryptoVersion: Int = 1
+    ) throws -> GenericItemSecretField.ID {
+        let (item, itemType, itemKey) = try loadItemAndKey(itemID: itemID)
         let ciphertext = try EnvelopeCrypto.seal(
             plaintext,
-            using: credentialKey,
-            aad: EnvelopeAAD.secret(credentialID: credential.id, secretName: name)
+            using: itemKey,
+            aad: EnvelopeAAD.itemField(
+                itemID: item.id,
+                itemType: itemType,
+                fieldName: fieldName,
+                cryptoVersion: cryptoVersion
+            )
         )
 
-        let secretID = UUID()
-        let secret = Secret(
-            id: secretID,
-            credentialID: credentialID,
-            name: name,
+        let fieldID = UUID()
+        let field = GenericItemSecretField(
+            id: fieldID,
+            itemID: itemID,
+            fieldName: fieldName,
+            cryptoVersion: cryptoVersion,
             ciphertext: ciphertext
         )
         try database.write { db in
-            try Secret.insert {
-                secret
+            try GenericItemSecretField.insert {
+                field
             }
             .execute(db)
         }
-        return secretID
+        return fieldID
     }
 
     /// Reveals a secret by unwrapping keys down the hierarchy and decrypting payload.
     func revealSecret(secretID: Secret.ID) throws -> Data {
-        let secret = try loadSecret(secretID: secretID)
-        let (_, credentialKey) = try loadCredentialAndKey(credentialID: secret.credentialID)
+        try revealSecretField(fieldID: secretID)
+    }
+
+    /// Reveals one generic item field by decrypting with the owning item key.
+    func revealSecretField(fieldID: GenericItemSecretField.ID) throws -> Data {
+        let field = try loadSecretField(fieldID: fieldID)
+        let (item, itemType, itemKey) = try loadItemAndKey(itemID: field.itemID)
         return try EnvelopeCrypto.open(
-            secret.ciphertext,
-            using: credentialKey,
-            aad: EnvelopeAAD.secret(credentialID: secret.credentialID, secretName: secret.name)
+            field.ciphertext,
+            using: itemKey,
+            aad: EnvelopeAAD.itemField(
+                itemID: item.id,
+                itemType: itemType,
+                fieldName: field.fieldName,
+                cryptoVersion: field.cryptoVersion
+            )
         )
     }
 
     /// Loads one vault row by ID.
-    private func loadVault(vaultID: Vault.ID) throws -> Vault {
+    func loadVault(vaultID: Vault.ID) throws -> Vault {
         guard let vault = try database.read({ db in
             try Vault.where { $0.id.eq(vaultID) }.fetchOne(db)
         }) else {
@@ -211,36 +272,40 @@ final class EnvelopeStore {
         return vault
     }
 
-    /// Loads a credential and unwraps its credential key.
-    private func loadCredentialAndKey(credentialID: Credential.ID) throws -> (Credential, SymmetricKey) {
-        guard let credential = try database.read({ db in
-            try Credential.where { $0.id.eq(credentialID) }.fetchOne(db)
+    /// Loads one item and unwraps its item key.
+    func loadItemAndKey(itemID: VaultItem.ID) throws -> (VaultItem, VaultItemType, SymmetricKey) {
+        guard let item = try database.read({ db in
+            try VaultItem.where { $0.id.eq(itemID) }.fetchOne(db)
         }) else {
-            throw StoreError.credentialNotFound
+            throw StoreError.itemNotFound
+        }
+        guard let itemType = VaultItemType(rawValue: item.typeRawValue) else {
+            throw StoreError.unsupportedItemType
         }
 
-        let vault = try loadVault(vaultID: credential.vaultID)
+        let vault = try loadVault(vaultID: item.vaultID)
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
             aad: EnvelopeAAD.vaultKey(vaultID: vault.id)
         )
-        let credentialKey = try EnvelopeCrypto.unwrapKey(
-            credential.wrappedCredentialKeyByVaultKey,
+        let itemKey = try EnvelopeCrypto.unwrapKey(
+            item.wrappedItemKeyByVaultKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.credentialKey(vaultID: vault.id, credentialID: credential.id)
+            aad: EnvelopeAAD.itemKey(vaultID: vault.id, itemID: item.id)
         )
 
-        return (credential, credentialKey)
+        return (item, itemType, itemKey)
     }
 
-    /// Loads one secret row by ID.
-    private func loadSecret(secretID: Secret.ID) throws -> Secret {
+    /// Loads one generic secret field row by ID.
+    private func loadSecretField(fieldID: GenericItemSecretField.ID) throws -> GenericItemSecretField {
         guard let secret = try database.read({ db in
-            try Secret.where { $0.id.eq(secretID) }.fetchOne(db)
+            try GenericItemSecretField.where { $0.id.eq(fieldID) }.fetchOne(db)
         }) else {
-            throw StoreError.secretNotFound
+            throw StoreError.secretFieldNotFound
         }
         return secret
     }
+
 }
