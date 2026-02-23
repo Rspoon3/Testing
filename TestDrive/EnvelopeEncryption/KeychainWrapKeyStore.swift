@@ -276,18 +276,23 @@ enum KeychainWrapKeyStore {
         account: String,
         policy: DeviceAccessPolicy
     ) throws -> SymmetricKey? {
-        var query: [String: Any] = [
+        let authenticationContext: LAContext = {
+            if let context = policy.authenticationContext {
+                return context
+            }
+            return LAContext()
+        }()
+        authenticationContext.localizedReason = policy.operationPrompt
+        authenticationContext.interactionNotAllowed = false
+
+        let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
-            kSecUseOperationPrompt as String: policy.operationPrompt,
-            kSecUseAuthenticationUI as String: kSecUseAuthenticationUIAllow,
+            kSecUseAuthenticationContext as String: authenticationContext,
         ]
-        if let context = policy.authenticationContext {
-            query[kSecUseAuthenticationContext as String] = context
-        }
 
         var result: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
