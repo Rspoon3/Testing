@@ -134,6 +134,7 @@ final class EnvelopeStore {
                   "keyID" TEXT NOT NULL CHECK (length("keyID") > 0),
                   "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
                   "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "aadVersion" INTEGER NOT NULL CHECK ("aadVersion" > 0),
                   "ciphertext" BLOB NOT NULL CHECK (length("ciphertext") > 0),
                   "createdAt" TEXT NOT NULL,
                   "updatedAt" TEXT NOT NULL
@@ -144,6 +145,17 @@ final class EnvelopeStore {
             try #sql(
                 """
                 CREATE INDEX "index_genericItemSecretFields_on_itemID" ON "genericItemSecretFields"("itemID")
+                """
+            )
+            .execute(db)
+
+            try #sql(
+                """
+                CREATE TABLE "recoveryAttemptRows" (
+                  "id" TEXT PRIMARY KEY NOT NULL,
+                  "consecutiveFailures" INTEGER NOT NULL CHECK ("consecutiveFailures" >= 0),
+                  "lastAttemptAt" TEXT NOT NULL
+                ) STRICT
                 """
             )
             .execute(db)
@@ -184,6 +196,7 @@ final class EnvelopeStore {
                   "keyID" TEXT NOT NULL CHECK (length("keyID") > 0),
                   "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
                   "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "aadVersion" INTEGER NOT NULL CHECK ("aadVersion" > 0),
                   "ciphertext" BLOB NOT NULL CHECK (length("ciphertext") > 0),
                   "createdAt" TEXT NOT NULL,
                   "updatedAt" TEXT NOT NULL
@@ -370,26 +383,27 @@ final class EnvelopeStore {
         credentialID: Credential.ID,
         label: String,
         plaintext: Data,
-        cryptoVersion: Int = 1
+        cryptoVersion: Int = 1,
+        aadVersion: Int = EnvelopeKeyID.aadVersion
     ) throws -> CredentialSecretField.ID {
         guard !label.trimmedForValidation.isEmpty else {
             throw StoreError.invalidSecretField
         }
 
-        let (item, itemType, itemKey) = try loadItemAndKey(itemID: credentialID)
+        let (item, _, itemKey) = try loadItemAndKey(itemID: credentialID)
+        let fieldID = UUID()
         let ciphertext = try EnvelopeCrypto.seal(
             plaintext,
             using: itemKey,
             aad: EnvelopeAAD.itemField(
                 itemID: item.id,
-                itemType: itemType,
-                fieldName: label,
-                cryptoVersion: cryptoVersion
+                fieldID: fieldID,
+                cryptoVersion: cryptoVersion,
+                aadVersion: aadVersion
             ),
             cryptoVersion: cryptoVersion
         )
 
-        let fieldID = UUID()
         let field = GenericItemSecretField(
             id: fieldID,
             itemID: credentialID,
@@ -397,6 +411,7 @@ final class EnvelopeStore {
             keyID: item.keyID,
             wrappedByKeyID: item.wrappedByKeyID,
             cryptoVersion: cryptoVersion,
+            aadVersion: aadVersion,
             ciphertext: ciphertext
         )
         try database.write { db in
@@ -413,13 +428,15 @@ final class EnvelopeStore {
         itemID: VaultItem.ID,
         fieldName: String,
         plaintext: Data,
-        cryptoVersion: Int = 1
+        cryptoVersion: Int = 1,
+        aadVersion: Int = EnvelopeKeyID.aadVersion
     ) throws -> GenericItemSecretField.ID {
         try addSecretField(
             credentialID: itemID,
             label: fieldName,
             plaintext: plaintext,
-            cryptoVersion: cryptoVersion
+            cryptoVersion: cryptoVersion,
+            aadVersion: aadVersion
         )
     }
 
@@ -430,7 +447,8 @@ final class EnvelopeStore {
         fileName: String,
         mimeType: String? = nil,
         plaintext: Data,
-        cryptoVersion: Int = 1
+        cryptoVersion: Int = 1,
+        aadVersion: Int = EnvelopeKeyID.aadVersion
     ) throws -> CredentialSecretFile.ID {
         guard !label.trimmedForValidation.isEmpty else {
             throw StoreError.invalidSecretField
@@ -439,21 +457,20 @@ final class EnvelopeStore {
             throw StoreError.invalidSecretField
         }
 
-        let (item, itemType, itemKey) = try loadItemAndKey(itemID: credentialID)
+        let (item, _, itemKey) = try loadItemAndKey(itemID: credentialID)
+        let fileID = UUID()
         let ciphertext = try EnvelopeCrypto.seal(
             plaintext,
             using: itemKey,
             aad: EnvelopeAAD.itemFile(
                 itemID: item.id,
-                itemType: itemType,
-                label: label,
-                fileName: fileName,
-                cryptoVersion: cryptoVersion
+                fileID: fileID,
+                cryptoVersion: cryptoVersion,
+                aadVersion: aadVersion
             ),
             cryptoVersion: cryptoVersion
         )
 
-        let fileID = UUID()
         let secretFile = CredentialSecretFile(
             id: fileID,
             credentialID: credentialID,
@@ -463,6 +480,7 @@ final class EnvelopeStore {
             keyID: item.keyID,
             wrappedByKeyID: item.wrappedByKeyID,
             cryptoVersion: cryptoVersion,
+            aadVersion: aadVersion,
             ciphertext: ciphertext
         )
         try database.write { db in
@@ -550,15 +568,15 @@ final class EnvelopeStore {
     /// Reveals one generic item field by decrypting with the owning item key.
     func revealSecretField(fieldID: GenericItemSecretField.ID) throws -> Data {
         let field = try loadSecretField(fieldID: fieldID)
-        let (item, itemType, itemKey) = try loadItemAndKey(itemID: field.itemID)
+        let (item, _, itemKey) = try loadItemAndKey(itemID: field.itemID)
         return try EnvelopeCrypto.open(
             field.ciphertext,
             using: itemKey,
             aad: EnvelopeAAD.itemField(
                 itemID: item.id,
-                itemType: itemType,
-                fieldName: field.fieldName,
-                cryptoVersion: field.cryptoVersion
+                fieldID: field.id,
+                cryptoVersion: field.cryptoVersion,
+                aadVersion: field.aadVersion
             ),
             cryptoVersion: field.cryptoVersion
         )
@@ -567,16 +585,15 @@ final class EnvelopeStore {
     /// Reveals one encrypted credential file payload.
     func revealSecretFile(fileID: CredentialSecretFile.ID) throws -> Data {
         let secretFile = try loadSecretFile(fileID: fileID)
-        let (item, itemType, itemKey) = try loadItemAndKey(itemID: secretFile.credentialID)
+        let (item, _, itemKey) = try loadItemAndKey(itemID: secretFile.credentialID)
         return try EnvelopeCrypto.open(
             secretFile.ciphertext,
             using: itemKey,
             aad: EnvelopeAAD.itemFile(
                 itemID: item.id,
-                itemType: itemType,
-                label: secretFile.label,
-                fileName: secretFile.fileName,
-                cryptoVersion: secretFile.cryptoVersion
+                fileID: secretFile.id,
+                cryptoVersion: secretFile.cryptoVersion,
+                aadVersion: secretFile.aadVersion
             ),
             cryptoVersion: secretFile.cryptoVersion
         )

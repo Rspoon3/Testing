@@ -175,6 +175,165 @@ struct TestDriveTests {
     }
 
     @Test
+    /// Verifies recovery succeeds with tracker and resets failure count.
+    func recoveryWithTrackerSucceedsAndResetsFailures() throws {
+        let accountID = UUID()
+        let recoveryCode = "correct horse battery staple"
+        let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
+        defer { try? FileManager.default.removeItem(at: databaseURL) }
+        let database = try EnvelopeStore.openDatabase(at: databaseURL)
+        let metadataStore = AccountMetadataStore(database: database)
+        _ = try AccountKeyCoordinator.bootstrapAccount(
+            accountID: accountID,
+            recoveryCode: recoveryCode,
+            initialDeviceID: UUID(),
+            initialDeviceWrapKey: SymmetricKey(size: .bits256),
+            metadataStore: metadataStore
+        )
+
+        var currentDate = Date()
+        let tracker = RecoveryAttemptTracker(
+            database: database,
+            policy: .default,
+            now: { currentDate }
+        )
+
+        // Fail once, then advance past backoff window
+        #expect(throws: (any Error).self) {
+            try AccountKeyCoordinator.recoverARK(
+                metadataStore: metadataStore,
+                accountID: accountID,
+                recoveryCode: "wrong code",
+                attemptTracker: tracker
+            )
+        }
+        currentDate = currentDate.addingTimeInterval(10)
+
+        // Correct code succeeds and resets failure count
+        let ark = try AccountKeyCoordinator.recoverARK(
+            metadataStore: metadataStore,
+            accountID: accountID,
+            recoveryCode: recoveryCode,
+            attemptTracker: tracker
+        )
+        #expect(ark.bitCount == 256)
+
+        // Immediate retry with correct code works (no backoff after reset)
+        let ark2 = try AccountKeyCoordinator.recoverARK(
+            metadataStore: metadataStore,
+            accountID: accountID,
+            recoveryCode: recoveryCode,
+            attemptTracker: tracker
+        )
+        #expect(ark2.bitCount == 256)
+    }
+
+    @Test
+    /// Verifies exponential backoff blocks attempts too soon after failure.
+    func recoveryRateLimitedAfterFailure() throws {
+        let accountID = UUID()
+        let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
+        defer { try? FileManager.default.removeItem(at: databaseURL) }
+        let database = try EnvelopeStore.openDatabase(at: databaseURL)
+        let metadataStore = AccountMetadataStore(database: database)
+        _ = try AccountKeyCoordinator.bootstrapAccount(
+            accountID: accountID,
+            recoveryCode: "correct horse battery staple",
+            initialDeviceID: UUID(),
+            initialDeviceWrapKey: SymmetricKey(size: .bits256),
+            metadataStore: metadataStore
+        )
+
+        var currentDate = Date()
+        let policy = RecoveryAttemptTracker.Policy(baseDelay: 2, maxConsecutiveFailures: 10)
+        let tracker = RecoveryAttemptTracker(
+            database: database,
+            policy: policy,
+            now: { currentDate }
+        )
+
+        // First wrong attempt fails (crypto error, but failure is recorded)
+        #expect(throws: (any Error).self) {
+            try AccountKeyCoordinator.recoverARK(
+                metadataStore: metadataStore,
+                accountID: accountID,
+                recoveryCode: "wrong",
+                attemptTracker: tracker
+            )
+        }
+
+        // Immediate retry is rate-limited (2s backoff after 1 failure)
+        #expect(throws: RecoveryAttemptTracker.TrackerError.self) {
+            try tracker.checkAttemptAllowed(accountID: accountID)
+        }
+
+        // Advance 1s — still blocked
+        currentDate = currentDate.addingTimeInterval(1)
+        #expect(throws: RecoveryAttemptTracker.TrackerError.self) {
+            try tracker.checkAttemptAllowed(accountID: accountID)
+        }
+
+        // Advance past 2s — allowed
+        currentDate = currentDate.addingTimeInterval(1.5)
+        try tracker.checkAttemptAllowed(accountID: accountID)
+    }
+
+    @Test
+    /// Verifies lockout after exceeding maximum consecutive failures.
+    func recoveryLockedOutAfterMaxFailures() throws {
+        let accountID = UUID()
+        let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
+        defer { try? FileManager.default.removeItem(at: databaseURL) }
+        let database = try EnvelopeStore.openDatabase(at: databaseURL)
+        let metadataStore = AccountMetadataStore(database: database)
+        _ = try AccountKeyCoordinator.bootstrapAccount(
+            accountID: accountID,
+            recoveryCode: "correct horse battery staple",
+            initialDeviceID: UUID(),
+            initialDeviceWrapKey: SymmetricKey(size: .bits256),
+            metadataStore: metadataStore
+        )
+
+        var currentDate = Date()
+        let maxFailures = 3
+        let policy = RecoveryAttemptTracker.Policy(baseDelay: 0.001, maxConsecutiveFailures: maxFailures)
+        let tracker = RecoveryAttemptTracker(
+            database: database,
+            policy: policy,
+            now: { currentDate }
+        )
+
+        // Exhaust all allowed attempts
+        for _ in 0..<maxFailures {
+            currentDate = currentDate.addingTimeInterval(100)
+            #expect(throws: (any Error).self) {
+                try AccountKeyCoordinator.recoverARK(
+                    metadataStore: metadataStore,
+                    accountID: accountID,
+                    recoveryCode: "wrong",
+                    attemptTracker: tracker
+                )
+            }
+        }
+
+        // Next attempt is permanently locked — even with lots of time elapsed
+        currentDate = currentDate.addingTimeInterval(999_999)
+        #expect(throws: RecoveryAttemptTracker.TrackerError.self) {
+            try tracker.checkAttemptAllowed(accountID: accountID)
+        }
+
+        // Manual reset re-enables recovery
+        try tracker.resetLockout(accountID: accountID)
+        let ark = try AccountKeyCoordinator.recoverARK(
+            metadataStore: metadataStore,
+            accountID: accountID,
+            recoveryCode: "correct horse battery staple",
+            attemptTracker: tracker
+        )
+        #expect(ark.bitCount == 256)
+    }
+
+    @Test
     /// Verifies shared-vault provisioning policy semantics.
     func sharedVaultProvisioningPolicy() {
         let alice = UUID()

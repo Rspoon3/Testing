@@ -174,13 +174,32 @@ enum AccountKeyCoordinator {
     }
 
     /// Recovers ARK from recovery code using persisted account metadata.
+    ///
+    /// When an `attemptTracker` is provided, the call enforces exponential backoff
+    /// and lockout after repeated failures.
+    /// - Parameters:
+    ///   - metadataStore: Persistence adapter for root wraps.
+    ///   - accountID: Account to recover.
+    ///   - recoveryCode: User-entered recovery material.
+    ///   - attemptTracker: Optional brute-force protection tracker.
+    /// - Returns: The unwrapped account root key.
     static func recoverARK(
         metadataStore: AccountMetadataStore,
         accountID: UUID,
-        recoveryCode: String
+        recoveryCode: String,
+        attemptTracker: RecoveryAttemptTracker? = nil
     ) throws -> SymmetricKey {
+        try attemptTracker?.checkAttemptAllowed(accountID: accountID)
+
         let rootWraps = try metadataStore.loadRootWraps(accountID: accountID)
-        return try recoverARK(rootWraps: rootWraps, recoveryCode: recoveryCode)
+        do {
+            let ark = try recoverARK(rootWraps: rootWraps, recoveryCode: recoveryCode)
+            try attemptTracker?.recordSuccess(accountID: accountID)
+            return ark
+        } catch {
+            try? attemptTracker?.recordFailure(accountID: accountID)
+            throw error
+        }
     }
 
     /// Recovers ARK from recovery code.

@@ -119,6 +119,7 @@ enum EnvelopeCrypto {
 /// Deterministic key identifiers persisted alongside wrapped/encrypted blobs.
 enum EnvelopeKeyID {
     static let cryptoVersion = 1
+    static let aadVersion = 1
     static let implicitAccountARK = "ark:account:implicit"
 
     static func accountARK(accountID: UUID) -> String {
@@ -163,12 +164,12 @@ enum EnvelopeAAD {
     /// AAD for a generic item field encrypted by an item key.
     static func itemField(
         itemID: UUID,
-        itemType: VaultItemType,
-        fieldName: String,
-        cryptoVersion: Int
+        fieldID: UUID,
+        cryptoVersion: Int,
+        aadVersion: Int
     ) -> Data {
         Data(
-            "item:\(itemID.uuidString)|type:\(itemType.rawValue)|field:\(fieldName)|crypto:\(cryptoVersion)|v1"
+            "item:\(itemID.uuidString)|fieldID:\(fieldID.uuidString)|crypto:\(cryptoVersion)|aad:\(aadVersion)"
                 .utf8
         )
     }
@@ -176,13 +177,12 @@ enum EnvelopeAAD {
     /// AAD for an encrypted credential file payload.
     static func itemFile(
         itemID: UUID,
-        itemType: VaultItemType,
-        label: String,
-        fileName: String,
-        cryptoVersion: Int
+        fileID: UUID,
+        cryptoVersion: Int,
+        aadVersion: Int
     ) -> Data {
         Data(
-            "item:\(itemID.uuidString)|type:\(itemType.rawValue)|fileLabel:\(label)|fileName:\(fileName)|crypto:\(cryptoVersion)|v1"
+            "item:\(itemID.uuidString)|fileID:\(fileID.uuidString)|crypto:\(cryptoVersion)|aad:\(aadVersion)"
                 .utf8
         )
     }

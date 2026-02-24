@@ -127,6 +127,8 @@ struct GenericItemSecretField: Identifiable {
     var wrappedByKeyID: String
     /// Ciphertext format/algorithm version.
     var cryptoVersion: Int
+    /// Associated-data format version.
+    var aadVersion: Int
     /// AES-GCM combined representation encrypted by the item key.
     var ciphertext: Data
     /// Field creation timestamp.
@@ -173,12 +175,25 @@ struct CredentialSecretFile: Identifiable {
     var wrappedByKeyID: String
     /// Ciphertext format/algorithm version.
     var cryptoVersion: Int
+    /// Associated-data format version.
+    var aadVersion: Int
     /// AES-GCM combined representation encrypted by the credential key.
     var ciphertext: Data
     /// File creation timestamp.
     var createdAt: Date = .init()
     /// Last update timestamp.
     var updatedAt: Date = .init()
+}
+
+/// Tracks consecutive failed recovery attempts for brute-force protection.
+@Table
+struct RecoveryAttemptRow: Identifiable {
+    /// Account identifier (primary key, one row per account).
+    let id: UUID
+    /// Number of consecutive failed recovery attempts.
+    var consecutiveFailures: Int
+    /// Timestamp of the most recent recovery attempt.
+    var lastAttemptAt: Date
 }
 
 typealias Credential = VaultItem
