@@ -25,9 +25,11 @@ final class AccountMetadataStore {
             arkKeyID: wraps.arkKeyID,
             recoveryWrappedByKeyID: wraps.recoveryWrappedByKeyID,
             recoveryCryptoVersion: wraps.recoveryCryptoVersion,
+            recoveryAADVersion: wraps.recoveryAADVersion,
             wrappedARKByRecovery: wraps.wrappedARKByRecovery,
             syncWrappedByKeyID: wraps.syncWrappedByKeyID,
             syncCryptoVersion: wraps.syncCryptoVersion,
+            syncAADVersion: wraps.syncAADVersion,
             wrappedARKBySync: wraps.wrappedARKBySync
         )
         try database.write { db in
@@ -54,9 +56,11 @@ final class AccountMetadataStore {
             arkKeyID: row.arkKeyID,
             recoveryWrappedByKeyID: row.recoveryWrappedByKeyID,
             recoveryCryptoVersion: row.recoveryCryptoVersion,
+            recoveryAADVersion: row.recoveryAADVersion,
             wrappedARKByRecovery: row.wrappedARKByRecovery,
             syncWrappedByKeyID: row.syncWrappedByKeyID,
             syncCryptoVersion: row.syncCryptoVersion,
+            syncAADVersion: row.syncAADVersion,
             wrappedARKBySync: row.wrappedARKBySync
         )
     }
@@ -75,9 +79,11 @@ final class AccountMetadataStore {
             arkKeyID: row.arkKeyID,
             recoveryWrappedByKeyID: row.recoveryWrappedByKeyID,
             recoveryCryptoVersion: row.recoveryCryptoVersion,
+            recoveryAADVersion: row.recoveryAADVersion,
             wrappedARKByRecovery: row.wrappedARKByRecovery,
             syncWrappedByKeyID: row.syncWrappedByKeyID,
             syncCryptoVersion: row.syncCryptoVersion,
+            syncAADVersion: row.syncAADVersion,
             wrappedARKBySync: row.wrappedARKBySync
         )
     }
@@ -90,6 +96,7 @@ final class AccountMetadataStore {
             arkKeyID: enrollment.arkKeyID,
             wrappedByKeyID: enrollment.wrappedByKeyID,
             cryptoVersion: enrollment.cryptoVersion,
+            aadVersion: enrollment.aadVersion,
             wrappedARKByDevice: enrollment.wrappedARKByDevice
         )
         try database.write { db in
@@ -118,6 +125,7 @@ final class AccountMetadataStore {
             arkKeyID: row.arkKeyID,
             wrappedByKeyID: row.wrappedByKeyID,
             cryptoVersion: row.cryptoVersion,
+            aadVersion: row.aadVersion,
             wrappedARKByDevice: row.wrappedARKByDevice
         )
     }
@@ -137,6 +145,7 @@ final class AccountMetadataStore {
             arkKeyID: row.arkKeyID,
             wrappedByKeyID: row.wrappedByKeyID,
             cryptoVersion: row.cryptoVersion,
+            aadVersion: row.aadVersion,
             wrappedARKByDevice: row.wrappedARKByDevice
         )
     }

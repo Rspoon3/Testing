@@ -37,12 +37,16 @@ struct AccountRootWrapRow: Identifiable {
     var recoveryWrappedByKeyID: String
     /// Ciphertext format/algorithm version for `wrappedARKByRecovery`.
     var recoveryCryptoVersion: Int
+    /// Associated-data format version for `wrappedARKByRecovery`.
+    var recoveryAADVersion: Int
     /// ARK wrapped by the recovery-derived wrap key.
     var wrappedARKByRecovery: Data
     /// Identifier for the key that wrapped `wrappedARKBySync`.
     var syncWrappedByKeyID: String?
     /// Ciphertext format/algorithm version for `wrappedARKBySync`.
     var syncCryptoVersion: Int?
+    /// Associated-data format version for `wrappedARKBySync`.
+    var syncAADVersion: Int?
     /// Optional ARK wrapped by a sync wrap key.
     var wrappedARKBySync: Data?
 }
@@ -60,6 +64,8 @@ struct DeviceEnrollmentRow: Identifiable {
     var wrappedByKeyID: String
     /// Ciphertext format/algorithm version.
     var cryptoVersion: Int
+    /// Associated-data format version.
+    var aadVersion: Int
     /// ARK wrapped for this specific device wrap key.
     var wrappedARKByDevice: Data
 }

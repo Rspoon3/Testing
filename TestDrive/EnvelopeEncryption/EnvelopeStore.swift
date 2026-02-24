@@ -58,14 +58,16 @@ final class EnvelopeStore {
                   "arkKeyID" TEXT NOT NULL CHECK (length("arkKeyID") > 0),
                   "recoveryWrappedByKeyID" TEXT NOT NULL CHECK (length("recoveryWrappedByKeyID") > 0),
                   "recoveryCryptoVersion" INTEGER NOT NULL CHECK ("recoveryCryptoVersion" > 0),
+                  "recoveryAADVersion" INTEGER NOT NULL CHECK ("recoveryAADVersion" > 0),
                   "wrappedARKByRecovery" BLOB NOT NULL CHECK (length("wrappedARKByRecovery") > 0),
                   "syncWrappedByKeyID" TEXT CHECK ("syncWrappedByKeyID" IS NULL OR length("syncWrappedByKeyID") > 0),
                   "syncCryptoVersion" INTEGER CHECK ("syncCryptoVersion" IS NULL OR "syncCryptoVersion" > 0),
+                  "syncAADVersion" INTEGER CHECK ("syncAADVersion" IS NULL OR "syncAADVersion" > 0),
                   "wrappedARKBySync" BLOB CHECK ("wrappedARKBySync" IS NULL OR length("wrappedARKBySync") > 0),
                   CHECK (
-                    ("wrappedARKBySync" IS NULL AND "syncWrappedByKeyID" IS NULL AND "syncCryptoVersion" IS NULL)
+                    ("wrappedARKBySync" IS NULL AND "syncWrappedByKeyID" IS NULL AND "syncCryptoVersion" IS NULL AND "syncAADVersion" IS NULL)
                     OR
-                    ("wrappedARKBySync" IS NOT NULL AND "syncWrappedByKeyID" IS NOT NULL AND "syncCryptoVersion" IS NOT NULL)
+                    ("wrappedARKBySync" IS NOT NULL AND "syncWrappedByKeyID" IS NOT NULL AND "syncCryptoVersion" IS NOT NULL AND "syncAADVersion" IS NOT NULL)
                   )
                 ) STRICT
                 """
@@ -80,6 +82,7 @@ final class EnvelopeStore {
                   "arkKeyID" TEXT NOT NULL CHECK (length("arkKeyID") > 0),
                   "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
                   "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "aadVersion" INTEGER NOT NULL CHECK ("aadVersion" > 0),
                   "wrappedARKByDevice" BLOB NOT NULL CHECK (length("wrappedARKByDevice") > 0)
                 ) STRICT
                 """
@@ -291,7 +294,7 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: EnvelopeKeyID.aadVersion),
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: vault.aadVersion),
             cryptoVersion: vault.cryptoVersion
         )
 
@@ -385,7 +388,7 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: EnvelopeKeyID.aadVersion),
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: vault.aadVersion),
             cryptoVersion: vault.cryptoVersion
         )
 

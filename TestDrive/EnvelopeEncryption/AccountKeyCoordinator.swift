@@ -15,12 +15,16 @@ struct AccountRootWraps {
     var recoveryWrappedByKeyID: String
     /// Ciphertext format/algorithm version for the recovery wrap.
     var recoveryCryptoVersion: Int
+    /// Associated-data format version for the recovery wrap.
+    var recoveryAADVersion: Int
     /// ARK wrapped by recovery-derived key.
     var wrappedARKByRecovery: Data
     /// Identifier of the sync key used to wrap ARK.
     var syncWrappedByKeyID: String?
     /// Ciphertext format/algorithm version for the sync wrap.
     var syncCryptoVersion: Int?
+    /// Associated-data format version for the sync wrap.
+    var syncAADVersion: Int?
     /// Optional ARK wrapped by sync key (for iCloud Keychain convenience path).
     var wrappedARKBySync: Data?
 }
@@ -37,6 +41,8 @@ struct DeviceEnrollment {
     let wrappedByKeyID: String
     /// Ciphertext format/algorithm version.
     let cryptoVersion: Int
+    /// Associated-data format version.
+    let aadVersion: Int
     /// ARK wrapped for this specific device's local wrap key.
     let wrappedARKByDevice: Data
 }
@@ -77,18 +83,18 @@ enum RecoveryWrapKeyDeriver {
 /// AAD namespaces for ARK wrapping variants.
 enum AccountRootAAD {
     /// AAD for recovery-wrapped ARK.
-    static func arkByRecovery(accountID: UUID) -> Data {
-        Data("account:\(accountID.uuidString)|ark|recovery|v1".utf8)
+    static func arkByRecovery(accountID: UUID, aadVersion: Int) -> Data {
+        Data("account:\(accountID.uuidString)|ark|recovery|aad:\(aadVersion)".utf8)
     }
 
     /// AAD for per-device ARK wrapping.
-    static func arkByDevice(accountID: UUID, deviceID: UUID) -> Data {
-        Data("account:\(accountID.uuidString)|ark|device:\(deviceID.uuidString)|v1".utf8)
+    static func arkByDevice(accountID: UUID, deviceID: UUID, aadVersion: Int) -> Data {
+        Data("account:\(accountID.uuidString)|ark|device:\(deviceID.uuidString)|aad:\(aadVersion)".utf8)
     }
 
     /// AAD for sync-key wrapped ARK.
-    static func arkBySync(accountID: UUID) -> Data {
-        Data("account:\(accountID.uuidString)|ark|sync|v1".utf8)
+    static func arkBySync(accountID: UUID, aadVersion: Int) -> Data {
+        Data("account:\(accountID.uuidString)|ark|sync|aad:\(aadVersion)".utf8)
     }
 }
 
@@ -136,7 +142,7 @@ enum AccountKeyCoordinator {
         let wrappedARKByRecovery = try EnvelopeCrypto.wrapKey(
             ark,
             wrappingKey: recoveryWrapKey,
-            aad: AccountRootAAD.arkByRecovery(accountID: accountID),
+            aad: AccountRootAAD.arkByRecovery(accountID: accountID, aadVersion: EnvelopeKeyID.aadVersion),
             cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
@@ -144,7 +150,7 @@ enum AccountKeyCoordinator {
             try EnvelopeCrypto.wrapKey(
                 ark,
                 wrappingKey: $0,
-                aad: AccountRootAAD.arkBySync(accountID: accountID),
+                aad: AccountRootAAD.arkBySync(accountID: accountID, aadVersion: EnvelopeKeyID.aadVersion),
                 cryptoVersion: EnvelopeKeyID.cryptoVersion
             )
         }
@@ -155,9 +161,11 @@ enum AccountKeyCoordinator {
             arkKeyID: arkKeyID,
             recoveryWrappedByKeyID: recoveryWrappedByKeyID,
             recoveryCryptoVersion: EnvelopeKeyID.cryptoVersion,
+            recoveryAADVersion: EnvelopeKeyID.aadVersion,
             wrappedARKByRecovery: wrappedARKByRecovery,
             syncWrappedByKeyID: syncWrappedByKeyID,
             syncCryptoVersion: wrappedARKBySync == nil ? nil : EnvelopeKeyID.cryptoVersion,
+            syncAADVersion: wrappedARKBySync == nil ? nil : EnvelopeKeyID.aadVersion,
             wrappedARKBySync: wrappedARKBySync
         )
 
@@ -211,7 +219,10 @@ enum AccountKeyCoordinator {
         return try EnvelopeCrypto.unwrapKey(
             rootWraps.wrappedARKByRecovery,
             wrappingKey: recoveryWrapKey,
-            aad: AccountRootAAD.arkByRecovery(accountID: rootWraps.accountID),
+            aad: AccountRootAAD.arkByRecovery(
+                accountID: rootWraps.accountID,
+                aadVersion: rootWraps.recoveryAADVersion
+            ),
             cryptoVersion: rootWraps.recoveryCryptoVersion
         )
     }
@@ -234,10 +245,13 @@ enum AccountKeyCoordinator {
         guard let syncCryptoVersion = rootWraps.syncCryptoVersion else {
             throw Error.invalidSyncWrapMetadata
         }
+        guard let syncAADVersion = rootWraps.syncAADVersion else {
+            throw Error.invalidSyncWrapMetadata
+        }
         return try EnvelopeCrypto.unwrapKey(
             wrappedARKBySync,
             wrappingKey: syncWrapKey,
-            aad: AccountRootAAD.arkBySync(accountID: rootWraps.accountID),
+            aad: AccountRootAAD.arkBySync(accountID: rootWraps.accountID, aadVersion: syncAADVersion),
             cryptoVersion: syncCryptoVersion
         )
     }
@@ -284,7 +298,11 @@ enum AccountKeyCoordinator {
         let wrappedARKByDevice = try EnvelopeCrypto.wrapKey(
             ark,
             wrappingKey: deviceWrapKey,
-            aad: AccountRootAAD.arkByDevice(accountID: accountID, deviceID: deviceID),
+            aad: AccountRootAAD.arkByDevice(
+                accountID: accountID,
+                deviceID: deviceID,
+                aadVersion: EnvelopeKeyID.aadVersion
+            ),
             cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
         return DeviceEnrollment(
@@ -293,6 +311,7 @@ enum AccountKeyCoordinator {
             arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID),
             wrappedByKeyID: EnvelopeKeyID.deviceWrapKey(accountID: accountID, deviceID: deviceID),
             cryptoVersion: EnvelopeKeyID.cryptoVersion,
+            aadVersion: EnvelopeKeyID.aadVersion,
             wrappedARKByDevice: wrappedARKByDevice
         )
     }
@@ -316,7 +335,11 @@ enum AccountKeyCoordinator {
         try EnvelopeCrypto.unwrapKey(
             enrollment.wrappedARKByDevice,
             wrappingKey: deviceWrapKey,
-            aad: AccountRootAAD.arkByDevice(accountID: enrollment.accountID, deviceID: enrollment.deviceID),
+            aad: AccountRootAAD.arkByDevice(
+                accountID: enrollment.accountID,
+                deviceID: enrollment.deviceID,
+                aadVersion: enrollment.aadVersion
+            ),
             cryptoVersion: enrollment.cryptoVersion
         )
     }
