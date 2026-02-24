@@ -94,6 +94,7 @@ final class EnvelopeStore {
                   "keyID" TEXT NOT NULL CHECK (length("keyID") > 0),
                   "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
                   "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "aadVersion" INTEGER NOT NULL CHECK ("aadVersion" > 0),
                   "wrappedVaultKeyByARK" BLOB NOT NULL CHECK (length("wrappedVaultKeyByARK") > 0)
                 ) STRICT
                 """
@@ -111,6 +112,7 @@ final class EnvelopeStore {
                   "keyID" TEXT NOT NULL CHECK (length("keyID") > 0),
                   "wrappedByKeyID" TEXT NOT NULL CHECK (length("wrappedByKeyID") > 0),
                   "cryptoVersion" INTEGER NOT NULL CHECK ("cryptoVersion" > 0),
+                  "aadVersion" INTEGER NOT NULL CHECK ("aadVersion" > 0),
                   "wrappedItemKeyByVaultKey" BLOB NOT NULL CHECK (length("wrappedItemKeyByVaultKey") > 0),
                   "createdAt" TEXT NOT NULL,
                   "updatedAt" TEXT NOT NULL
@@ -238,7 +240,7 @@ final class EnvelopeStore {
         let wrappedVaultKey = try EnvelopeCrypto.wrapKey(
             vaultKey,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID),
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: EnvelopeKeyID.aadVersion),
             cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
@@ -248,6 +250,7 @@ final class EnvelopeStore {
             keyID: vaultKeyID,
             wrappedByKeyID: arkKeyID,
             cryptoVersion: EnvelopeKeyID.cryptoVersion,
+            aadVersion: EnvelopeKeyID.aadVersion,
             wrappedVaultKeyByARK: wrappedVaultKey
         )
         try database.write { db in
@@ -261,7 +264,8 @@ final class EnvelopeStore {
 
     /// Creates a credential with at least one secret field.
     ///
-    /// This is the preferred creation API because it enforces the minimum payload.
+    /// All rows are inserted in a single transaction so a crash cannot leave an
+    /// orphaned credential without its initial secret.
     func createCredential(
         vaultID: Vault.ID,
         label: String,
@@ -281,25 +285,82 @@ final class EnvelopeStore {
             throw StoreError.invalidSecretField
         }
 
-        let credentialID = try createCredentialRecord(
+        // --- Crypto (no DB writes yet) ---
+
+        let vault = try loadVault(vaultID: vaultID)
+        let vaultKey = try EnvelopeCrypto.unwrapKey(
+            vault.wrappedVaultKeyByARK,
+            wrappingKey: ark,
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: EnvelopeKeyID.aadVersion),
+            cryptoVersion: vault.cryptoVersion
+        )
+
+        let itemID = UUID()
+        let itemKeyID = EnvelopeKeyID.itemKey(itemID: itemID)
+        let itemKey = SymmetricKey(size: .bits256)
+        let wrappedItemKey = try EnvelopeCrypto.wrapKey(
+            itemKey,
+            wrappingKey: vaultKey,
+            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID, aadVersion: EnvelopeKeyID.aadVersion),
+            cryptoVersion: EnvelopeKeyID.cryptoVersion
+        )
+
+        let credential = VaultItem(
+            id: itemID,
             vaultID: vaultID,
-            label: label,
+            title: label,
             type: type,
-            payloadVersion: payloadVersion
+            payloadVersion: payloadVersion,
+            keyID: itemKeyID,
+            wrappedByKeyID: vault.keyID,
+            cryptoVersion: EnvelopeKeyID.cryptoVersion,
+            aadVersion: EnvelopeKeyID.aadVersion,
+            wrappedItemKeyByVaultKey: wrappedItemKey
         )
-        let initialSecretFieldID = try addSecret(
-            credentialID: credentialID,
-            name: initialSecretLabel,
-            plaintext: initialSecretPlaintext
+
+        let fieldID = UUID()
+        let fieldCiphertext = try EnvelopeCrypto.seal(
+            initialSecretPlaintext,
+            using: itemKey,
+            aad: EnvelopeAAD.itemField(
+                itemID: itemID,
+                fieldID: fieldID,
+                cryptoVersion: EnvelopeKeyID.cryptoVersion,
+                aadVersion: EnvelopeKeyID.aadVersion
+            ),
+            cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
-        try addCredentialAttributes(
-            credentialID: credentialID,
+
+        let field = GenericItemSecretField(
+            id: fieldID,
+            itemID: itemID,
+            fieldName: initialSecretLabel,
+            keyID: itemKeyID,
+            wrappedByKeyID: vault.keyID,
+            cryptoVersion: EnvelopeKeyID.cryptoVersion,
+            aadVersion: EnvelopeKeyID.aadVersion,
+            ciphertext: fieldCiphertext
+        )
+
+        let attributeRows = buildAttributeRows(
+            credentialID: itemID,
             environment: environment,
             links: links,
             associatedEmails: associatedEmails,
             notes: notes
         )
-        return (credentialID, initialSecretFieldID)
+
+        // --- Single atomic write ---
+
+        try database.write { db in
+            try VaultItem.insert { credential }.execute(db)
+            try GenericItemSecretField.insert { field }.execute(db)
+            for attribute in attributeRows {
+                try CredentialAttribute.insert { attribute }.execute(db)
+            }
+        }
+
+        return (itemID, fieldID)
     }
 
     /// Creates a credential row and wraps a per-credential key with the containing vault key.
@@ -324,7 +385,7 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID),
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: EnvelopeKeyID.aadVersion),
             cryptoVersion: vault.cryptoVersion
         )
 
@@ -334,7 +395,7 @@ final class EnvelopeStore {
         let wrappedItemKey = try EnvelopeCrypto.wrapKey(
             itemKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID),
+            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID, aadVersion: EnvelopeKeyID.aadVersion),
             cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
@@ -347,6 +408,7 @@ final class EnvelopeStore {
             keyID: itemKeyID,
             wrappedByKeyID: vaultKeyID,
             cryptoVersion: EnvelopeKeyID.cryptoVersion,
+            aadVersion: EnvelopeKeyID.aadVersion,
             wrappedItemKeyByVaultKey: wrappedItemKey
         )
         try database.write { db in
@@ -590,13 +652,13 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vault.id),
+            aad: EnvelopeAAD.vaultKey(vaultID: vault.id, aadVersion: vault.aadVersion),
             cryptoVersion: vault.cryptoVersion
         )
         let itemKey = try EnvelopeCrypto.unwrapKey(
             item.wrappedItemKeyByVaultKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.itemKey(vaultID: vault.id, itemID: item.id),
+            aad: EnvelopeAAD.itemKey(vaultID: vault.id, itemID: item.id, aadVersion: item.aadVersion),
             cryptoVersion: item.cryptoVersion
         )
 
@@ -621,6 +683,56 @@ final class EnvelopeStore {
             throw StoreError.secretFieldNotFound
         }
         return secretFile
+    }
+
+    /// Builds attribute rows without persisting, for use in atomic writes.
+    private func buildAttributeRows(
+        credentialID: Credential.ID,
+        environment: String?,
+        links: [String],
+        associatedEmails: [String],
+        notes: String?
+    ) -> [CredentialAttribute] {
+        var rows: [CredentialAttribute] = []
+
+        if let environment, !environment.trimmedForValidation.isEmpty {
+            rows.append(CredentialAttribute(
+                id: UUID(),
+                credentialID: credentialID,
+                kindRawValue: CredentialAttributeKind.environment.rawValue,
+                name: CredentialAttributeKind.environment.defaultAttributeName,
+                value: environment.trimmedForValidation
+            ))
+        }
+        for link in links where !link.trimmedForValidation.isEmpty {
+            rows.append(CredentialAttribute(
+                id: UUID(),
+                credentialID: credentialID,
+                kindRawValue: CredentialAttributeKind.link.rawValue,
+                name: CredentialAttributeKind.link.defaultAttributeName,
+                value: link.trimmedForValidation
+            ))
+        }
+        for email in associatedEmails where !email.trimmedForValidation.isEmpty {
+            rows.append(CredentialAttribute(
+                id: UUID(),
+                credentialID: credentialID,
+                kindRawValue: CredentialAttributeKind.associatedEmail.rawValue,
+                name: CredentialAttributeKind.associatedEmail.defaultAttributeName,
+                value: email.trimmedForValidation
+            ))
+        }
+        if let notes, !notes.trimmedForValidation.isEmpty {
+            rows.append(CredentialAttribute(
+                id: UUID(),
+                credentialID: credentialID,
+                kindRawValue: CredentialAttributeKind.note.rawValue,
+                name: CredentialAttributeKind.note.defaultAttributeName,
+                value: notes.trimmedForValidation
+            ))
+        }
+
+        return rows
     }
 
 }

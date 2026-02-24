@@ -79,6 +79,8 @@ struct Vault: Identifiable {
     var wrappedByKeyID: String
     /// Ciphertext format/algorithm version.
     var cryptoVersion: Int
+    /// Associated-data format version.
+    var aadVersion: Int
     /// Vault key wrapped by ARK.
     var wrappedVaultKeyByARK: Data
 }
@@ -104,6 +106,8 @@ struct VaultItem: Identifiable {
     var wrappedByKeyID: String
     /// Ciphertext format/algorithm version.
     var cryptoVersion: Int
+    /// Associated-data format version.
+    var aadVersion: Int
     /// Item key wrapped by the vault key.
     var wrappedItemKeyByVaultKey: Data
     /// Item creation timestamp.

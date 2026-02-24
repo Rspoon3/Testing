@@ -152,13 +152,13 @@ enum EnvelopeKeyID {
 /// AAD prevents ciphertext/key-swapping across contexts.
 enum EnvelopeAAD {
     /// AAD for a vault key wrapped by ARK.
-    static func vaultKey(vaultID: UUID) -> Data {
-        Data("vault:\(vaultID.uuidString)|vaultKey|v1".utf8)
+    static func vaultKey(vaultID: UUID, aadVersion: Int) -> Data {
+        Data("vault:\(vaultID.uuidString)|vaultKey|aad:\(aadVersion)".utf8)
     }
 
     /// AAD for an item key wrapped by its vault key.
-    static func itemKey(vaultID: UUID, itemID: UUID) -> Data {
-        Data("vault:\(vaultID.uuidString)|item:\(itemID.uuidString)|key|v1".utf8)
+    static func itemKey(vaultID: UUID, itemID: UUID, aadVersion: Int) -> Data {
+        Data("vault:\(vaultID.uuidString)|item:\(itemID.uuidString)|key|aad:\(aadVersion)".utf8)
     }
 
     /// AAD for a generic item field encrypted by an item key.
