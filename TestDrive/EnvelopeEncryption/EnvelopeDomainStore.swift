@@ -1,4 +1,5 @@
 import CryptoKit
+import Dependencies
 import Foundation
 
 /// DB-agnostic envelope encryption engine.
@@ -20,18 +21,16 @@ final class EnvelopeDomainStore {
         var secretFields: [PersistedSecretField]
     }
 
-    let persistence: any EnvelopeDomainPersisting
+    @Dependency(\.envelopeDomainPersistence) private var persistence
     let ark: SymmetricKey
     let arkKeyID: String
     private let now: () -> Date
 
     init(
-        persistence: any EnvelopeDomainPersisting,
         ark: SymmetricKey,
         arkKeyID: String = EnvelopeKeyID.implicitAccountARK,
         now: @escaping () -> Date = { Date() }
     ) {
-        self.persistence = persistence
         self.ark = ark
         self.arkKeyID = arkKeyID
         self.now = now
@@ -193,7 +192,7 @@ final class EnvelopeDomainStore {
     func revealSecret(secretID: UUID) throws -> Data {
         let field: PersistedSecretField
         do {
-            field = try persistence.loadSecretField(id: secretID)
+            field = try persistence.loadSecretField(secretID)
         } catch {
             throw StoreError.secretFieldNotFound
         }
@@ -248,9 +247,9 @@ final class EnvelopeDomainStore {
             wrappedVaultKeyByARK: wrappedVaultKeyForRecipient
         )
 
-        let credentials = try persistence.loadCredentials(vaultID: vaultID)
+        let credentials = try persistence.loadCredentials(vaultID)
         let secretFields = try credentials.flatMap { credential in
-            try persistence.loadSecretFields(itemID: credential.id)
+            try persistence.loadSecretFields(credential.id)
         }
 
         return SharedVaultPackage(
@@ -273,7 +272,7 @@ final class EnvelopeDomainStore {
 
     private func loadVault(vaultID: UUID) throws -> PersistedVault {
         do {
-            return try persistence.loadVault(id: vaultID)
+            return try persistence.loadVault(vaultID)
         } catch {
             throw StoreError.vaultNotFound
         }
@@ -282,7 +281,7 @@ final class EnvelopeDomainStore {
     private func loadCredentialAndItemKey(credentialID: UUID) throws -> (PersistedCredential, SymmetricKey) {
         let credential: PersistedCredential
         do {
-            credential = try persistence.loadCredential(id: credentialID)
+            credential = try persistence.loadCredential(credentialID)
         } catch {
             throw StoreError.credentialNotFound
         }

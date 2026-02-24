@@ -10,7 +10,7 @@ struct EnvelopeSharingAndDeviceTopologyTests {
         let accountID = UUID()
         let recoveryCode = "correct horse battery staple"
         let dependencies = makeInMemoryCoordinatorDependencies()
-        let sharedPersistence = InMemoryEnvelopeDomainPersistence()
+        let sharedPersistence = makeInMemoryEnvelopeDomainPersistence()
 
         try withCoordinatorDependencies(dependencies) {
             let deviceAID = UUID()
@@ -26,7 +26,7 @@ struct EnvelopeSharingAndDeviceTopologyTests {
                 deviceID: deviceAID,
                 deviceWrapKey: deviceAWrapKey
             )
-            let storeA = EnvelopeDomainStore(
+            let storeA = makeEnvelopeDomainStore(
                 persistence: sharedPersistence,
                 ark: arkOnA,
                 arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
@@ -59,7 +59,7 @@ struct EnvelopeSharingAndDeviceTopologyTests {
                 deviceID: deviceBID,
                 deviceWrapKey: deviceBWrapKey
             )
-            let storeB = EnvelopeDomainStore(
+            let storeB = makeEnvelopeDomainStore(
                 persistence: sharedPersistence,
                 ark: arkOnB,
                 arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
@@ -78,7 +78,7 @@ struct EnvelopeSharingAndDeviceTopologyTests {
                 deviceID: deviceCID,
                 deviceWrapKey: deviceCWrapKey
             )
-            let storeC = EnvelopeDomainStore(
+            let storeC = makeEnvelopeDomainStore(
                 persistence: sharedPersistence,
                 ark: arkOnC,
                 arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
@@ -107,12 +107,12 @@ struct EnvelopeSharingAndDeviceTopologyTests {
         let userA = try makeUserContext()
         let userB = try makeUserContext()
 
-        let storeA = EnvelopeDomainStore(
+        let storeA = makeEnvelopeDomainStore(
             persistence: userA.persistence,
             ark: userA.ark,
             arkKeyID: EnvelopeKeyID.accountARK(accountID: userA.accountID)
         )
-        let storeB = EnvelopeDomainStore(
+        let storeB = makeEnvelopeDomainStore(
             persistence: userB.persistence,
             ark: userB.ark,
             arkKeyID: EnvelopeKeyID.accountARK(accountID: userB.accountID)
@@ -151,12 +151,12 @@ struct EnvelopeSharingAndDeviceTopologyTests {
         let userA = try makeUserContext()
         let userB = try makeUserContext()
 
-        let storeA = EnvelopeDomainStore(
+        let storeA = makeEnvelopeDomainStore(
             persistence: userA.persistence,
             ark: userA.ark,
             arkKeyID: EnvelopeKeyID.accountARK(accountID: userA.accountID)
         )
-        let storeB = EnvelopeDomainStore(
+        let storeB = makeEnvelopeDomainStore(
             persistence: userB.persistence,
             ark: userB.ark,
             arkKeyID: EnvelopeKeyID.accountARK(accountID: userB.accountID)
@@ -204,6 +204,7 @@ private struct UserContext {
 private func makeUserContext() throws -> UserContext {
     let accountID = UUID()
     let dependencies = makeInMemoryCoordinatorDependencies()
+    let persistence = makeInMemoryEnvelopeDomainPersistence()
     let deviceID = UUID()
     let deviceWrapKey = SymmetricKey(size: .bits256)
 
@@ -224,72 +225,100 @@ private func makeUserContext() throws -> UserContext {
     return UserContext(
         accountID: accountID,
         ark: ark,
-        persistence: InMemoryEnvelopeDomainPersistence()
+        persistence: persistence
     )
 }
 
-private final class InMemoryEnvelopeDomainPersistence: EnvelopeDomainPersisting {
-    enum PersistenceError: Error {
-        case vaultNotFound
-        case credentialNotFound
-        case secretFieldNotFound
-    }
+private typealias InMemoryEnvelopeDomainPersistence = LockedValue<InMemoryEnvelopeDomainPersistenceState>
 
-    private var vaultsByID: [UUID: PersistedVault] = [:]
-    private var credentialsByID: [UUID: PersistedCredential] = [:]
-    private var secretFieldsByID: [UUID: PersistedSecretField] = [:]
+private struct InMemoryEnvelopeDomainPersistenceState {
+    var vaultsByID: [UUID: PersistedVault] = [:]
+    var credentialsByID: [UUID: PersistedCredential] = [:]
+    var secretFieldsByID: [UUID: PersistedSecretField] = [:]
+}
 
-    func upsertVault(_ vault: PersistedVault) throws {
-        vaultsByID[vault.id] = vault
-    }
+private enum InMemoryEnvelopePersistenceError: Error {
+    case vaultNotFound
+    case credentialNotFound
+    case secretFieldNotFound
+}
 
-    func loadVault(id: UUID) throws -> PersistedVault {
-        guard let vault = vaultsByID[id] else {
-            throw PersistenceError.vaultNotFound
+private func makeInMemoryEnvelopeDomainPersistence() -> InMemoryEnvelopeDomainPersistence {
+    LockedValue(InMemoryEnvelopeDomainPersistenceState())
+}
+
+private func makeEnvelopeDomainPersistenceClient(
+    persistence: InMemoryEnvelopeDomainPersistence
+) -> EnvelopeDomainPersistenceClient {
+    EnvelopeDomainPersistenceClient(
+        upsertVault: { vault in
+            persistence.withValue { $0.vaultsByID[vault.id] = vault }
+        },
+        loadVault: { id in
+            try persistence.withValue { state in
+                guard let vault = state.vaultsByID[id] else {
+                    throw InMemoryEnvelopePersistenceError.vaultNotFound
+                }
+                return vault
+            }
+        },
+        fetchVault: { id in
+            persistence.withValue { $0.vaultsByID[id] }
+        },
+        upsertCredential: { credential in
+            persistence.withValue { $0.credentialsByID[credential.id] = credential }
+        },
+        loadCredential: { id in
+            try persistence.withValue { state in
+                guard let credential = state.credentialsByID[id] else {
+                    throw InMemoryEnvelopePersistenceError.credentialNotFound
+                }
+                return credential
+            }
+        },
+        fetchCredential: { id in
+            persistence.withValue { $0.credentialsByID[id] }
+        },
+        loadCredentials: { vaultID in
+            persistence.withValue { state in
+                state.credentialsByID.values
+                    .filter { $0.vaultID == vaultID }
+                    .sorted { $0.createdAt < $1.createdAt }
+            }
+        },
+        upsertSecretField: { field in
+            persistence.withValue { $0.secretFieldsByID[field.id] = field }
+        },
+        loadSecretField: { id in
+            try persistence.withValue { state in
+                guard let field = state.secretFieldsByID[id] else {
+                    throw InMemoryEnvelopePersistenceError.secretFieldNotFound
+                }
+                return field
+            }
+        },
+        loadSecretFields: { itemID in
+            persistence.withValue { state in
+                state.secretFieldsByID.values
+                    .filter { $0.itemID == itemID }
+                    .sorted { $0.createdAt < $1.createdAt }
+            }
         }
-        return vault
-    }
+    )
+}
 
-    func fetchVault(id: UUID) throws -> PersistedVault? {
-        vaultsByID[id]
-    }
-
-    func upsertCredential(_ credential: PersistedCredential) throws {
-        credentialsByID[credential.id] = credential
-    }
-
-    func loadCredential(id: UUID) throws -> PersistedCredential {
-        guard let credential = credentialsByID[id] else {
-            throw PersistenceError.credentialNotFound
-        }
-        return credential
-    }
-
-    func fetchCredential(id: UUID) throws -> PersistedCredential? {
-        credentialsByID[id]
-    }
-
-    func loadCredentials(vaultID: UUID) throws -> [PersistedCredential] {
-        credentialsByID.values
-            .filter { $0.vaultID == vaultID }
-            .sorted { $0.createdAt < $1.createdAt }
-    }
-
-    func upsertSecretField(_ field: PersistedSecretField) throws {
-        secretFieldsByID[field.id] = field
-    }
-
-    func loadSecretField(id: UUID) throws -> PersistedSecretField {
-        guard let field = secretFieldsByID[id] else {
-            throw PersistenceError.secretFieldNotFound
-        }
-        return field
-    }
-
-    func loadSecretFields(itemID: UUID) throws -> [PersistedSecretField] {
-        secretFieldsByID.values
-            .filter { $0.itemID == itemID }
-            .sorted { $0.createdAt < $1.createdAt }
+private func makeEnvelopeDomainStore(
+    persistence: InMemoryEnvelopeDomainPersistence,
+    ark: SymmetricKey,
+    arkKeyID: String
+) -> EnvelopeDomainStore {
+    withDependencies {
+        $0.envelopeDomainPersistence = makeEnvelopeDomainPersistenceClient(persistence: persistence)
+    } operation: {
+        EnvelopeDomainStore(
+            ark: ark,
+            arkKeyID: arkKeyID
+        )
     }
 }
 

@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 
 /// Persisted vault metadata and ARK-wrapped vault key.
@@ -41,18 +42,72 @@ struct PersistedSecretField: Identifiable, Sendable {
     var updatedAt: Date
 }
 
-/// DB-agnostic persistence port used by the envelope domain layer.
-protocol EnvelopeDomainPersisting {
-    func upsertVault(_ vault: PersistedVault) throws
-    func loadVault(id: UUID) throws -> PersistedVault
-    func fetchVault(id: UUID) throws -> PersistedVault?
+/// DB-agnostic persistence client used by the envelope domain layer.
+struct EnvelopeDomainPersistenceClient: Sendable {
+    var upsertVault: @Sendable (_ vault: PersistedVault) throws -> Void
+    var loadVault: @Sendable (_ id: UUID) throws -> PersistedVault
+    var fetchVault: @Sendable (_ id: UUID) throws -> PersistedVault?
 
-    func upsertCredential(_ credential: PersistedCredential) throws
-    func loadCredential(id: UUID) throws -> PersistedCredential
-    func fetchCredential(id: UUID) throws -> PersistedCredential?
-    func loadCredentials(vaultID: UUID) throws -> [PersistedCredential]
+    var upsertCredential: @Sendable (_ credential: PersistedCredential) throws -> Void
+    var loadCredential: @Sendable (_ id: UUID) throws -> PersistedCredential
+    var fetchCredential: @Sendable (_ id: UUID) throws -> PersistedCredential?
+    var loadCredentials: @Sendable (_ vaultID: UUID) throws -> [PersistedCredential]
 
-    func upsertSecretField(_ field: PersistedSecretField) throws
-    func loadSecretField(id: UUID) throws -> PersistedSecretField
-    func loadSecretFields(itemID: UUID) throws -> [PersistedSecretField]
+    var upsertSecretField: @Sendable (_ field: PersistedSecretField) throws -> Void
+    var loadSecretField: @Sendable (_ id: UUID) throws -> PersistedSecretField
+    var loadSecretFields: @Sendable (_ itemID: UUID) throws -> [PersistedSecretField]
+}
+
+extension EnvelopeDomainPersistenceClient: DependencyKey {
+    static var liveValue: EnvelopeDomainPersistenceClient {
+        .unimplemented
+    }
+
+    static var testValue: EnvelopeDomainPersistenceClient {
+        .unimplemented
+    }
+}
+
+extension DependencyValues {
+    var envelopeDomainPersistence: EnvelopeDomainPersistenceClient {
+        get { self[EnvelopeDomainPersistenceClient.self] }
+        set { self[EnvelopeDomainPersistenceClient.self] = newValue }
+    }
+}
+
+extension EnvelopeDomainPersistenceClient {
+    static var unimplemented: EnvelopeDomainPersistenceClient {
+        EnvelopeDomainPersistenceClient(
+            upsertVault: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.upsertVault")
+            },
+            loadVault: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.loadVault")
+            },
+            fetchVault: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.fetchVault")
+            },
+            upsertCredential: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.upsertCredential")
+            },
+            loadCredential: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.loadCredential")
+            },
+            fetchCredential: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.fetchCredential")
+            },
+            loadCredentials: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.loadCredentials")
+            },
+            upsertSecretField: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.upsertSecretField")
+            },
+            loadSecretField: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.loadSecretField")
+            },
+            loadSecretFields: { _ in
+                throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.loadSecretFields")
+            }
+        )
+    }
 }
