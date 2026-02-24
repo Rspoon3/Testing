@@ -3,7 +3,7 @@ import GRDB
 import SQLiteData
 
 /// Persistence adapter for account-level key-wrap metadata.
-final class AccountMetadataStore: AccountMetadataRepository {
+final class AccountMetadataStore: @unchecked Sendable {
     /// Store-level errors.
     enum StoreError: Error {
         case accountNotFound
@@ -147,6 +147,23 @@ final class AccountMetadataStore: AccountMetadataRepository {
             cryptoVersion: row.cryptoVersion,
             aadVersion: row.aadVersion,
             wrappedARKByDevice: row.wrappedARKByDevice
+        )
+    }
+
+    var client: AccountMetadataClient {
+        AccountMetadataClient(
+            saveRootWraps: { wraps in
+                try self.saveRootWraps(wraps)
+            },
+            loadRootWraps: { accountID in
+                try self.loadRootWraps(accountID: accountID)
+            },
+            saveDeviceEnrollment: { enrollment in
+                try self.saveDeviceEnrollment(enrollment)
+            },
+            loadDeviceEnrollment: { accountID, deviceID in
+                try self.loadDeviceEnrollment(accountID: accountID, deviceID: deviceID)
+            }
         )
     }
 }

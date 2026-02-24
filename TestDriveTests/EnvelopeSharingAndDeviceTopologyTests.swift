@@ -1,4 +1,5 @@
 import CryptoKit
+import Dependencies
 import Foundation
 import Testing
 @testable import TestDrive
@@ -8,104 +9,97 @@ struct EnvelopeSharingAndDeviceTopologyTests {
     func ownerDevicesABCCanReadAndEditCredentialWithoutSQLite() throws {
         let accountID = UUID()
         let recoveryCode = "correct horse battery staple"
-        let metadataRepository = InMemoryAccountMetadataRepository()
-        let attemptTracker = InMemoryRecoveryAttemptTracker()
+        let dependencies = makeInMemoryCoordinatorDependencies()
         let sharedPersistence = InMemoryEnvelopeDomainPersistence()
 
-        let deviceAID = UUID()
-        let deviceAWrapKey = SymmetricKey(size: .bits256)
-        _ = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: recoveryCode,
-            initialDeviceID: deviceAID,
-            initialDeviceWrapKey: deviceAWrapKey,
-            metadataStore: metadataRepository
-        )
-        let arkOnA = try AccountKeyCoordinator.unlockARKForDevice(
-            metadataStore: metadataRepository,
-            accountID: accountID,
-            deviceID: deviceAID,
-            deviceWrapKey: deviceAWrapKey
-        )
-        let storeA = EnvelopeDomainStore(
-            persistence: sharedPersistence,
-            ark: arkOnA,
-            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
-        )
+        try withCoordinatorDependencies(dependencies) {
+            let deviceAID = UUID()
+            let deviceAWrapKey = SymmetricKey(size: .bits256)
+            _ = try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: recoveryCode,
+                initialDeviceID: deviceAID,
+                initialDeviceWrapKey: deviceAWrapKey
+            )
+            let arkOnA = try AccountKeyCoordinator.unlockARKForDevice(
+                accountID: accountID,
+                deviceID: deviceAID,
+                deviceWrapKey: deviceAWrapKey
+            )
+            let storeA = EnvelopeDomainStore(
+                persistence: sharedPersistence,
+                ark: arkOnA,
+                arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+            )
 
-        let vaultID = try storeA.createVault(name: "Primary")
-        let created = try storeA.createCredential(
-            vaultID: vaultID,
-            label: "Stripe",
-            type: .personalAccessToken,
-            initialSecretLabel: "token",
-            initialSecretPlaintext: Data("pat_a_initial".utf8)
-        )
+            let vaultID = try storeA.createVault(name: "Primary")
+            let created = try storeA.createCredential(
+                vaultID: vaultID,
+                label: "Stripe",
+                type: .personalAccessToken,
+                initialSecretLabel: "token",
+                initialSecretPlaintext: Data("pat_a_initial".utf8)
+            )
 
-        let recoveredARK = try AccountKeyCoordinator.recoverARK(
-            metadataStore: metadataRepository,
-            accountID: accountID,
-            recoveryCode: recoveryCode,
-            attemptTracker: attemptTracker
-        )
+            let recoveredARK = try AccountKeyCoordinator.recoverARK(
+                accountID: accountID,
+                recoveryCode: recoveryCode
+            )
 
-        let deviceBID = UUID()
-        let deviceBWrapKey = SymmetricKey(size: .bits256)
-        _ = try AccountKeyCoordinator.enrollDevice(
-            metadataStore: metadataRepository,
-            accountID: accountID,
-            ark: recoveredARK,
-            deviceID: deviceBID,
-            deviceWrapKey: deviceBWrapKey
-        )
-        let arkOnB = try AccountKeyCoordinator.unlockARKForDevice(
-            metadataStore: metadataRepository,
-            accountID: accountID,
-            deviceID: deviceBID,
-            deviceWrapKey: deviceBWrapKey
-        )
-        let storeB = EnvelopeDomainStore(
-            persistence: sharedPersistence,
-            ark: arkOnB,
-            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
-        )
+            let deviceBID = UUID()
+            let deviceBWrapKey = SymmetricKey(size: .bits256)
+            _ = try AccountKeyCoordinator.enrollDevice(
+                accountID: accountID,
+                ark: recoveredARK,
+                deviceID: deviceBID,
+                deviceWrapKey: deviceBWrapKey
+            )
+            let arkOnB = try AccountKeyCoordinator.unlockARKForDevice(
+                accountID: accountID,
+                deviceID: deviceBID,
+                deviceWrapKey: deviceBWrapKey
+            )
+            let storeB = EnvelopeDomainStore(
+                persistence: sharedPersistence,
+                ark: arkOnB,
+                arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+            )
 
-        let deviceCID = UUID()
-        let deviceCWrapKey = SymmetricKey(size: .bits256)
-        _ = try AccountKeyCoordinator.enrollDevice(
-            metadataStore: metadataRepository,
-            accountID: accountID,
-            ark: recoveredARK,
-            deviceID: deviceCID,
-            deviceWrapKey: deviceCWrapKey
-        )
-        let arkOnC = try AccountKeyCoordinator.unlockARKForDevice(
-            metadataStore: metadataRepository,
-            accountID: accountID,
-            deviceID: deviceCID,
-            deviceWrapKey: deviceCWrapKey
-        )
-        let storeC = EnvelopeDomainStore(
-            persistence: sharedPersistence,
-            ark: arkOnC,
-            arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
-        )
+            let deviceCID = UUID()
+            let deviceCWrapKey = SymmetricKey(size: .bits256)
+            _ = try AccountKeyCoordinator.enrollDevice(
+                accountID: accountID,
+                ark: recoveredARK,
+                deviceID: deviceCID,
+                deviceWrapKey: deviceCWrapKey
+            )
+            let arkOnC = try AccountKeyCoordinator.unlockARKForDevice(
+                accountID: accountID,
+                deviceID: deviceCID,
+                deviceWrapKey: deviceCWrapKey
+            )
+            let storeC = EnvelopeDomainStore(
+                persistence: sharedPersistence,
+                ark: arkOnC,
+                arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
+            )
 
-        let initialOnB = try storeB.revealSecret(secretID: created.initialSecretFieldID)
-        let initialOnC = try storeC.revealSecret(secretID: created.initialSecretFieldID)
-        #expect(String(decoding: initialOnB, as: UTF8.self) == "pat_a_initial")
-        #expect(String(decoding: initialOnC, as: UTF8.self) == "pat_a_initial")
+            let initialOnB = try storeB.revealSecret(secretID: created.initialSecretFieldID)
+            let initialOnC = try storeC.revealSecret(secretID: created.initialSecretFieldID)
+            #expect(String(decoding: initialOnB, as: UTF8.self) == "pat_a_initial")
+            #expect(String(decoding: initialOnC, as: UTF8.self) == "pat_a_initial")
 
-        let rotatedID = try storeB.addSecret(
-            credentialID: created.credentialID,
-            name: "tokenRotated",
-            plaintext: Data("pat_b_rotated".utf8)
-        )
+            let rotatedID = try storeB.addSecret(
+                credentialID: created.credentialID,
+                name: "tokenRotated",
+                plaintext: Data("pat_b_rotated".utf8)
+            )
 
-        let rotatedOnA = try storeA.revealSecret(secretID: rotatedID)
-        let rotatedOnC = try storeC.revealSecret(secretID: rotatedID)
-        #expect(String(decoding: rotatedOnA, as: UTF8.self) == "pat_b_rotated")
-        #expect(String(decoding: rotatedOnC, as: UTF8.self) == "pat_b_rotated")
+            let rotatedOnA = try storeA.revealSecret(secretID: rotatedID)
+            let rotatedOnC = try storeC.revealSecret(secretID: rotatedID)
+            #expect(String(decoding: rotatedOnA, as: UTF8.self) == "pat_b_rotated")
+            #expect(String(decoding: rotatedOnC, as: UTF8.self) == "pat_b_rotated")
+        }
     }
 
     @Test
@@ -209,23 +203,23 @@ private struct UserContext {
 
 private func makeUserContext() throws -> UserContext {
     let accountID = UUID()
-    let metadataRepository = InMemoryAccountMetadataRepository()
+    let dependencies = makeInMemoryCoordinatorDependencies()
     let deviceID = UUID()
     let deviceWrapKey = SymmetricKey(size: .bits256)
 
-    _ = try AccountKeyCoordinator.bootstrapAccount(
-        accountID: accountID,
-        recoveryCode: "correct horse battery staple",
-        initialDeviceID: deviceID,
-        initialDeviceWrapKey: deviceWrapKey,
-        metadataStore: metadataRepository
-    )
-    let ark = try AccountKeyCoordinator.unlockARKForDevice(
-        metadataStore: metadataRepository,
-        accountID: accountID,
-        deviceID: deviceID,
-        deviceWrapKey: deviceWrapKey
-    )
+    let ark = try withCoordinatorDependencies(dependencies) {
+        _ = try AccountKeyCoordinator.bootstrapAccount(
+            accountID: accountID,
+            recoveryCode: "correct horse battery staple",
+            initialDeviceID: deviceID,
+            initialDeviceWrapKey: deviceWrapKey
+        )
+        return try AccountKeyCoordinator.unlockARKForDevice(
+            accountID: accountID,
+            deviceID: deviceID,
+            deviceWrapKey: deviceWrapKey
+        )
+    }
 
     return UserContext(
         accountID: accountID,
@@ -299,40 +293,26 @@ private final class InMemoryEnvelopeDomainPersistence: EnvelopeDomainPersisting 
     }
 }
 
-private final class InMemoryAccountMetadataRepository: AccountMetadataRepository {
-    enum RepositoryError: Error {
-        case accountNotFound
-        case deviceEnrollmentNotFound
+private struct InMemoryCoordinatorDependencies {
+    let metadataState: LockedValue<InMemoryMetadataState>
+    let trackerState: LockedValue<TrackerState>
+
+    var metadataClient: AccountMetadataClient {
+        makeAccountMetadataClient(state: metadataState)
     }
 
-    private var rootWrapsByAccountID: [UUID: AccountRootWraps] = [:]
-    private var enrollmentsByAccountAndDeviceID: [DeviceEnrollmentKey: DeviceEnrollment] = [:]
-
-    func saveRootWraps(_ wraps: AccountRootWraps) throws {
-        rootWrapsByAccountID[wraps.accountID] = wraps
+    var trackerClient: RecoveryAttemptTrackerClient {
+        makeRecoveryAttemptTrackerClient(state: trackerState)
     }
+}
 
-    func loadRootWraps(accountID: UUID) throws -> AccountRootWraps {
-        guard let wraps = rootWrapsByAccountID[accountID] else {
-            throw RepositoryError.accountNotFound
-        }
-        return wraps
-    }
+private struct InMemoryMetadataState {
+    var rootWrapsByAccountID: [UUID: AccountRootWraps] = [:]
+    var enrollmentsByAccountAndDeviceID: [DeviceEnrollmentKey: DeviceEnrollment] = [:]
+}
 
-    func saveDeviceEnrollment(_ enrollment: DeviceEnrollment) throws {
-        enrollmentsByAccountAndDeviceID[
-            DeviceEnrollmentKey(accountID: enrollment.accountID, deviceID: enrollment.deviceID)
-        ] = enrollment
-    }
-
-    func loadDeviceEnrollment(accountID: UUID, deviceID: UUID) throws -> DeviceEnrollment {
-        guard let enrollment = enrollmentsByAccountAndDeviceID[
-            DeviceEnrollmentKey(accountID: accountID, deviceID: deviceID)
-        ] else {
-            throw RepositoryError.deviceEnrollmentNotFound
-        }
-        return enrollment
-    }
+private struct TrackerState: Sendable {
+    var consecutiveFailuresByAccountID: [UUID: Int] = [:]
 }
 
 private struct DeviceEnrollmentKey: Hashable {
@@ -340,20 +320,91 @@ private struct DeviceEnrollmentKey: Hashable {
     let deviceID: UUID
 }
 
-private final class InMemoryRecoveryAttemptTracker: RecoveryAttemptTracking {
-    private var consecutiveFailuresByAccountID: [UUID: Int] = [:]
+private enum InMemoryMetadataError: Error {
+    case accountNotFound
+    case deviceEnrollmentNotFound
+}
 
-    func checkAttemptAllowed(accountID: UUID) throws {}
+private func makeInMemoryCoordinatorDependencies() -> InMemoryCoordinatorDependencies {
+    InMemoryCoordinatorDependencies(
+        metadataState: LockedValue(InMemoryMetadataState()),
+        trackerState: LockedValue(TrackerState())
+    )
+}
 
-    func recordFailure(accountID: UUID) throws {
-        consecutiveFailuresByAccountID[accountID, default: 0] += 1
+private func makeAccountMetadataClient(state: LockedValue<InMemoryMetadataState>) -> AccountMetadataClient {
+    AccountMetadataClient(
+        saveRootWraps: { wraps in
+            state.withValue { $0.rootWrapsByAccountID[wraps.accountID] = wraps }
+        },
+        loadRootWraps: { accountID in
+            try state.withValue { state in
+                guard let wraps = state.rootWrapsByAccountID[accountID] else {
+                    throw InMemoryMetadataError.accountNotFound
+                }
+                return wraps
+            }
+        },
+        saveDeviceEnrollment: { enrollment in
+            state.withValue {
+                $0.enrollmentsByAccountAndDeviceID[
+                    DeviceEnrollmentKey(accountID: enrollment.accountID, deviceID: enrollment.deviceID)
+                ] = enrollment
+            }
+        },
+        loadDeviceEnrollment: { accountID, deviceID in
+            try state.withValue { state in
+                guard let enrollment = state.enrollmentsByAccountAndDeviceID[
+                    DeviceEnrollmentKey(accountID: accountID, deviceID: deviceID)
+                ] else {
+                    throw InMemoryMetadataError.deviceEnrollmentNotFound
+                }
+                return enrollment
+            }
+        }
+    )
+}
+
+private func makeRecoveryAttemptTrackerClient(
+    state: LockedValue<TrackerState>
+) -> RecoveryAttemptTrackerClient {
+    RecoveryAttemptTrackerClient(
+        checkAttemptAllowed: { _ in },
+        recordFailure: { accountID in
+            state.withValue { $0.consecutiveFailuresByAccountID[accountID, default: 0] += 1 }
+        },
+        recordSuccess: { accountID in
+            state.withValue { $0.consecutiveFailuresByAccountID[accountID] = 0 }
+        },
+        resetLockout: { accountID in
+            state.withValue { $0.consecutiveFailuresByAccountID[accountID] = 0 }
+        }
+    )
+}
+
+private func withCoordinatorDependencies<R>(
+    _ dependencies: InMemoryCoordinatorDependencies,
+    operation: () throws -> R
+) rethrows -> R {
+    try withDependencies {
+        $0.accountMetadata = dependencies.metadataClient
+        $0.recoveryAttemptTracker = dependencies.trackerClient
+    } operation: {
+        try operation()
+    }
+}
+
+private final class LockedValue<Value>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Value
+
+    init(_ value: Value) {
+        self.value = value
     }
 
-    func recordSuccess(accountID: UUID) throws {
-        consecutiveFailuresByAccountID[accountID] = 0
-    }
-
-    func resetLockout(accountID: UUID) throws {
-        consecutiveFailuresByAccountID[accountID] = 0
+    func withValue<T>(_ operation: (inout Value) throws -> T) rethrows -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return try operation(&value)
     }
 }

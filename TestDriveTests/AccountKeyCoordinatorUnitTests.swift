@@ -1,4 +1,5 @@
 import CryptoKit
+import Dependencies
 import Foundation
 import Testing
 @testable import TestDrive
@@ -10,24 +11,29 @@ struct AccountKeyCoordinatorUnitTests {
         let deviceID = UUID()
         let recoveryCode = "correct horse battery staple"
         let deviceWrapKey = SymmetricKey(size: .bits256)
-        let metadataRepository = InMemoryAccountMetadataRepository()
+        let dependencies = makeInMemoryCoordinatorDependencies()
 
-        let bootstrap = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: recoveryCode,
-            initialDeviceID: deviceID,
-            initialDeviceWrapKey: deviceWrapKey,
-            metadataStore: metadataRepository
-        )
-        let unlockedARK = try AccountKeyCoordinator.unlockARKForDevice(
-            metadataStore: metadataRepository,
-            accountID: accountID,
-            deviceID: deviceID,
-            deviceWrapKey: deviceWrapKey
-        )
+        let bootstrap = try withCoordinatorDependencies(dependencies) {
+            try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: recoveryCode,
+                initialDeviceID: deviceID,
+                initialDeviceWrapKey: deviceWrapKey
+            )
+        }
+        let unlockedARK = try withCoordinatorDependencies(dependencies) {
+            try AccountKeyCoordinator.unlockARKForDevice(
+                accountID: accountID,
+                deviceID: deviceID,
+                deviceWrapKey: deviceWrapKey
+            )
+        }
 
         #expect(keyMaterial(unlockedARK) == keyMaterial(bootstrap.ark))
-        #expect((try? metadataRepository.loadRootWraps(accountID: accountID).accountID) == accountID)
+        let storedAccountID = dependencies.metadataState.withValue { state in
+            state.rootWrapsByAccountID[accountID]?.accountID
+        }
+        #expect(storedAccountID == accountID)
     }
 
     @Test
@@ -35,127 +41,116 @@ struct AccountKeyCoordinatorUnitTests {
         let accountID = UUID()
         let deviceID = UUID()
         let recoveryCode = "correct horse battery staple"
-        let metadataRepository = InMemoryAccountMetadataRepository()
-        let tracker = SpyRecoveryAttemptTracker()
+        let dependencies = makeInMemoryCoordinatorDependencies()
 
-        let bootstrap = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: recoveryCode,
-            initialDeviceID: deviceID,
-            initialDeviceWrapKey: SymmetricKey(size: .bits256),
-            metadataStore: metadataRepository
-        )
-        let recoveredARK = try AccountKeyCoordinator.recoverARK(
-            metadataStore: metadataRepository,
-            accountID: accountID,
-            recoveryCode: recoveryCode,
-            attemptTracker: tracker
-        )
+        let bootstrap = try withCoordinatorDependencies(dependencies) {
+            try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: recoveryCode,
+                initialDeviceID: deviceID,
+                initialDeviceWrapKey: SymmetricKey(size: .bits256)
+            )
+        }
+        let recoveredARK = try withCoordinatorDependencies(dependencies) {
+            try AccountKeyCoordinator.recoverARK(
+                accountID: accountID,
+                recoveryCode: recoveryCode
+            )
+        }
 
+        let trackerState = dependencies.trackerState.withValue { $0 }
         #expect(keyMaterial(recoveredARK) == keyMaterial(bootstrap.ark))
-        #expect(tracker.checkCalls == [accountID])
-        #expect(tracker.successCalls == [accountID])
-        #expect(tracker.failureCalls.isEmpty)
+        #expect(trackerState.checkCalls == [accountID])
+        #expect(trackerState.successCalls == [accountID])
+        #expect(trackerState.failureCalls.isEmpty)
     }
 
     @Test
     func recoveryFailureRecordsTrackerFailureWithoutSQLite() throws {
         let accountID = UUID()
         let deviceID = UUID()
-        let metadataRepository = InMemoryAccountMetadataRepository()
-        let tracker = SpyRecoveryAttemptTracker()
+        let dependencies = makeInMemoryCoordinatorDependencies()
 
-        _ = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: "correct horse battery staple",
-            initialDeviceID: deviceID,
-            initialDeviceWrapKey: SymmetricKey(size: .bits256),
-            metadataStore: metadataRepository
-        )
-
-        #expect(throws: (any Error).self) {
-            try AccountKeyCoordinator.recoverARK(
-                metadataStore: metadataRepository,
+        _ = try withCoordinatorDependencies(dependencies) {
+            try AccountKeyCoordinator.bootstrapAccount(
                 accountID: accountID,
-                recoveryCode: "wrong code",
-                attemptTracker: tracker
+                recoveryCode: "correct horse battery staple",
+                initialDeviceID: deviceID,
+                initialDeviceWrapKey: SymmetricKey(size: .bits256)
             )
         }
 
-        #expect(tracker.checkCalls == [accountID])
-        #expect(tracker.successCalls.isEmpty)
-        #expect(tracker.failureCalls == [accountID])
+        #expect(throws: (any Error).self) {
+            try withCoordinatorDependencies(dependencies) {
+                try AccountKeyCoordinator.recoverARK(
+                    accountID: accountID,
+                    recoveryCode: "wrong code"
+                )
+            }
+        }
+
+        let trackerState = dependencies.trackerState.withValue { $0 }
+        #expect(trackerState.checkCalls == [accountID])
+        #expect(trackerState.successCalls.isEmpty)
+        #expect(trackerState.failureCalls == [accountID])
     }
 
     @Test
     func trackerRejectionShortCircuitsRecovery() throws {
         let accountID = UUID()
         let deviceID = UUID()
-        let metadataRepository = InMemoryAccountMetadataRepository()
-        let tracker = SpyRecoveryAttemptTracker()
-        tracker.shouldThrowOnCheck = true
+        let dependencies = makeInMemoryCoordinatorDependencies()
+        dependencies.trackerState.withValue { $0.shouldThrowOnCheck = true }
 
-        _ = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: "correct horse battery staple",
-            initialDeviceID: deviceID,
-            initialDeviceWrapKey: SymmetricKey(size: .bits256),
-            metadataStore: metadataRepository
-        )
-
-        #expect(throws: SpyRecoveryAttemptTracker.StubError.self) {
-            try AccountKeyCoordinator.recoverARK(
-                metadataStore: metadataRepository,
+        _ = try withCoordinatorDependencies(dependencies) {
+            try AccountKeyCoordinator.bootstrapAccount(
                 accountID: accountID,
                 recoveryCode: "correct horse battery staple",
-                attemptTracker: tracker
+                initialDeviceID: deviceID,
+                initialDeviceWrapKey: SymmetricKey(size: .bits256)
             )
         }
 
-        #expect(tracker.checkCalls == [accountID])
-        #expect(tracker.successCalls.isEmpty)
-        #expect(tracker.failureCalls.isEmpty)
+        #expect(throws: TrackerStubError.self) {
+            try withCoordinatorDependencies(dependencies) {
+                try AccountKeyCoordinator.recoverARK(
+                    accountID: accountID,
+                    recoveryCode: "correct horse battery staple"
+                )
+            }
+        }
+
+        let trackerState = dependencies.trackerState.withValue { $0 }
+        #expect(trackerState.checkCalls == [accountID])
+        #expect(trackerState.successCalls.isEmpty)
+        #expect(trackerState.failureCalls.isEmpty)
     }
 }
 
-private func keyMaterial(_ key: SymmetricKey) -> Data {
-    key.withUnsafeBytes { Data($0) }
+private struct InMemoryCoordinatorDependencies {
+    let metadataState: LockedValue<InMemoryMetadataState>
+    let trackerState: LockedValue<TrackerProbeState>
+
+    var metadataClient: AccountMetadataClient {
+        makeAccountMetadataClient(state: metadataState)
+    }
+
+    var trackerClient: RecoveryAttemptTrackerClient {
+        makeRecoveryAttemptTrackerClient(state: trackerState)
+    }
 }
 
-private final class InMemoryAccountMetadataRepository: AccountMetadataRepository {
-    enum RepositoryError: Error {
-        case accountNotFound
-        case deviceEnrollmentNotFound
-    }
+private struct InMemoryMetadataState {
+    var rootWrapsByAccountID: [UUID: AccountRootWraps] = [:]
+    var enrollmentsByAccountAndDeviceID: [DeviceEnrollmentKey: DeviceEnrollment] = [:]
+}
 
-    private var rootWrapsByAccountID: [UUID: AccountRootWraps] = [:]
-    private var enrollmentsByAccountAndDeviceID: [DeviceEnrollmentKey: DeviceEnrollment] = [:]
-
-    func saveRootWraps(_ wraps: AccountRootWraps) throws {
-        rootWrapsByAccountID[wraps.accountID] = wraps
-    }
-
-    func loadRootWraps(accountID: UUID) throws -> AccountRootWraps {
-        guard let wraps = rootWrapsByAccountID[accountID] else {
-            throw RepositoryError.accountNotFound
-        }
-        return wraps
-    }
-
-    func saveDeviceEnrollment(_ enrollment: DeviceEnrollment) throws {
-        enrollmentsByAccountAndDeviceID[
-            DeviceEnrollmentKey(accountID: enrollment.accountID, deviceID: enrollment.deviceID)
-        ] = enrollment
-    }
-
-    func loadDeviceEnrollment(accountID: UUID, deviceID: UUID) throws -> DeviceEnrollment {
-        guard let enrollment = enrollmentsByAccountAndDeviceID[
-            DeviceEnrollmentKey(accountID: accountID, deviceID: deviceID)
-        ] else {
-            throw RepositoryError.deviceEnrollmentNotFound
-        }
-        return enrollment
-    }
+private struct TrackerProbeState: Sendable {
+    var shouldThrowOnCheck = false
+    var checkCalls: [UUID] = []
+    var failureCalls: [UUID] = []
+    var successCalls: [UUID] = []
+    var resetCalls: [UUID] = []
 }
 
 private struct DeviceEnrollmentKey: Hashable {
@@ -163,34 +158,106 @@ private struct DeviceEnrollmentKey: Hashable {
     let deviceID: UUID
 }
 
-private final class SpyRecoveryAttemptTracker: RecoveryAttemptTracking {
-    enum StubError: Error {
-        case blocked
-    }
+private enum InMemoryMetadataError: Error {
+    case accountNotFound
+    case deviceEnrollmentNotFound
+}
 
-    var shouldThrowOnCheck = false
+private enum TrackerStubError: Error {
+    case blocked
+}
 
-    private(set) var checkCalls: [UUID] = []
-    private(set) var failureCalls: [UUID] = []
-    private(set) var successCalls: [UUID] = []
-    private(set) var resetCalls: [UUID] = []
+private func makeInMemoryCoordinatorDependencies() -> InMemoryCoordinatorDependencies {
+    InMemoryCoordinatorDependencies(
+        metadataState: LockedValue(InMemoryMetadataState()),
+        trackerState: LockedValue(TrackerProbeState())
+    )
+}
 
-    func checkAttemptAllowed(accountID: UUID) throws {
-        checkCalls.append(accountID)
-        if shouldThrowOnCheck {
-            throw StubError.blocked
+private func makeAccountMetadataClient(state: LockedValue<InMemoryMetadataState>) -> AccountMetadataClient {
+    AccountMetadataClient(
+        saveRootWraps: { wraps in
+            state.withValue { $0.rootWrapsByAccountID[wraps.accountID] = wraps }
+        },
+        loadRootWraps: { accountID in
+            try state.withValue { state in
+                guard let wraps = state.rootWrapsByAccountID[accountID] else {
+                    throw InMemoryMetadataError.accountNotFound
+                }
+                return wraps
+            }
+        },
+        saveDeviceEnrollment: { enrollment in
+            state.withValue {
+                $0.enrollmentsByAccountAndDeviceID[
+                    DeviceEnrollmentKey(accountID: enrollment.accountID, deviceID: enrollment.deviceID)
+                ] = enrollment
+            }
+        },
+        loadDeviceEnrollment: { accountID, deviceID in
+            try state.withValue { state in
+                guard let enrollment = state.enrollmentsByAccountAndDeviceID[
+                    DeviceEnrollmentKey(accountID: accountID, deviceID: deviceID)
+                ] else {
+                    throw InMemoryMetadataError.deviceEnrollmentNotFound
+                }
+                return enrollment
+            }
         }
+    )
+}
+
+private func makeRecoveryAttemptTrackerClient(
+    state: LockedValue<TrackerProbeState>
+) -> RecoveryAttemptTrackerClient {
+    RecoveryAttemptTrackerClient(
+        checkAttemptAllowed: { accountID in
+            try state.withValue { state in
+                state.checkCalls.append(accountID)
+                if state.shouldThrowOnCheck {
+                    throw TrackerStubError.blocked
+                }
+            }
+        },
+        recordFailure: { accountID in
+            state.withValue { $0.failureCalls.append(accountID) }
+        },
+        recordSuccess: { accountID in
+            state.withValue { $0.successCalls.append(accountID) }
+        },
+        resetLockout: { accountID in
+            state.withValue { $0.resetCalls.append(accountID) }
+        }
+    )
+}
+
+private func withCoordinatorDependencies<R>(
+    _ dependencies: InMemoryCoordinatorDependencies,
+    operation: () throws -> R
+) rethrows -> R {
+    try withDependencies {
+        $0.accountMetadata = dependencies.metadataClient
+        $0.recoveryAttemptTracker = dependencies.trackerClient
+    } operation: {
+        try operation()
+    }
+}
+
+private func keyMaterial(_ key: SymmetricKey) -> Data {
+    key.withUnsafeBytes { Data($0) }
+}
+
+private final class LockedValue<Value>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Value
+
+    init(_ value: Value) {
+        self.value = value
     }
 
-    func recordFailure(accountID: UUID) throws {
-        failureCalls.append(accountID)
-    }
-
-    func recordSuccess(accountID: UUID) throws {
-        successCalls.append(accountID)
-    }
-
-    func resetLockout(accountID: UUID) throws {
-        resetCalls.append(accountID)
+    func withValue<T>(_ operation: (inout Value) throws -> T) rethrows -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return try operation(&value)
     }
 }

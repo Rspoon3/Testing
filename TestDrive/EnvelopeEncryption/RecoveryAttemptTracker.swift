@@ -7,7 +7,7 @@ import SQLiteData
 /// Tracks consecutive failures per account in SQLite and applies exponential
 /// backoff before allowing the next attempt. After a configurable maximum
 /// number of failures the account is permanently locked until manually reset.
-final class RecoveryAttemptTracker: RecoveryAttemptTracking {
+final class RecoveryAttemptTracker: @unchecked Sendable {
     /// Errors thrown when a recovery attempt is blocked by the rate-limit policy.
     enum TrackerError: Error, Equatable {
         /// The caller must wait before retrying. `retryAfter` is the remaining delay in seconds.
@@ -133,5 +133,22 @@ final class RecoveryAttemptTracker: RecoveryAttemptTracking {
                 .delete()
                 .execute(db)
         }
+    }
+
+    var client: RecoveryAttemptTrackerClient {
+        RecoveryAttemptTrackerClient(
+            checkAttemptAllowed: { accountID in
+                try self.checkAttemptAllowed(accountID: accountID)
+            },
+            recordFailure: { accountID in
+                try self.recordFailure(accountID: accountID)
+            },
+            recordSuccess: { accountID in
+                try self.recordSuccess(accountID: accountID)
+            },
+            resetLockout: { accountID in
+                try self.resetLockout(accountID: accountID)
+            }
+        )
     }
 }

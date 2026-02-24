@@ -123,7 +123,6 @@ enum AccountKeyCoordinator {
     ///   - recoveryCode: User-owned recovery material.
     ///   - initialDeviceID: First trusted device identifier.
     ///   - initialDeviceWrapKey: Device-local wrap key (Secure Enclave/Keychain in production).
-    ///   - metadataStore: Persistence adapter for root wraps and device enrollments.
     ///   - syncWrapKey: Optional convenience key for iCloud Keychain style bootstrap.
     /// - Returns: ARK plus persisted wrap metadata and first device enrollment.
     static func bootstrapAccount(
@@ -131,9 +130,9 @@ enum AccountKeyCoordinator {
         recoveryCode: String,
         initialDeviceID: UUID,
         initialDeviceWrapKey: SymmetricKey,
-        metadataStore: any AccountMetadataRepository,
         syncWrapKey: SymmetricKey? = nil
     ) throws -> AccountBootstrapResult {
+        @Dependency(\.accountMetadata) var accountMetadata
         @Dependency(\.recoveryWrapKeyDeriver) var recoveryWrapKeyDeriver
         let ark = SymmetricKey(size: .bits256)
         let arkKeyID = EnvelopeKeyID.accountARK(accountID: accountID)
@@ -180,8 +179,8 @@ enum AccountKeyCoordinator {
             deviceID: initialDeviceID,
             deviceWrapKey: initialDeviceWrapKey
         )
-        try metadataStore.saveRootWraps(rootWraps)
-        try metadataStore.saveDeviceEnrollment(initialDevice)
+        try accountMetadata.saveRootWraps(rootWraps)
+        try accountMetadata.saveDeviceEnrollment(initialDevice)
 
         return AccountBootstrapResult(ark: ark, rootWraps: rootWraps, initialDevice: initialDevice)
     }
@@ -191,26 +190,24 @@ enum AccountKeyCoordinator {
     /// This call always enforces exponential backoff and lockout via the
     /// provided `attemptTracker`.
     /// - Parameters:
-    ///   - metadataStore: Persistence adapter for root wraps.
     ///   - accountID: Account to recover.
     ///   - recoveryCode: User-entered recovery material.
-    ///   - attemptTracker: Brute-force protection tracker.
     /// - Returns: The unwrapped account root key.
     static func recoverARK(
-        metadataStore: any AccountMetadataRepository,
         accountID: UUID,
-        recoveryCode: String,
-        attemptTracker: any RecoveryAttemptTracking
+        recoveryCode: String
     ) throws -> SymmetricKey {
-        try attemptTracker.checkAttemptAllowed(accountID: accountID)
+        @Dependency(\.accountMetadata) var accountMetadata
+        @Dependency(\.recoveryAttemptTracker) var recoveryAttemptTracker
+        try recoveryAttemptTracker.checkAttemptAllowed(accountID)
 
-        let rootWraps = try metadataStore.loadRootWraps(accountID: accountID)
+        let rootWraps = try accountMetadata.loadRootWraps(accountID)
         do {
             let ark = try recoverARK(rootWraps: rootWraps, recoveryCode: recoveryCode)
-            try attemptTracker.recordSuccess(accountID: accountID)
+            try recoveryAttemptTracker.recordSuccess(accountID)
             return ark
         } catch {
-            try? attemptTracker.recordFailure(accountID: accountID)
+            try? recoveryAttemptTracker.recordFailure(accountID)
             throw error
         }
     }
@@ -232,11 +229,11 @@ enum AccountKeyCoordinator {
 
     /// Unlocks ARK using optional sync-wrap path from persisted account metadata.
     static func unlockARKFromSync(
-        metadataStore: any AccountMetadataRepository,
         accountID: UUID,
         syncWrapKey: SymmetricKey
     ) throws -> SymmetricKey {
-        let rootWraps = try metadataStore.loadRootWraps(accountID: accountID)
+        @Dependency(\.accountMetadata) var accountMetadata
+        let rootWraps = try accountMetadata.loadRootWraps(accountID)
         return try unlockARKFromSync(rootWraps: rootWraps, syncWrapKey: syncWrapKey)
     }
 
@@ -261,35 +258,20 @@ enum AccountKeyCoordinator {
 
     /// Creates and persists a per-device ARK wrap for a new trusted device.
     static func enrollDevice(
-        metadataStore: any AccountMetadataRepository,
         accountID: UUID,
         ark: SymmetricKey,
         deviceID: UUID,
         deviceWrapKey: SymmetricKey
     ) throws -> DeviceEnrollment {
+        @Dependency(\.accountMetadata) var accountMetadata
         let enrollment = try enrollDeviceWithoutPersistence(
             accountID: accountID,
             ark: ark,
             deviceID: deviceID,
             deviceWrapKey: deviceWrapKey
         )
-        try metadataStore.saveDeviceEnrollment(enrollment)
+        try accountMetadata.saveDeviceEnrollment(enrollment)
         return enrollment
-    }
-
-    /// Creates a per-device ARK wrap for a new trusted device.
-    static func enrollDevice(
-        accountID: UUID,
-        ark: SymmetricKey,
-        deviceID: UUID,
-        deviceWrapKey: SymmetricKey
-    ) throws -> DeviceEnrollment {
-        try enrollDeviceWithoutPersistence(
-            accountID: accountID,
-            ark: ark,
-            deviceID: deviceID,
-            deviceWrapKey: deviceWrapKey
-        )
     }
 
     private static func enrollDeviceWithoutPersistence(
@@ -321,12 +303,12 @@ enum AccountKeyCoordinator {
 
     /// Unlocks ARK for a persisted device enrollment.
     static func unlockARKForDevice(
-        metadataStore: any AccountMetadataRepository,
         accountID: UUID,
         deviceID: UUID,
         deviceWrapKey: SymmetricKey
     ) throws -> SymmetricKey {
-        let enrollment = try metadataStore.loadDeviceEnrollment(accountID: accountID, deviceID: deviceID)
+        @Dependency(\.accountMetadata) var accountMetadata
+        let enrollment = try accountMetadata.loadDeviceEnrollment(accountID, deviceID)
         return try unlockARKForDevice(enrollment: enrollment, deviceWrapKey: deviceWrapKey)
     }
 
