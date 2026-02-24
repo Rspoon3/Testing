@@ -110,7 +110,8 @@ enum EnvelopeCrypto {
         aad: Data,
         cryptoVersion: Int
     ) throws -> SymmetricKey {
-        let keyData = try open(wrappedKey, using: wrappingKey, aad: aad, cryptoVersion: cryptoVersion)
+        var keyData = try open(wrappedKey, using: wrappingKey, aad: aad, cryptoVersion: cryptoVersion)
+        defer { keyData.resetBytes(in: 0..<keyData.count) }
         return SymmetricKey(data: keyData)
     }
 }

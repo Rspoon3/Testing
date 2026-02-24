@@ -241,18 +241,17 @@ enum KeychainWrapKeyStore {
             return
         }
         if addStatus == errSecDuplicateItem {
-            let deleteQuery: [String: Any] = [
+            let updateQuery: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: seService,
                 kSecAttrAccount as String: account,
             ]
-            let deleteStatus = SecItemDelete(deleteQuery as CFDictionary)
-            guard deleteStatus == errSecSuccess || deleteStatus == errSecItemNotFound else {
-                throw StoreError.unexpectedStatus(deleteStatus)
-            }
-            let retryStatus = SecItemAdd(item as CFDictionary, nil)
-            guard retryStatus == errSecSuccess else {
-                throw StoreError.unexpectedStatus(retryStatus)
+            let updateAttributes: [String: Any] = [
+                kSecValueData as String: blob,
+            ]
+            let updateStatus = SecItemUpdate(updateQuery as CFDictionary, updateAttributes as CFDictionary)
+            guard updateStatus == errSecSuccess else {
+                throw StoreError.unexpectedStatus(updateStatus)
             }
             return
         }
@@ -388,7 +387,7 @@ enum KeychainWrapKeyStore {
         try save(
             key: key,
             account: account,
-            accessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            accessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         )
         return key
     }
