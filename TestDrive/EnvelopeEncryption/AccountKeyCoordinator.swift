@@ -1,5 +1,6 @@
 import CryptoKit
 import CryptoSwift
+import Dependencies
 import Foundation
 
 /// Persistable account-level ARK wrappers.
@@ -130,9 +131,10 @@ enum AccountKeyCoordinator {
         recoveryCode: String,
         initialDeviceID: UUID,
         initialDeviceWrapKey: SymmetricKey,
-        metadataStore: AccountMetadataStore,
+        metadataStore: any AccountMetadataRepository,
         syncWrapKey: SymmetricKey? = nil
     ) throws -> AccountBootstrapResult {
+        @Dependency(\.recoveryWrapKeyDeriver) var recoveryWrapKeyDeriver
         let ark = SymmetricKey(size: .bits256)
         let arkKeyID = EnvelopeKeyID.accountARK(accountID: accountID)
         let recoveryWrappedByKeyID = EnvelopeKeyID.recoveryWrapKey(accountID: accountID)
@@ -140,11 +142,8 @@ enum AccountKeyCoordinator {
             EnvelopeKeyID.syncWrapKey(accountID: accountID)
         }
 
-        let recoverySalt = RecoveryWrapKeyDeriver.makeSalt()
-        let recoveryWrapKey = try RecoveryWrapKeyDeriver.derive(
-            recoveryCode: recoveryCode,
-            salt: recoverySalt
-        )
+        let recoverySalt = recoveryWrapKeyDeriver.makeSalt(32)
+        let recoveryWrapKey = try recoveryWrapKeyDeriver.derive(recoveryCode, recoverySalt)
         let wrappedARKByRecovery = try EnvelopeCrypto.wrapKey(
             ark,
             wrappingKey: recoveryWrapKey,
@@ -198,10 +197,10 @@ enum AccountKeyCoordinator {
     ///   - attemptTracker: Brute-force protection tracker.
     /// - Returns: The unwrapped account root key.
     static func recoverARK(
-        metadataStore: AccountMetadataStore,
+        metadataStore: any AccountMetadataRepository,
         accountID: UUID,
         recoveryCode: String,
-        attemptTracker: RecoveryAttemptTracker
+        attemptTracker: any RecoveryAttemptTracking
     ) throws -> SymmetricKey {
         try attemptTracker.checkAttemptAllowed(accountID: accountID)
 
@@ -218,10 +217,8 @@ enum AccountKeyCoordinator {
 
     /// Recovers ARK from recovery code.
     private static func recoverARK(rootWraps: AccountRootWraps, recoveryCode: String) throws -> SymmetricKey {
-        let recoveryWrapKey = try RecoveryWrapKeyDeriver.derive(
-            recoveryCode: recoveryCode,
-            salt: rootWraps.recoverySalt
-        )
+        @Dependency(\.recoveryWrapKeyDeriver) var recoveryWrapKeyDeriver
+        let recoveryWrapKey = try recoveryWrapKeyDeriver.derive(recoveryCode, rootWraps.recoverySalt)
         return try EnvelopeCrypto.unwrapKey(
             rootWraps.wrappedARKByRecovery,
             wrappingKey: recoveryWrapKey,
@@ -235,7 +232,7 @@ enum AccountKeyCoordinator {
 
     /// Unlocks ARK using optional sync-wrap path from persisted account metadata.
     static func unlockARKFromSync(
-        metadataStore: AccountMetadataStore,
+        metadataStore: any AccountMetadataRepository,
         accountID: UUID,
         syncWrapKey: SymmetricKey
     ) throws -> SymmetricKey {
@@ -264,7 +261,7 @@ enum AccountKeyCoordinator {
 
     /// Creates and persists a per-device ARK wrap for a new trusted device.
     static func enrollDevice(
-        metadataStore: AccountMetadataStore,
+        metadataStore: any AccountMetadataRepository,
         accountID: UUID,
         ark: SymmetricKey,
         deviceID: UUID,
@@ -324,7 +321,7 @@ enum AccountKeyCoordinator {
 
     /// Unlocks ARK for a persisted device enrollment.
     static func unlockARKForDevice(
-        metadataStore: AccountMetadataStore,
+        metadataStore: any AccountMetadataRepository,
         accountID: UUID,
         deviceID: UUID,
         deviceWrapKey: SymmetricKey

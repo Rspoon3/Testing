@@ -3,7 +3,7 @@ import GRDB
 import SQLiteData
 
 /// Persistence adapter for account-level key-wrap metadata.
-final class AccountMetadataStore {
+final class AccountMetadataStore: AccountMetadataRepository {
     /// Store-level errors.
     enum StoreError: Error {
         case accountNotFound
