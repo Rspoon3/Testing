@@ -2,6 +2,7 @@ import CryptoKit
 import Dependencies
 import Foundation
 import LocalAuthentication
+import SQLiteData
 
 /// End-to-end architecture walkthrough that exercises:
 /// - account bootstrap
@@ -15,12 +16,14 @@ enum EnvelopeEncryptionDemo {
     /// This is the first half of `run()` extracted so `EncryptionSession` can
     /// re-create a store without running the full demo.
     static func createPrimaryStore() throws -> EnvelopeStore {
+        @Dependency(\.defaultDatabase) var database
         let recoveryCode = "correct horse battery staple"
-        let databaseURL = try EnvelopePaths.defaultDatabaseURL()
-        let database = try EnvelopeStore.openDatabase(at: databaseURL)
-        let metadataStore = AccountMetadataStore(database: database)
-        let attemptTracker = RecoveryAttemptTracker(database: database)
+        var metadataStore: AccountMetadataStore!
+        var attemptTracker: RecoveryAttemptTracker!
         return try withDependencies {
+            $0.defaultDatabase = database
+            metadataStore = AccountMetadataStore()
+            attemptTracker = RecoveryAttemptTracker()
             $0.accountMetadata = metadataStore.client
             $0.recoveryAttemptTracker = attemptTracker.client
         } operation: {
@@ -69,7 +72,6 @@ enum EnvelopeEncryptionDemo {
             }
 
             return EnvelopeStore(
-                database: database,
                 ark: ark,
                 arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
             )
@@ -78,12 +80,14 @@ enum EnvelopeEncryptionDemo {
 
     /// Runs the demo and returns the revealed secret string.
     static func run() throws -> String {
+        @Dependency(\.defaultDatabase) var database
         let recoveryCode = "correct horse battery staple"
-        let databaseURL = try EnvelopePaths.defaultDatabaseURL()
-        let database = try EnvelopeStore.openDatabase(at: databaseURL)
-        let metadataStore = AccountMetadataStore(database: database)
-        let attemptTracker = RecoveryAttemptTracker(database: database)
+        var metadataStore: AccountMetadataStore!
+        var attemptTracker: RecoveryAttemptTracker!
         return try withDependencies {
+            $0.defaultDatabase = database
+            metadataStore = AccountMetadataStore()
+            attemptTracker = RecoveryAttemptTracker()
             $0.accountMetadata = metadataStore.client
             $0.recoveryAttemptTracker = attemptTracker.client
         } operation: {
@@ -132,7 +136,6 @@ enum EnvelopeEncryptionDemo {
             }
 
             let deviceAStore = EnvelopeStore(
-                database: database,
                 ark: arkOnDeviceA,
                 arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
             )
@@ -231,7 +234,6 @@ enum EnvelopeEncryptionDemo {
                 deviceWrapKey: deviceBWrapKey
             )
             let deviceBStore = EnvelopeStore(
-                database: database,
                 ark: arkOnDeviceB,
                 arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
             )

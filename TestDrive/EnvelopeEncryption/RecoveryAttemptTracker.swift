@@ -1,5 +1,5 @@
+import Dependencies
 import Foundation
-import GRDB
 import SQLiteData
 
 /// Enforces brute-force protection on recovery code attempts.
@@ -27,8 +27,8 @@ final class RecoveryAttemptTracker: @unchecked Sendable {
         static let `default` = Policy(baseDelay: 2, maxConsecutiveFailures: 10)
     }
 
-    /// Backing SQLite database (shared with the envelope store).
-    let database: DatabaseQueue
+    @Dependency(\.defaultDatabase) private var database
+
     /// Active rate-limit policy.
     let policy: Policy
     /// Clock abstraction for testability.
@@ -36,17 +36,14 @@ final class RecoveryAttemptTracker: @unchecked Sendable {
 
     // MARK: - Initializer
 
-    /// Creates a tracker backed by the given database.
+    /// Creates a tracker with a configurable policy and clock.
     /// - Parameters:
-    ///   - database: SQLite database that contains the `recoveryAttemptRows` table.
     ///   - policy: Brute-force protection policy.
     ///   - now: Clock override for deterministic testing.
     init(
-        database: DatabaseQueue,
         policy: Policy = .default,
         now: @escaping () -> Date = { Date() }
     ) {
-        self.database = database
         self.policy = policy
         self.now = now
     }

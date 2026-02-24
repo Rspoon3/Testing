@@ -1,5 +1,5 @@
+import Dependencies
 import Foundation
-import GRDB
 import SQLiteData
 
 /// Persistence adapter for account-level key-wrap metadata.
@@ -10,12 +10,7 @@ final class AccountMetadataStore: @unchecked Sendable {
         case deviceEnrollmentNotFound
     }
 
-    /// Backing SQLite database connection.
-    let database: DatabaseQueue
-
-    init(database: DatabaseQueue) {
-        self.database = database
-    }
+    @Dependency(\.defaultDatabase) private var database
 
     /// Saves (or replaces) account root wraps for one account.
     func saveRootWraps(_ wraps: AccountRootWraps) throws {
