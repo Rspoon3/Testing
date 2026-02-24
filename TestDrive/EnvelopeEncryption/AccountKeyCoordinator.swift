@@ -65,9 +65,12 @@ enum RecoveryWrapKeyDeriver {
     private static let keyLength = 32
     private static let iterations = 300_000
 
-    /// Generates a random salt for recovery key derivation.
+    /// Generates a cryptographically secure random salt for recovery key derivation.
     static func makeSalt(byteCount: Int = 32) -> Data {
-        Data((0..<byteCount).map { _ in UInt8.random(in: .min ... .max) })
+        var bytes = [UInt8](repeating: 0, count: byteCount)
+        let status = SecRandomCopyBytes(kSecRandomDefault, byteCount, &bytes)
+        precondition(status == errSecSuccess, "SecRandomCopyBytes failed with status \(status)")
+        return Data(bytes)
     }
 
     /// Derives a 256-bit recovery wrap key from recovery code and salt.
