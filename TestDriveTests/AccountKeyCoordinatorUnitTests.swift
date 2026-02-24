@@ -34,6 +34,10 @@ struct AccountKeyCoordinatorUnitTests {
             state.rootWrapsByAccountID[accountID]?.accountID
         }
         #expect(storedAccountID == accountID)
+        let storedKDFVersion = dependencies.metadataState.withValue { state in
+            state.rootWrapsByAccountID[accountID]?.recoveryKDFVersion
+        }
+        #expect(storedKDFVersion == .v1)
     }
 
     @Test
@@ -125,6 +129,7 @@ struct AccountKeyCoordinatorUnitTests {
         #expect(trackerState.successCalls.isEmpty)
         #expect(trackerState.failureCalls.isEmpty)
     }
+
 }
 
 private struct InMemoryCoordinatorDependencies {

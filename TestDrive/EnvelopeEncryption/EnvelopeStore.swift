@@ -52,6 +52,7 @@ final class EnvelopeStore {
                 CREATE TABLE "accountRootWrapRows" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "recoverySalt" BLOB NOT NULL,
+                  "recoveryKDFVersion" INTEGER NOT NULL CHECK ("recoveryKDFVersion" > 0),
                   "arkKeyID" TEXT NOT NULL CHECK (length("arkKeyID") > 0),
                   "recoveryWrappedByKeyID" TEXT NOT NULL CHECK (length("recoveryWrappedByKeyID") > 0),
                   "recoveryCryptoVersion" INTEGER NOT NULL CHECK ("recoveryCryptoVersion" > 0),

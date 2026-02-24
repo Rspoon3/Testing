@@ -8,6 +8,7 @@ final class AccountMetadataStore: @unchecked Sendable {
     enum StoreError: Error {
         case accountNotFound
         case deviceEnrollmentNotFound
+        case unsupportedRecoveryKDFVersion(Int)
     }
 
     @Dependency(\.defaultDatabase) private var database
@@ -17,6 +18,7 @@ final class AccountMetadataStore: @unchecked Sendable {
         let row = AccountRootWrapRow(
             id: wraps.accountID,
             recoverySalt: wraps.recoverySalt,
+            recoveryKDFVersion: wraps.recoveryKDFVersion.rawValue,
             arkKeyID: wraps.arkKeyID,
             recoveryWrappedByKeyID: wraps.recoveryWrappedByKeyID,
             recoveryCryptoVersion: wraps.recoveryCryptoVersion,
@@ -44,10 +46,14 @@ final class AccountMetadataStore: @unchecked Sendable {
         }) else {
             throw StoreError.accountNotFound
         }
+        guard let recoveryKDFVersion = RecoveryWrapKeyDerivationVersion(rawValue: row.recoveryKDFVersion) else {
+            throw StoreError.unsupportedRecoveryKDFVersion(row.recoveryKDFVersion)
+        }
 
         return AccountRootWraps(
             accountID: row.id,
             recoverySalt: row.recoverySalt,
+            recoveryKDFVersion: recoveryKDFVersion,
             arkKeyID: row.arkKeyID,
             recoveryWrappedByKeyID: row.recoveryWrappedByKeyID,
             recoveryCryptoVersion: row.recoveryCryptoVersion,
@@ -67,10 +73,14 @@ final class AccountMetadataStore: @unchecked Sendable {
                 .order { $0.id.asc() }
                 .fetchOne(db)
         }) else { return nil }
+        guard let recoveryKDFVersion = RecoveryWrapKeyDerivationVersion(rawValue: row.recoveryKDFVersion) else {
+            throw StoreError.unsupportedRecoveryKDFVersion(row.recoveryKDFVersion)
+        }
 
         return AccountRootWraps(
             accountID: row.id,
             recoverySalt: row.recoverySalt,
+            recoveryKDFVersion: recoveryKDFVersion,
             arkKeyID: row.arkKeyID,
             recoveryWrappedByKeyID: row.recoveryWrappedByKeyID,
             recoveryCryptoVersion: row.recoveryCryptoVersion,

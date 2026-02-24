@@ -11,6 +11,8 @@ struct AccountRootWraps {
     let accountID: UUID
     /// Salt used when deriving the recovery wrap key from recovery code.
     var recoverySalt: Data
+    /// Version of the KDF policy used to derive the recovery wrap key.
+    var recoveryKDFVersion: RecoveryWrapKeyDerivationVersion
     /// Identifier of the wrapped ARK key material.
     var arkKeyID: String
     /// Identifier of the recovery-derived key used to wrap ARK.
@@ -29,6 +31,21 @@ struct AccountRootWraps {
     var syncAADVersion: Int?
     /// Optional ARK wrapped by sync key (for iCloud Keychain convenience path).
     var wrappedARKBySync: Data?
+}
+
+/// Versioned recovery key-derivation policy stored with account wraps.
+enum RecoveryWrapKeyDerivationVersion: Int, Codable, Sendable {
+    /// PBKDF2-HMAC-SHA256 with 300k rounds.
+    case v1 = 1
+
+    static let current: Self = .v1
+
+    var rounds: UInt32 {
+        switch self {
+        case .v1:
+            return 300_000
+        }
+    }
 }
 
 /// One device's local ARK enrollment record.
@@ -68,7 +85,6 @@ enum RecoveryWrapKeyDeriver {
     }
 
     private static let keyLength = 32
-    private static let iterations: UInt32 = 300_000
 
     /// Generates a cryptographically secure random salt for recovery key derivation.
     static func makeSalt(byteCount: Int = 32) -> Data {
@@ -79,7 +95,12 @@ enum RecoveryWrapKeyDeriver {
     }
 
     /// Derives a 256-bit recovery wrap key from recovery code and salt.
-    static func derive(recoveryCode: String, salt: Data) throws -> SymmetricKey {
+    static func derive(
+        recoveryCode: String,
+        salt: Data,
+        version: RecoveryWrapKeyDerivationVersion = .current
+    ) throws -> SymmetricKey {
+        let rounds = version.rounds
         let passwordData = Data(recoveryCode.utf8)
         var derivedKey = Data(repeating: 0, count: keyLength)
 
@@ -93,7 +114,7 @@ enum RecoveryWrapKeyDeriver {
                         saltBytes.bindMemory(to: UInt8.self).baseAddress,
                         salt.count,
                         CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
-                        iterations,
+                        rounds,
                         derivedBytes.bindMemory(to: UInt8.self).baseAddress,
                         keyLength
                     )
@@ -164,7 +185,12 @@ enum AccountKeyCoordinator {
         }
 
         let recoverySalt = recoveryWrapKeyDeriver.makeSalt(32)
-        let recoveryWrapKey = try recoveryWrapKeyDeriver.derive(recoveryCode, recoverySalt)
+        let recoveryKDFVersion = recoveryWrapKeyDeriver.defaultVersion()
+        let recoveryWrapKey = try recoveryWrapKeyDeriver.deriveWithVersion(
+            recoveryCode,
+            recoverySalt,
+            recoveryKDFVersion
+        )
         let wrappedARKByRecovery = try EnvelopeCrypto.wrapKey(
             ark,
             wrappingKey: recoveryWrapKey,
@@ -184,6 +210,7 @@ enum AccountKeyCoordinator {
         let rootWraps = AccountRootWraps(
             accountID: accountID,
             recoverySalt: recoverySalt,
+            recoveryKDFVersion: recoveryKDFVersion,
             arkKeyID: arkKeyID,
             recoveryWrappedByKeyID: recoveryWrappedByKeyID,
             recoveryCryptoVersion: EnvelopeKeyID.cryptoVersion,
@@ -237,7 +264,11 @@ enum AccountKeyCoordinator {
     /// Recovers ARK from recovery code.
     private static func recoverARK(rootWraps: AccountRootWraps, recoveryCode: String) throws -> SymmetricKey {
         @Dependency(\.recoveryWrapKeyDeriver) var recoveryWrapKeyDeriver
-        let recoveryWrapKey = try recoveryWrapKeyDeriver.derive(recoveryCode, rootWraps.recoverySalt)
+        let recoveryWrapKey = try recoveryWrapKeyDeriver.deriveWithVersion(
+            recoveryCode,
+            rootWraps.recoverySalt,
+            rootWraps.recoveryKDFVersion
+        )
         return try EnvelopeCrypto.unwrapKey(
             rootWraps.wrappedARKByRecovery,
             wrappingKey: recoveryWrapKey,
