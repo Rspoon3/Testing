@@ -312,21 +312,6 @@ final class EnvelopeStore {
         return try createCredentialRecord(vaultID: vaultID, label: label, type: .genericSecret)
     }
 
-    /// Backward-compatible generic creation API.
-    func createItem(
-        vaultID: Vault.ID,
-        title: String,
-        type: VaultItemType,
-        payloadVersion: Int = 1
-    ) throws -> VaultItem.ID {
-        try createCredentialRecord(
-            vaultID: vaultID,
-            label: title,
-            type: type,
-            payloadVersion: payloadVersion
-        )
-    }
-
     /// Internal credential row creation helper used by all creation entry points.
     private func createCredentialRecord(
         vaultID: Vault.ID,
@@ -421,23 +406,6 @@ final class EnvelopeStore {
             .execute(db)
         }
         return fieldID
-    }
-
-    /// Backward-compatible alias for generic secret-field insertion.
-    func addSecretField(
-        itemID: VaultItem.ID,
-        fieldName: String,
-        plaintext: Data,
-        cryptoVersion: Int = 1,
-        aadVersion: Int = EnvelopeKeyID.aadVersion
-    ) throws -> GenericItemSecretField.ID {
-        try addSecretField(
-            credentialID: itemID,
-            label: fieldName,
-            plaintext: plaintext,
-            cryptoVersion: cryptoVersion,
-            aadVersion: aadVersion
-        )
     }
 
     /// Encrypts and stores one credential file payload.

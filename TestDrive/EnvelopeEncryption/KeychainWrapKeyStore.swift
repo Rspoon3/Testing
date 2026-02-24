@@ -5,9 +5,9 @@ import Security
 
 /// Keychain-backed storage for local wrap keys.
 ///
-/// On devices with a Secure Enclave, the 256-bit device wrap key is encrypted
-/// (ECIES) using a hardware-bound P-256 private key. On Simulator, falls back
-/// to raw Keychain storage.
+    /// On devices with a Secure Enclave, the 256-bit device wrap key is encrypted
+    /// (ECIES) using a hardware-bound P-256 private key. On environments without
+    /// Secure Enclave, falls back to raw Keychain storage.
 enum KeychainWrapKeyStore {
     /// Authentication behavior used when loading/creating a device wrap key.
     struct DeviceAccessPolicy {
@@ -56,7 +56,8 @@ enum KeychainWrapKeyStore {
     /// Loads or creates a device wrap key for one account/device pair.
     ///
     /// On Secure Enclave-capable hardware the wrap key is encrypted with an
-    /// SE-bound P-256 key. On Simulator falls back to raw Keychain storage.
+    /// SE-bound P-256 key. On environments without Secure Enclave this uses
+    /// raw Keychain storage.
     static func loadOrCreateDeviceWrapKey(
         accountID: UUID,
         deviceID: UUID,
@@ -67,7 +68,7 @@ enum KeychainWrapKeyStore {
         if SecureEnclave.isAvailable {
             return try loadOrCreateDeviceWrapKeySE(account: account, policy: policy)
         } else {
-            return try loadOrCreateDeviceWrapKeyLegacy(account: account, policy: policy)
+            return try loadOrCreateDeviceWrapKeyFallback(account: account, policy: policy)
         }
     }
 
@@ -256,23 +257,23 @@ enum KeychainWrapKeyStore {
         throw StoreError.unexpectedStatus(addStatus)
     }
 
-    // MARK: - Legacy Path (Simulator Fallback)
+    // MARK: - Fallback Path
 
     /// Loads or creates a device wrap key using raw Keychain storage (no Secure Enclave).
-    private static func loadOrCreateDeviceWrapKeyLegacy(
+    private static func loadOrCreateDeviceWrapKeyFallback(
         account: String,
         policy: DeviceAccessPolicy
     ) throws -> SymmetricKey {
-        if let existing = try loadDeviceKeyLegacy(account: account, policy: policy) {
+        if let existing = try loadDeviceKeyFallback(account: account, policy: policy) {
             return existing
         }
 
         let key = SymmetricKey(size: .bits256)
-        try saveDeviceKeyLegacy(key: key, account: account, policy: policy)
+        try saveDeviceKeyFallback(key: key, account: account, policy: policy)
         return key
     }
 
-    private static func loadDeviceKeyLegacy(
+    private static func loadDeviceKeyFallback(
         account: String,
         policy: DeviceAccessPolicy
     ) throws -> SymmetricKey? {
@@ -312,7 +313,7 @@ enum KeychainWrapKeyStore {
         }
     }
 
-    private static func saveDeviceKeyLegacy(
+    private static func saveDeviceKeyFallback(
         key: SymmetricKey,
         account: String,
         policy: DeviceAccessPolicy
