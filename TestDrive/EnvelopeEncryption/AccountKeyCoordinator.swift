@@ -1,4 +1,5 @@
 import CryptoKit
+import CryptoSwift
 import Foundation
 
 /// Persistable account-level ARK wrappers.
@@ -59,9 +60,10 @@ struct AccountBootstrapResult {
 
 /// Derives a recovery wrap key from a human-entered recovery code.
 ///
-/// This sample uses HKDF-SHA256 from CryptoKit as a practical iOS-native derivation.
+/// Uses PBKDF2-HMAC-SHA256 to make offline brute-force guessing expensive.
 enum RecoveryWrapKeyDeriver {
-    private static let info = Data("devcreds.recovery-wrap-key.v1".utf8)
+    private static let keyLength = 32
+    private static let iterations = 300_000
 
     /// Generates a random salt for recovery key derivation.
     static func makeSalt(byteCount: Int = 32) -> Data {
@@ -69,14 +71,15 @@ enum RecoveryWrapKeyDeriver {
     }
 
     /// Derives a 256-bit recovery wrap key from recovery code and salt.
-    static func derive(recoveryCode: String, salt: Data) -> SymmetricKey {
-        let inputMaterial = SymmetricKey(data: Data(recoveryCode.utf8))
-        return HKDF<SHA256>.deriveKey(
-            inputKeyMaterial: inputMaterial,
-            salt: salt,
-            info: info,
-            outputByteCount: 32
+    static func derive(recoveryCode: String, salt: Data) throws -> SymmetricKey {
+        let pbkdf2 = try PKCS5.PBKDF2(
+            password: Array(recoveryCode.utf8),
+            salt: Array(salt),
+            iterations: iterations,
+            keyLength: keyLength,
+            variant: .sha2(.sha256)
         )
+        return SymmetricKey(data: Data(try pbkdf2.calculate()))
     }
 }
 
@@ -135,7 +138,7 @@ enum AccountKeyCoordinator {
         }
 
         let recoverySalt = RecoveryWrapKeyDeriver.makeSalt()
-        let recoveryWrapKey = RecoveryWrapKeyDeriver.derive(
+        let recoveryWrapKey = try RecoveryWrapKeyDeriver.derive(
             recoveryCode: recoveryCode,
             salt: recoverySalt
         )
@@ -212,7 +215,7 @@ enum AccountKeyCoordinator {
 
     /// Recovers ARK from recovery code.
     static func recoverARK(rootWraps: AccountRootWraps, recoveryCode: String) throws -> SymmetricKey {
-        let recoveryWrapKey = RecoveryWrapKeyDeriver.derive(
+        let recoveryWrapKey = try RecoveryWrapKeyDeriver.derive(
             recoveryCode: recoveryCode,
             salt: rootWraps.recoverySalt
         )

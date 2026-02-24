@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94440AD12F4D372F0095E226 /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 94440AD02F4D372F0095E226 /* CryptoSwift */; };
 		949E48552F4CC051000F3D4F /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 949E48542F4CC051000F3D4F /* SQLiteData */; };
 		949E48572F4CC051000F3D4F /* SQLiteDataTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 949E48562F4CC051000F3D4F /* SQLiteDataTestSupport */; };
 /* End PBXBuildFile section */
@@ -45,6 +46,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				949E48552F4CC051000F3D4F /* SQLiteData in Frameworks */,
+				94440AD12F4D372F0095E226 /* CryptoSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,6 +100,7 @@
 			name = TestDrive;
 			packageProductDependencies = (
 				949E48542F4CC051000F3D4F /* SQLiteData */,
+				94440AD02F4D372F0095E226 /* CryptoSwift */,
 			);
 			productName = TestDrive;
 			productReference = 9483720E2EAE6B2E0094674D /* TestDrive.app */;
@@ -157,6 +160,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				949E48532F4CC051000F3D4F /* XCRemoteSwiftPackageReference "sqlite-data" */,
+				94440ACF2F4D372F0095E226 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9483720F2EAE6B2E0094674D /* Products */;
@@ -476,6 +480,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		94440ACF2F4D372F0095E226 /* XCRemoteSwiftPackageReference "CryptoSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/CryptoSwift";
+			requirement = {
+				kind = exactVersion;
+				version = 1.9.0;
+			};
+		};
 		949E48532F4CC051000F3D4F /* XCRemoteSwiftPackageReference "sqlite-data" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/sqlite-data.git";
@@ -487,6 +499,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		94440AD02F4D372F0095E226 /* CryptoSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94440ACF2F4D372F0095E226 /* XCRemoteSwiftPackageReference "CryptoSwift" */;
+			productName = CryptoSwift;
+		};
 		949E48542F4CC051000F3D4F /* SQLiteData */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 949E48532F4CC051000F3D4F /* XCRemoteSwiftPackageReference "sqlite-data" */;
