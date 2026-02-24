@@ -1,5 +1,5 @@
 import CryptoKit
-import CryptoSwift
+import CommonCrypto
 import Dependencies
 import Foundation
 
@@ -63,8 +63,12 @@ struct AccountBootstrapResult {
 ///
 /// Uses PBKDF2-HMAC-SHA256 to make offline brute-force guessing expensive.
 enum RecoveryWrapKeyDeriver {
+    enum Error: Swift.Error {
+        case keyDerivationFailed(status: Int32)
+    }
+
     private static let keyLength = 32
-    private static let iterations = 300_000
+    private static let iterations: UInt32 = 300_000
 
     /// Generates a cryptographically secure random salt for recovery key derivation.
     static func makeSalt(byteCount: Int = 32) -> Data {
@@ -76,14 +80,32 @@ enum RecoveryWrapKeyDeriver {
 
     /// Derives a 256-bit recovery wrap key from recovery code and salt.
     static func derive(recoveryCode: String, salt: Data) throws -> SymmetricKey {
-        let pbkdf2 = try PKCS5.PBKDF2(
-            password: Array(recoveryCode.utf8),
-            salt: Array(salt),
-            iterations: iterations,
-            keyLength: keyLength,
-            variant: .sha2(.sha256)
-        )
-        return SymmetricKey(data: Data(try pbkdf2.calculate()))
+        let passwordData = Data(recoveryCode.utf8)
+        var derivedKey = Data(repeating: 0, count: keyLength)
+
+        let status = derivedKey.withUnsafeMutableBytes { derivedBytes in
+            salt.withUnsafeBytes { saltBytes in
+                passwordData.withUnsafeBytes { passwordBytes in
+                    CCKeyDerivationPBKDF(
+                        CCPBKDFAlgorithm(kCCPBKDF2),
+                        passwordBytes.bindMemory(to: Int8.self).baseAddress,
+                        passwordData.count,
+                        saltBytes.bindMemory(to: UInt8.self).baseAddress,
+                        salt.count,
+                        CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+                        iterations,
+                        derivedBytes.bindMemory(to: UInt8.self).baseAddress,
+                        keyLength
+                    )
+                }
+            }
+        }
+
+        guard status == kCCSuccess else {
+            throw Error.keyDerivationFailed(status: status)
+        }
+
+        return SymmetricKey(data: derivedKey)
     }
 }
 
