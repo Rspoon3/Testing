@@ -186,35 +186,35 @@ enum AccountKeyCoordinator {
 
     /// Recovers ARK from recovery code using persisted account metadata.
     ///
-    /// When an `attemptTracker` is provided, the call enforces exponential backoff
-    /// and lockout after repeated failures.
+    /// This call always enforces exponential backoff and lockout via the
+    /// provided `attemptTracker`.
     /// - Parameters:
     ///   - metadataStore: Persistence adapter for root wraps.
     ///   - accountID: Account to recover.
     ///   - recoveryCode: User-entered recovery material.
-    ///   - attemptTracker: Optional brute-force protection tracker.
+    ///   - attemptTracker: Brute-force protection tracker.
     /// - Returns: The unwrapped account root key.
     static func recoverARK(
         metadataStore: AccountMetadataStore,
         accountID: UUID,
         recoveryCode: String,
-        attemptTracker: RecoveryAttemptTracker? = nil
+        attemptTracker: RecoveryAttemptTracker
     ) throws -> SymmetricKey {
-        try attemptTracker?.checkAttemptAllowed(accountID: accountID)
+        try attemptTracker.checkAttemptAllowed(accountID: accountID)
 
         let rootWraps = try metadataStore.loadRootWraps(accountID: accountID)
         do {
             let ark = try recoverARK(rootWraps: rootWraps, recoveryCode: recoveryCode)
-            try attemptTracker?.recordSuccess(accountID: accountID)
+            try attemptTracker.recordSuccess(accountID: accountID)
             return ark
         } catch {
-            try? attemptTracker?.recordFailure(accountID: accountID)
+            try? attemptTracker.recordFailure(accountID: accountID)
             throw error
         }
     }
 
     /// Recovers ARK from recovery code.
-    static func recoverARK(rootWraps: AccountRootWraps, recoveryCode: String) throws -> SymmetricKey {
+    private static func recoverARK(rootWraps: AccountRootWraps, recoveryCode: String) throws -> SymmetricKey {
         let recoveryWrapKey = try RecoveryWrapKeyDeriver.derive(
             recoveryCode: recoveryCode,
             salt: rootWraps.recoverySalt

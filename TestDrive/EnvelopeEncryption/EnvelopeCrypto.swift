@@ -91,12 +91,11 @@ enum EnvelopeCrypto {
         aad: Data,
         cryptoVersion: Int
     ) throws -> Data {
-        try seal(
-            innerKey.withUnsafeBytes { Data($0) },
-            using: wrappingKey,
-            aad: aad,
-            cryptoVersion: cryptoVersion
-        )
+        try innerKey.withUnsafeBytes { rawBytes -> Data in
+            var keyData = Data(rawBytes)
+            defer { keyData.resetBytes(in: 0..<keyData.count) }
+            return try seal(keyData, using: wrappingKey, aad: aad, cryptoVersion: cryptoVersion)
+        }
     }
 
     /// Unwraps a previously wrapped symmetric key.
@@ -152,13 +151,13 @@ enum EnvelopeKeyID {
 /// AAD prevents ciphertext/key-swapping across contexts.
 enum EnvelopeAAD {
     /// AAD for a vault key wrapped by ARK.
-    static func vaultKey(vaultID: UUID, aadVersion: Int) -> Data {
-        Data("vault:\(vaultID.uuidString)|vaultKey|aad:\(aadVersion)".utf8)
+    static func vaultKey(vaultID: UUID, cryptoVersion: Int, aadVersion: Int) -> Data {
+        Data("vault:\(vaultID.uuidString)|vaultKey|crypto:\(cryptoVersion)|aad:\(aadVersion)".utf8)
     }
 
     /// AAD for an item key wrapped by its vault key.
-    static func itemKey(vaultID: UUID, itemID: UUID, aadVersion: Int) -> Data {
-        Data("vault:\(vaultID.uuidString)|item:\(itemID.uuidString)|key|aad:\(aadVersion)".utf8)
+    static func itemKey(vaultID: UUID, itemID: UUID, cryptoVersion: Int, aadVersion: Int) -> Data {
+        Data("vault:\(vaultID.uuidString)|item:\(itemID.uuidString)|key|crypto:\(cryptoVersion)|aad:\(aadVersion)".utf8)
     }
 
     /// AAD for a generic item field encrypted by an item key.

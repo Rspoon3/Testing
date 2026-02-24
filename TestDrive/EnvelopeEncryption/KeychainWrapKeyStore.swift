@@ -169,18 +169,21 @@ enum KeychainWrapKeyStore {
         _ key: SymmetricKey,
         publicKey: SecKey
     ) throws -> Data {
-        let plaintext = key.withUnsafeBytes { Data($0) }
-        var error: Unmanaged<CFError>?
-        guard let ciphertext = SecKeyCreateEncryptedData(
-            publicKey,
-            .eciesEncryptionCofactorVariableIVX963SHA256AESGCM,
-            plaintext as CFData,
-            &error
-        ) else {
-            _ = error?.takeRetainedValue()
-            throw StoreError.encryptionFailed
+        try key.withUnsafeBytes { rawBytes -> Data in
+            var plaintext = Data(rawBytes)
+            defer { plaintext.resetBytes(in: 0..<plaintext.count) }
+            var error: Unmanaged<CFError>?
+            guard let ciphertext = SecKeyCreateEncryptedData(
+                publicKey,
+                .eciesEncryptionCofactorVariableIVX963SHA256AESGCM,
+                plaintext as CFData,
+                &error
+            ) else {
+                _ = error?.takeRetainedValue()
+                throw StoreError.encryptionFailed
+            }
+            return ciphertext as Data
         }
-        return ciphertext as Data
     }
 
     /// Decrypts an ECIES blob using the Secure Enclave private key.
@@ -337,38 +340,41 @@ enum KeychainWrapKeyStore {
             throw StoreError.accessControlCreationFailed
         }
 
-        let data = key.withUnsafeBytes { Data($0) }
-        let item: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecAttrAccessControl as String: accessControl,
-            kSecValueData as String: data,
-        ]
-
-        let addStatus = SecItemAdd(item as CFDictionary, nil)
-        if addStatus == errSecSuccess {
-            return
-        }
-        if addStatus == errSecDuplicateItem {
-            let deleteQuery: [String: Any] = [
+        try key.withUnsafeBytes { rawBytes in
+            var data = Data(rawBytes)
+            defer { data.resetBytes(in: 0..<data.count) }
+            let item: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
                 kSecAttrAccount as String: account,
+                kSecAttrAccessControl as String: accessControl,
+                kSecValueData as String: data,
             ]
-            let deleteStatus = SecItemDelete(deleteQuery as CFDictionary)
-            guard deleteStatus == errSecSuccess || deleteStatus == errSecItemNotFound else {
-                throw StoreError.unexpectedStatus(deleteStatus)
+
+            let addStatus = SecItemAdd(item as CFDictionary, nil)
+            if addStatus == errSecSuccess {
+                return
+            }
+            if addStatus == errSecDuplicateItem {
+                let deleteQuery: [String: Any] = [
+                    kSecClass as String: kSecClassGenericPassword,
+                    kSecAttrService as String: service,
+                    kSecAttrAccount as String: account,
+                ]
+                let deleteStatus = SecItemDelete(deleteQuery as CFDictionary)
+                guard deleteStatus == errSecSuccess || deleteStatus == errSecItemNotFound else {
+                    throw StoreError.unexpectedStatus(deleteStatus)
+                }
+
+                let retryStatus = SecItemAdd(item as CFDictionary, nil)
+                guard retryStatus == errSecSuccess else {
+                    throw StoreError.unexpectedStatus(retryStatus)
+                }
+                return
             }
 
-            let retryStatus = SecItemAdd(item as CFDictionary, nil)
-            guard retryStatus == errSecSuccess else {
-                throw StoreError.unexpectedStatus(retryStatus)
-            }
-            return
+            throw StoreError.unexpectedStatus(addStatus)
         }
-
-        throw StoreError.unexpectedStatus(addStatus)
     }
 
     // MARK: - Sync Key Helpers
@@ -419,35 +425,38 @@ enum KeychainWrapKeyStore {
         account: String,
         accessible: CFString
     ) throws {
-        let data = key.withUnsafeBytes { Data($0) }
-        let item: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecAttrAccessible as String: accessible,
-            kSecValueData as String: data,
-        ]
-
-        let addStatus = SecItemAdd(item as CFDictionary, nil)
-        if addStatus == errSecSuccess {
-            return
-        }
-        if addStatus == errSecDuplicateItem {
-            let query: [String: Any] = [
+        try key.withUnsafeBytes { rawBytes in
+            var data = Data(rawBytes)
+            defer { data.resetBytes(in: 0..<data.count) }
+            let item: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
                 kSecAttrAccount as String: account,
+                kSecAttrAccessible as String: accessible,
+                kSecValueData as String: data,
             ]
-            let update: [String: Any] = [
-                kSecValueData as String: data
-            ]
-            let updateStatus = SecItemUpdate(query as CFDictionary, update as CFDictionary)
-            guard updateStatus == errSecSuccess else {
-                throw StoreError.unexpectedStatus(updateStatus)
-            }
-            return
-        }
 
-        throw StoreError.unexpectedStatus(addStatus)
+            let addStatus = SecItemAdd(item as CFDictionary, nil)
+            if addStatus == errSecSuccess {
+                return
+            }
+            if addStatus == errSecDuplicateItem {
+                let query: [String: Any] = [
+                    kSecClass as String: kSecClassGenericPassword,
+                    kSecAttrService as String: service,
+                    kSecAttrAccount as String: account,
+                ]
+                let update: [String: Any] = [
+                    kSecValueData as String: data
+                ]
+                let updateStatus = SecItemUpdate(query as CFDictionary, update as CFDictionary)
+                guard updateStatus == errSecSuccess else {
+                    throw StoreError.unexpectedStatus(updateStatus)
+                }
+                return
+            }
+
+            throw StoreError.unexpectedStatus(addStatus)
+        }
     }
 }

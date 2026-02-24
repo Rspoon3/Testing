@@ -24,7 +24,7 @@ The Keychain policy is configured by ``KeychainWrapKeyStore/DeviceAccessPolicy``
 
 ## Recovery unlock
 
-Handled by ``AccountKeyCoordinator/recoverARK(metadataStore:accountID:recoveryCode:)``:
+Handled by ``AccountKeyCoordinator/recoverARK(metadataStore:accountID:recoveryCode:attemptTracker:)``:
 
 1. Re-derive `RecoveryWrapKey` from user recovery code.
 2. Unwrap ARK from `wrappedARKByRecovery`.

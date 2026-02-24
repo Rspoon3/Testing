@@ -243,7 +243,7 @@ final class EnvelopeStore {
         let wrappedVaultKey = try EnvelopeCrypto.wrapKey(
             vaultKey,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: EnvelopeKeyID.aadVersion),
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, cryptoVersion: EnvelopeKeyID.cryptoVersion, aadVersion: EnvelopeKeyID.aadVersion),
             cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
@@ -294,7 +294,7 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: vault.aadVersion),
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, cryptoVersion: vault.cryptoVersion, aadVersion: vault.aadVersion),
             cryptoVersion: vault.cryptoVersion
         )
 
@@ -304,7 +304,7 @@ final class EnvelopeStore {
         let wrappedItemKey = try EnvelopeCrypto.wrapKey(
             itemKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID, aadVersion: EnvelopeKeyID.aadVersion),
+            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID, cryptoVersion: EnvelopeKeyID.cryptoVersion, aadVersion: EnvelopeKeyID.aadVersion),
             cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
@@ -388,7 +388,7 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, aadVersion: vault.aadVersion),
+            aad: EnvelopeAAD.vaultKey(vaultID: vaultID, cryptoVersion: vault.cryptoVersion, aadVersion: vault.aadVersion),
             cryptoVersion: vault.cryptoVersion
         )
 
@@ -398,7 +398,7 @@ final class EnvelopeStore {
         let wrappedItemKey = try EnvelopeCrypto.wrapKey(
             itemKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID, aadVersion: EnvelopeKeyID.aadVersion),
+            aad: EnvelopeAAD.itemKey(vaultID: vaultID, itemID: itemID, cryptoVersion: EnvelopeKeyID.cryptoVersion, aadVersion: EnvelopeKeyID.aadVersion),
             cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
 
@@ -655,13 +655,13 @@ final class EnvelopeStore {
         let vaultKey = try EnvelopeCrypto.unwrapKey(
             vault.wrappedVaultKeyByARK,
             wrappingKey: ark,
-            aad: EnvelopeAAD.vaultKey(vaultID: vault.id, aadVersion: vault.aadVersion),
+            aad: EnvelopeAAD.vaultKey(vaultID: vault.id, cryptoVersion: vault.cryptoVersion, aadVersion: vault.aadVersion),
             cryptoVersion: vault.cryptoVersion
         )
         let itemKey = try EnvelopeCrypto.unwrapKey(
             item.wrappedItemKeyByVaultKey,
             wrappingKey: vaultKey,
-            aad: EnvelopeAAD.itemKey(vaultID: vault.id, itemID: item.id, aadVersion: item.aadVersion),
+            aad: EnvelopeAAD.itemKey(vaultID: vault.id, itemID: item.id, cryptoVersion: item.cryptoVersion, aadVersion: item.aadVersion),
             cryptoVersion: item.cryptoVersion
         )
 

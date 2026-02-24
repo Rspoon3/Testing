@@ -24,6 +24,7 @@ struct TestDriveTests {
         defer { try? FileManager.default.removeItem(at: databaseURL) }
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
         let metadataStore = AccountMetadataStore(database: database)
+        let attemptTracker = RecoveryAttemptTracker(database: database)
         let bootstrap = try AccountKeyCoordinator.bootstrapAccount(
             accountID: accountID,
             recoveryCode: recoveryCode,
@@ -62,7 +63,8 @@ struct TestDriveTests {
         let recoveredARK = try AccountKeyCoordinator.recoverARK(
             metadataStore: metadataStore,
             accountID: accountID,
-            recoveryCode: recoveryCode
+            recoveryCode: recoveryCode,
+            attemptTracker: attemptTracker
         )
         let deviceBID = UUID()
         let deviceBWrapKey = SymmetricKey(size: .bits256)
@@ -118,6 +120,7 @@ struct TestDriveTests {
         defer { try? FileManager.default.removeItem(at: databaseURL) }
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
         let metadataStore = AccountMetadataStore(database: database)
+        let attemptTracker = RecoveryAttemptTracker(database: database)
         let bootstrap = try AccountKeyCoordinator.bootstrapAccount(
             accountID: accountID,
             recoveryCode: "correct horse battery staple",
@@ -131,7 +134,8 @@ struct TestDriveTests {
             _ = try AccountKeyCoordinator.recoverARK(
                 metadataStore: metadataStore,
                 accountID: accountID,
-                recoveryCode: "wrong recovery code"
+                recoveryCode: "wrong recovery code",
+                attemptTracker: attemptTracker
             )
         } catch {
             didThrow = true

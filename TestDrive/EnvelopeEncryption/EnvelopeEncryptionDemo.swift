@@ -18,6 +18,7 @@ enum EnvelopeEncryptionDemo {
         let databaseURL = try EnvelopePaths.defaultDatabaseURL()
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
         let metadataStore = AccountMetadataStore(database: database)
+        let attemptTracker = RecoveryAttemptTracker(database: database)
 
         let accountID = try metadataStore.loadFirstRootWraps()?.accountID ?? UUID()
         let primaryEnrollment = try metadataStore.loadFirstDeviceEnrollment(accountID: accountID)
@@ -55,7 +56,8 @@ enum EnvelopeEncryptionDemo {
             let recoveredARK = try AccountKeyCoordinator.recoverARK(
                 metadataStore: metadataStore,
                 accountID: accountID,
-                recoveryCode: recoveryCode
+                recoveryCode: recoveryCode,
+                attemptTracker: attemptTracker
             )
             _ = try AccountKeyCoordinator.enrollDevice(
                 metadataStore: metadataStore,
@@ -80,6 +82,7 @@ enum EnvelopeEncryptionDemo {
         let databaseURL = try EnvelopePaths.defaultDatabaseURL()
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
         let metadataStore = AccountMetadataStore(database: database)
+        let attemptTracker = RecoveryAttemptTracker(database: database)
 
         let accountID = try metadataStore.loadFirstRootWraps()?.accountID ?? UUID()
         let primaryEnrollment = try metadataStore.loadFirstDeviceEnrollment(accountID: accountID)
@@ -117,7 +120,8 @@ enum EnvelopeEncryptionDemo {
             let recoveredARK = try AccountKeyCoordinator.recoverARK(
                 metadataStore: metadataStore,
                 accountID: accountID,
-                recoveryCode: recoveryCode
+                recoveryCode: recoveryCode,
+                attemptTracker: attemptTracker
             )
             _ = try AccountKeyCoordinator.enrollDevice(
                 metadataStore: metadataStore,
@@ -206,7 +210,8 @@ enum EnvelopeEncryptionDemo {
         let recoveredARK = try AccountKeyCoordinator.recoverARK(
             metadataStore: metadataStore,
             accountID: accountID,
-            recoveryCode: recoveryCode
+            recoveryCode: recoveryCode,
+            attemptTracker: attemptTracker
         )
 
         let deviceBID = UUID()
