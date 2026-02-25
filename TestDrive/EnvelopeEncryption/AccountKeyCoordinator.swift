@@ -228,8 +228,7 @@ enum AccountKeyCoordinator {
             deviceID: initialDeviceID,
             deviceWrapKey: initialDeviceWrapKey
         )
-        try accountMetadata.saveRootWraps(rootWraps)
-        try accountMetadata.saveDeviceEnrollment(initialDevice)
+        try accountMetadata.saveBootstrap(rootWraps, initialDevice)
 
         return AccountBootstrapResult(ark: ark, rootWraps: rootWraps, initialDevice: initialDevice)
     }

@@ -49,6 +49,8 @@ struct EnvelopeDomainPersistenceClient: Sendable {
     var fetchVault: @Sendable (_ id: UUID) throws -> PersistedVault?
 
     var upsertCredential: @Sendable (_ credential: PersistedCredential) throws -> Void
+    var upsertCredentialWithInitialSecret:
+        @Sendable (_ credential: PersistedCredential, _ initialSecretField: PersistedSecretField) throws -> Void
     var loadCredential: @Sendable (_ id: UUID) throws -> PersistedCredential
     var fetchCredential: @Sendable (_ id: UUID) throws -> PersistedCredential?
     var loadCredentials: @Sendable (_ vaultID: UUID) throws -> [PersistedCredential]
@@ -89,6 +91,11 @@ extension EnvelopeDomainPersistenceClient {
             },
             upsertCredential: { _ in
                 throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.upsertCredential")
+            },
+            upsertCredentialWithInitialSecret: { _, _ in
+                throw DependencyNotConfiguredError(
+                    endpoint: "envelopeDomainPersistence.upsertCredentialWithInitialSecret"
+                )
             },
             loadCredential: { _ in
                 throw DependencyNotConfiguredError(endpoint: "envelopeDomainPersistence.loadCredential")

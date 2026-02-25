@@ -105,7 +105,7 @@ final class EnvelopeDomainStore {
         )
 
         let timestamp = now()
-        try persistence.upsertCredential(PersistedCredential(
+        let credential = PersistedCredential(
             id: itemID,
             vaultID: vaultID,
             title: label,
@@ -118,7 +118,7 @@ final class EnvelopeDomainStore {
             wrappedItemKeyByVaultKey: wrappedItemKey,
             createdAt: timestamp,
             updatedAt: timestamp
-        ))
+        )
 
         let fieldID = UUID()
         let ciphertext = try EnvelopeCrypto.seal(
@@ -132,7 +132,7 @@ final class EnvelopeDomainStore {
             ),
             cryptoVersion: EnvelopeKeyID.cryptoVersion
         )
-        try persistence.upsertSecretField(PersistedSecretField(
+        let initialSecretField = PersistedSecretField(
             id: fieldID,
             itemID: itemID,
             fieldName: initialSecretLabel,
@@ -143,7 +143,8 @@ final class EnvelopeDomainStore {
             ciphertext: ciphertext,
             createdAt: timestamp,
             updatedAt: timestamp
-        ))
+        )
+        try persistence.upsertCredentialWithInitialSecret(credential, initialSecretField)
 
         return (itemID, fieldID)
     }

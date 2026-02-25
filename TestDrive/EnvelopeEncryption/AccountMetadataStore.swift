@@ -9,26 +9,38 @@ final class AccountMetadataStore: @unchecked Sendable {
         case accountNotFound
         case deviceEnrollmentNotFound
         case unsupportedRecoveryKDFVersion(Int)
+        case bootstrapAccountMismatch
     }
 
     @Dependency(\.defaultDatabase) private var database
 
+    /// Saves account root wraps and first device enrollment atomically.
+    func saveBootstrap(_ wraps: AccountRootWraps, _ enrollment: DeviceEnrollment) throws {
+        guard wraps.accountID == enrollment.accountID else {
+            throw StoreError.bootstrapAccountMismatch
+        }
+
+        let wrapsRow = Self.rootWrapRow(from: wraps)
+        let enrollmentRow = Self.deviceEnrollmentRow(from: enrollment)
+
+        try database.write { db in
+            try AccountRootWrapRow.where { $0.id.eq(wraps.accountID) }
+                .delete()
+                .execute(db)
+            try AccountRootWrapRow.insert { wrapsRow }
+                .execute(db)
+
+            try DeviceEnrollmentRow.where { $0.id.eq(enrollment.deviceID) }
+                .delete()
+                .execute(db)
+            try DeviceEnrollmentRow.insert { enrollmentRow }
+                .execute(db)
+        }
+    }
+
     /// Saves (or replaces) account root wraps for one account.
     func saveRootWraps(_ wraps: AccountRootWraps) throws {
-        let row = AccountRootWrapRow(
-            id: wraps.accountID,
-            recoverySalt: wraps.recoverySalt,
-            recoveryKDFVersion: wraps.recoveryKDFVersion.rawValue,
-            arkKeyID: wraps.arkKeyID,
-            recoveryWrappedByKeyID: wraps.recoveryWrappedByKeyID,
-            recoveryCryptoVersion: wraps.recoveryCryptoVersion,
-            recoveryAADVersion: wraps.recoveryAADVersion,
-            wrappedARKByRecovery: wraps.wrappedARKByRecovery,
-            syncWrappedByKeyID: wraps.syncWrappedByKeyID,
-            syncCryptoVersion: wraps.syncCryptoVersion,
-            syncAADVersion: wraps.syncAADVersion,
-            wrappedARKBySync: wraps.wrappedARKBySync
-        )
+        let row = Self.rootWrapRow(from: wraps)
         try database.write { db in
             try AccountRootWrapRow.where { $0.id.eq(wraps.accountID) }
                 .delete()
@@ -95,15 +107,7 @@ final class AccountMetadataStore: @unchecked Sendable {
 
     /// Saves (or replaces) one device enrollment.
     func saveDeviceEnrollment(_ enrollment: DeviceEnrollment) throws {
-        let row = DeviceEnrollmentRow(
-            id: enrollment.deviceID,
-            accountID: enrollment.accountID,
-            arkKeyID: enrollment.arkKeyID,
-            wrappedByKeyID: enrollment.wrappedByKeyID,
-            cryptoVersion: enrollment.cryptoVersion,
-            aadVersion: enrollment.aadVersion,
-            wrappedARKByDevice: enrollment.wrappedARKByDevice
-        )
+        let row = Self.deviceEnrollmentRow(from: enrollment)
         try database.write { db in
             try DeviceEnrollmentRow.where { $0.id.eq(enrollment.deviceID) }
                 .delete()
@@ -157,6 +161,9 @@ final class AccountMetadataStore: @unchecked Sendable {
 
     var client: AccountMetadataClient {
         AccountMetadataClient(
+            saveBootstrap: { wraps, enrollment in
+                try self.saveBootstrap(wraps, enrollment)
+            },
             saveRootWraps: { wraps in
                 try self.saveRootWraps(wraps)
             },
@@ -169,6 +176,35 @@ final class AccountMetadataStore: @unchecked Sendable {
             loadDeviceEnrollment: { accountID, deviceID in
                 try self.loadDeviceEnrollment(accountID: accountID, deviceID: deviceID)
             }
+        )
+    }
+
+    private static func rootWrapRow(from wraps: AccountRootWraps) -> AccountRootWrapRow {
+        AccountRootWrapRow(
+            id: wraps.accountID,
+            recoverySalt: wraps.recoverySalt,
+            recoveryKDFVersion: wraps.recoveryKDFVersion.rawValue,
+            arkKeyID: wraps.arkKeyID,
+            recoveryWrappedByKeyID: wraps.recoveryWrappedByKeyID,
+            recoveryCryptoVersion: wraps.recoveryCryptoVersion,
+            recoveryAADVersion: wraps.recoveryAADVersion,
+            wrappedARKByRecovery: wraps.wrappedARKByRecovery,
+            syncWrappedByKeyID: wraps.syncWrappedByKeyID,
+            syncCryptoVersion: wraps.syncCryptoVersion,
+            syncAADVersion: wraps.syncAADVersion,
+            wrappedARKBySync: wraps.wrappedARKBySync
+        )
+    }
+
+    private static func deviceEnrollmentRow(from enrollment: DeviceEnrollment) -> DeviceEnrollmentRow {
+        DeviceEnrollmentRow(
+            id: enrollment.deviceID,
+            accountID: enrollment.accountID,
+            arkKeyID: enrollment.arkKeyID,
+            wrappedByKeyID: enrollment.wrappedByKeyID,
+            cryptoVersion: enrollment.cryptoVersion,
+            aadVersion: enrollment.aadVersion,
+            wrappedARKByDevice: enrollment.wrappedARKByDevice
         )
     }
 }

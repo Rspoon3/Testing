@@ -181,6 +181,14 @@ private func makeInMemoryCoordinatorDependencies() -> InMemoryCoordinatorDepende
 
 private func makeAccountMetadataClient(state: LockedValue<InMemoryMetadataState>) -> AccountMetadataClient {
     AccountMetadataClient(
+        saveBootstrap: { wraps, enrollment in
+            state.withValue {
+                $0.rootWrapsByAccountID[wraps.accountID] = wraps
+                $0.enrollmentsByAccountAndDeviceID[
+                    DeviceEnrollmentKey(accountID: enrollment.accountID, deviceID: enrollment.deviceID)
+                ] = enrollment
+            }
+        },
         saveRootWraps: { wraps in
             state.withValue { $0.rootWrapsByAccountID[wraps.accountID] = wraps }
         },

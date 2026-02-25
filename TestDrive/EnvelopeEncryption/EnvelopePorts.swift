@@ -2,6 +2,7 @@ import Dependencies
 import Foundation
 
 struct AccountMetadataClient: Sendable {
+    var saveBootstrap: @Sendable (_ wraps: AccountRootWraps, _ enrollment: DeviceEnrollment) throws -> Void
     var saveRootWraps: @Sendable (_ wraps: AccountRootWraps) throws -> Void
     var loadRootWraps: @Sendable (_ accountID: UUID) throws -> AccountRootWraps
     var saveDeviceEnrollment: @Sendable (_ enrollment: DeviceEnrollment) throws -> Void
@@ -50,6 +51,7 @@ extension DependencyValues {
 extension AccountMetadataClient {
     static var unimplemented: AccountMetadataClient {
         AccountMetadataClient(
+            saveBootstrap: { _, _ in throw DependencyNotConfiguredError(endpoint: "accountMetadata.saveBootstrap") },
             saveRootWraps: { _ in throw DependencyNotConfiguredError(endpoint: "accountMetadata.saveRootWraps") },
             loadRootWraps: { _ in throw DependencyNotConfiguredError(endpoint: "accountMetadata.loadRootWraps") },
             saveDeviceEnrollment: { _ in

@@ -268,6 +268,12 @@ private func makeEnvelopeDomainPersistenceClient(
         upsertCredential: { credential in
             persistence.withValue { $0.credentialsByID[credential.id] = credential }
         },
+        upsertCredentialWithInitialSecret: { credential, initialSecretField in
+            persistence.withValue {
+                $0.credentialsByID[credential.id] = credential
+                $0.secretFieldsByID[initialSecretField.id] = initialSecretField
+            }
+        },
         loadCredential: { id in
             try persistence.withValue { state in
                 guard let credential = state.credentialsByID[id] else {
@@ -363,6 +369,14 @@ private func makeInMemoryCoordinatorDependencies() -> InMemoryCoordinatorDepende
 
 private func makeAccountMetadataClient(state: LockedValue<InMemoryMetadataState>) -> AccountMetadataClient {
     AccountMetadataClient(
+        saveBootstrap: { wraps, enrollment in
+            state.withValue {
+                $0.rootWrapsByAccountID[wraps.accountID] = wraps
+                $0.enrollmentsByAccountAndDeviceID[
+                    DeviceEnrollmentKey(accountID: enrollment.accountID, deviceID: enrollment.deviceID)
+                ] = enrollment
+            }
+        },
         saveRootWraps: { wraps in
             state.withValue { $0.rootWrapsByAccountID[wraps.accountID] = wraps }
         },
