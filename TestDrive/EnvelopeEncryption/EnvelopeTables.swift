@@ -13,6 +13,59 @@ enum VaultItemType: String, Codable, QueryBindable {
     case databaseCredential
     case mobileReleaseSigning
     case softwareLicense
+    case creditCard
+    case driversLicense
+    case passport
+    case socialSecurityNumber
+    case router
+    case bankAccount
+    case cryptoWallet
+    case membership
+    case rewardsProgram
+
+    /// Human-readable display name.
+    var displayName: String {
+        switch self {
+        case .genericSecret: "Generic Secret"
+        case .usernamePassword: "Username & Password"
+        case .sshKey: "SSH Key"
+        case .personalAccessToken: "Personal Access Token"
+        case .databaseCredential: "Database Credential"
+        case .mobileReleaseSigning: "Mobile Release Signing"
+        case .softwareLicense: "Software License"
+        case .creditCard: "Credit Card"
+        case .driversLicense: "Driver's License"
+        case .passport: "Passport"
+        case .socialSecurityNumber: "Social Security Number"
+        case .router: "Router"
+        case .bankAccount: "Bank Account"
+        case .cryptoWallet: "Crypto Wallet"
+        case .membership: "Membership"
+        case .rewardsProgram: "Rewards Program"
+        }
+    }
+
+    /// SF Symbol name for the item type.
+    var systemImage: String {
+        switch self {
+        case .genericSecret: "key.fill"
+        case .usernamePassword: "person.text.rectangle"
+        case .sshKey: "terminal"
+        case .personalAccessToken: "key.horizontal"
+        case .databaseCredential: "externaldrive.connected.to.line.below"
+        case .mobileReleaseSigning: "signature"
+        case .softwareLicense: "checkmark.seal"
+        case .creditCard: "creditcard"
+        case .driversLicense: "car"
+        case .passport: "airplane"
+        case .socialSecurityNumber: "number"
+        case .router: "wifi.router"
+        case .bankAccount: "building.columns"
+        case .cryptoWallet: "bitcoinsign.circle"
+        case .membership: "person.crop.rectangle"
+        case .rewardsProgram: "star.circle"
+        }
+    }
 }
 
 /// Non-secret metadata attribute kinds attached to a credential.
@@ -22,6 +75,13 @@ enum CredentialAttributeKind: String, Codable {
     case associatedEmail
     case note
     case custom
+    case expirationDate
+    case address
+    case accountNumber
+    case issuer
+    case dateOfBirth
+    case membershipTier
+    case network
 }
 
 /// Persisted account-level wraps for the ARK.

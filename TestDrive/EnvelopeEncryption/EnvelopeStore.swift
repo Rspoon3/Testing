@@ -751,6 +751,20 @@ extension CredentialAttributeKind {
             return "note"
         case .custom:
             return "custom"
+        case .expirationDate:
+            return "expiration date"
+        case .address:
+            return "address"
+        case .accountNumber:
+            return "account number"
+        case .issuer:
+            return "issuer"
+        case .dateOfBirth:
+            return "date of birth"
+        case .membershipTier:
+            return "tier"
+        case .network:
+            return "network"
         }
     }
 }
