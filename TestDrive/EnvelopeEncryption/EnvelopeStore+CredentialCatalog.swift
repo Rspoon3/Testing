@@ -1,5 +1,10 @@
 import Foundation
 import SQLiteData
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 extension EnvelopeStore {
     struct CredentialSummary: Identifiable, Hashable {
@@ -26,6 +31,7 @@ extension EnvelopeStore {
         let label: String
         let fileName: String
         let mimeType: String?
+        let decryptedData: Data
         let decryptedByteCount: Int
     }
 
@@ -132,6 +138,7 @@ extension EnvelopeStore {
                     label: row.label,
                     fileName: row.fileName,
                     mimeType: row.mimeType,
+                    decryptedData: plaintext,
                     decryptedByteCount: plaintext.count
                 )
             )
@@ -164,7 +171,7 @@ private extension EnvelopeStore {
         let label: String
         let fileName: String
         let mimeType: String?
-        let contents: String
+        let plaintext: () -> Data
     }
 
     struct DemoBlueprint {
@@ -252,9 +259,158 @@ private extension EnvelopeStore {
                     label: "App Store Connect API Key",
                     fileName: "AuthKey_ABC123DEFG.p8",
                     mimeType: "application/x-pkcs8",
-                    contents: "-----BEGIN PRIVATE KEY-----demo-----END PRIVATE KEY-----"
+                    plaintext: { Data("-----BEGIN PRIVATE KEY-----demo-----END PRIVATE KEY-----".utf8) }
                 )
             ]
+        ),
+        DemoBlueprint(
+            label: "Visa Platinum",
+            type: .creditCard,
+            initialSecret: DemoSecret(label: "cardNumber", value: "4111 1111 1111 1234"),
+            additionalSecrets: [
+                DemoSecret(label: "cvv", value: "789")
+            ],
+            attributes: [
+                DemoAttribute(kind: .issuer, name: nil, value: "Chase"),
+                DemoAttribute(kind: .network, name: nil, value: "Visa"),
+                DemoAttribute(kind: .custom, name: "cardholder", value: "Jane Doe"),
+                DemoAttribute(kind: .expirationDate, name: nil, value: "09/2028"),
+                DemoAttribute(kind: .address, name: "billing address", value: "123 Main St, Anytown, CA 90210")
+            ],
+            files: []
+        ),
+        DemoBlueprint(
+            label: "California Driver's License",
+            type: .driversLicense,
+            initialSecret: DemoSecret(label: "licenseNumber", value: "D1234567"),
+            additionalSecrets: [],
+            attributes: [
+                DemoAttribute(kind: .custom, name: "full name", value: "Jane Doe"),
+                DemoAttribute(kind: .dateOfBirth, name: nil, value: "1990-03-15"),
+                DemoAttribute(kind: .expirationDate, name: nil, value: "2029-03-15"),
+                DemoAttribute(kind: .custom, name: "state", value: "California"),
+                DemoAttribute(kind: .custom, name: "class", value: "C"),
+                DemoAttribute(kind: .address, name: nil, value: "123 Main St, Anytown, CA 90210")
+            ],
+            files: [
+                DemoFile(
+                    label: "License Photo",
+                    fileName: "license.jpeg",
+                    mimeType: "image/jpeg",
+                    plaintext: {
+                        EnvelopeStore.imageAssetData(named: "license")
+                            ?? Data("missing-license-image-asset".utf8)
+                    }
+                )
+            ]
+        ),
+        DemoBlueprint(
+            label: "US Passport",
+            type: .passport,
+            initialSecret: DemoSecret(label: "passportNumber", value: "X12345678"),
+            additionalSecrets: [],
+            attributes: [
+                DemoAttribute(kind: .custom, name: "full name", value: "Jane Doe"),
+                DemoAttribute(kind: .dateOfBirth, name: nil, value: "1990-03-15"),
+                DemoAttribute(kind: .expirationDate, name: nil, value: "2033-06-01"),
+                DemoAttribute(kind: .custom, name: "nationality", value: "United States"),
+                DemoAttribute(kind: .custom, name: "issuing country", value: "United States"),
+                DemoAttribute(kind: .custom, name: "place of birth", value: "Los Angeles, CA")
+            ],
+            files: []
+        ),
+        DemoBlueprint(
+            label: "Social Security",
+            type: .socialSecurityNumber,
+            initialSecret: DemoSecret(label: "ssn", value: "123-45-6789"),
+            additionalSecrets: [],
+            attributes: [
+                DemoAttribute(kind: .custom, name: "full name", value: "Jane Doe"),
+                DemoAttribute(kind: .dateOfBirth, name: nil, value: "1990-03-15"),
+                DemoAttribute(kind: .note, name: nil, value: "Keep physical card in a secure location")
+            ],
+            files: []
+        ),
+        DemoBlueprint(
+            label: "Home Wi-Fi Router",
+            type: .router,
+            initialSecret: DemoSecret(label: "wifiPassword", value: "MyS3cur3W1f1!"),
+            additionalSecrets: [
+                DemoSecret(label: "adminPassword", value: "admin-p@ssw0rd")
+            ],
+            attributes: [
+                DemoAttribute(kind: .custom, name: "SSID", value: "HomeNetwork_5G"),
+                DemoAttribute(kind: .custom, name: "admin URL", value: "192.168.1.1"),
+                DemoAttribute(kind: .custom, name: "admin username", value: "admin"),
+                DemoAttribute(kind: .custom, name: "IP address", value: "192.168.1.1"),
+                DemoAttribute(kind: .network, name: nil, value: "WPA3"),
+                DemoAttribute(kind: .custom, name: "model", value: "ASUS RT-AX88U")
+            ],
+            files: []
+        ),
+        DemoBlueprint(
+            label: "Chase Checking",
+            type: .bankAccount,
+            initialSecret: DemoSecret(label: "accountNumber", value: "000123456789"),
+            additionalSecrets: [
+                DemoSecret(label: "routingNumber", value: "021000021"),
+                DemoSecret(label: "onlineBankingPassword", value: "b@nk-s3cure!")
+            ],
+            attributes: [
+                DemoAttribute(kind: .issuer, name: "bank", value: "JPMorgan Chase"),
+                DemoAttribute(kind: .custom, name: "account holder", value: "Jane Doe"),
+                DemoAttribute(kind: .custom, name: "account type", value: "Checking"),
+                DemoAttribute(kind: .link, name: nil, value: "https://chase.com"),
+                DemoAttribute(kind: .custom, name: "online username", value: "janedoe_chase")
+            ],
+            files: []
+        ),
+        DemoBlueprint(
+            label: "Ethereum Wallet",
+            type: .cryptoWallet,
+            initialSecret: DemoSecret(label: "seedPhrase", value: "abandon ability able about above absent absorb abstract absurd abuse access accident"),
+            additionalSecrets: [
+                DemoSecret(label: "privateKey", value: "0xdeadbeef1234567890abcdef1234567890abcdef1234567890abcdef12345678")
+            ],
+            attributes: [
+                DemoAttribute(kind: .custom, name: "wallet name", value: "Primary ETH Wallet"),
+                DemoAttribute(kind: .custom, name: "public address", value: "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18"),
+                DemoAttribute(kind: .network, name: nil, value: "Ethereum Mainnet"),
+                DemoAttribute(kind: .custom, name: "wallet app", value: "MetaMask"),
+                DemoAttribute(kind: .note, name: nil, value: "Hardware wallet backup stored in safe deposit box")
+            ],
+            files: []
+        ),
+        DemoBlueprint(
+            label: "Costco Membership",
+            type: .membership,
+            initialSecret: DemoSecret(label: "memberID", value: "111234567890"),
+            additionalSecrets: [],
+            attributes: [
+                DemoAttribute(kind: .custom, name: "organization", value: "Costco Wholesale"),
+                DemoAttribute(kind: .custom, name: "member name", value: "Jane Doe"),
+                DemoAttribute(kind: .membershipTier, name: nil, value: "Executive"),
+                DemoAttribute(kind: .expirationDate, name: nil, value: "2027-01-31"),
+                DemoAttribute(kind: .custom, name: "home warehouse", value: "#482 - San Francisco")
+            ],
+            files: []
+        ),
+        DemoBlueprint(
+            label: "Delta SkyMiles",
+            type: .rewardsProgram,
+            initialSecret: DemoSecret(label: "memberID", value: "2810123456"),
+            additionalSecrets: [
+                DemoSecret(label: "accountPassword", value: "fly-d3lta-2025!")
+            ],
+            attributes: [
+                DemoAttribute(kind: .custom, name: "program", value: "Delta SkyMiles"),
+                DemoAttribute(kind: .custom, name: "member name", value: "Jane Doe"),
+                DemoAttribute(kind: .membershipTier, name: nil, value: "Gold Medallion"),
+                DemoAttribute(kind: .custom, name: "points balance", value: "84,320 miles"),
+                DemoAttribute(kind: .link, name: nil, value: "https://www.delta.com/skymiles"),
+                DemoAttribute(kind: .associatedEmail, name: nil, value: "jane.doe@example.com")
+            ],
+            files: []
         )
     ]
 
@@ -306,7 +462,7 @@ private extension EnvelopeStore {
                     label: file.label,
                     fileName: file.fileName,
                     mimeType: file.mimeType,
-                    plaintext: Data(file.contents.utf8)
+                    plaintext: file.plaintext()
                 )
             }
         }
@@ -384,5 +540,24 @@ private extension EnvelopeStore {
                 }
                 .fetchOne(db) != nil
         }
+    }
+
+    static func imageAssetData(named name: String) -> Data? {
+        #if canImport(UIKit)
+            guard let image = UIImage(named: name) else { return nil }
+            return image.jpegData(compressionQuality: 1.0) ?? image.pngData()
+        #elseif canImport(AppKit)
+            guard let image = NSImage(named: NSImage.Name(name)),
+                  let tiffData = image.tiffRepresentation,
+                  let rep = NSBitmapImageRep(data: tiffData)
+            else { return nil }
+
+            return rep.representation(
+                using: .jpeg,
+                properties: [.compressionFactor: 1.0]
+            ) ?? rep.representation(using: .png, properties: [:])
+        #else
+            return nil
+        #endif
     }
 }
