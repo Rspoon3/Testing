@@ -6,7 +6,9 @@
 //
 
 import CryptoKit
+import Dependencies
 import Foundation
+import SQLiteData
 import Testing
 @testable import TestDrive
 
@@ -23,23 +25,30 @@ struct TestDriveTests {
         let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
         defer { try? FileManager.default.removeItem(at: databaseURL) }
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
-        let metadataStore = AccountMetadataStore(database: database)
-        let attemptTracker = RecoveryAttemptTracker(database: database)
-        let bootstrap = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: recoveryCode,
-            initialDeviceID: deviceAID,
-            initialDeviceWrapKey: deviceAWrapKey,
-            metadataStore: metadataStore,
-            syncWrapKey: syncWrapKey
-        )
-        let arkOnDeviceA = try AccountKeyCoordinator.unlockARKForDevice(
-            metadataStore: metadataStore,
-            accountID: accountID,
-            deviceID: deviceAID,
-            deviceWrapKey: deviceAWrapKey
-        )
-        let deviceAStore = EnvelopeStore(
+        let attemptTracker = makeRecoveryAttemptTracker(database: database)
+        let bootstrap = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: attemptTracker
+        ) {
+            try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: recoveryCode,
+                initialDeviceID: deviceAID,
+                initialDeviceWrapKey: deviceAWrapKey,
+                syncWrapKey: syncWrapKey
+            )
+        }
+        let arkOnDeviceA = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: attemptTracker
+        ) {
+            try AccountKeyCoordinator.unlockARKForDevice(
+                accountID: accountID,
+                deviceID: deviceAID,
+                deviceWrapKey: deviceAWrapKey
+            )
+        }
+        let deviceAStore = makeEnvelopeStore(
             database: database,
             ark: arkOnDeviceA,
             arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
@@ -60,28 +69,39 @@ struct TestDriveTests {
             initialSecretPlaintext: Data("JETBRAINS-DEMO-LICENSE".utf8)
         )
 
-        let recoveredARK = try AccountKeyCoordinator.recoverARK(
-            metadataStore: metadataStore,
-            accountID: accountID,
-            recoveryCode: recoveryCode,
+        let recoveredARK = try withCoordinatorDependencies(
+            database: database,
             attemptTracker: attemptTracker
-        )
+        ) {
+            try AccountKeyCoordinator.recoverARK(
+                accountID: accountID,
+                recoveryCode: recoveryCode
+            )
+        }
         let deviceBID = UUID()
         let deviceBWrapKey = SymmetricKey(size: .bits256)
-        _ = try AccountKeyCoordinator.enrollDevice(
-            metadataStore: metadataStore,
-            accountID: accountID,
-            ark: recoveredARK,
-            deviceID: deviceBID,
-            deviceWrapKey: deviceBWrapKey
-        )
-        let arkOnDeviceB = try AccountKeyCoordinator.unlockARKForDevice(
-            metadataStore: metadataStore,
-            accountID: accountID,
-            deviceID: deviceBID,
-            deviceWrapKey: deviceBWrapKey
-        )
-        let deviceBStore = EnvelopeStore(
+        _ = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: attemptTracker
+        ) {
+            try AccountKeyCoordinator.enrollDevice(
+                accountID: accountID,
+                ark: recoveredARK,
+                deviceID: deviceBID,
+                deviceWrapKey: deviceBWrapKey
+            )
+        }
+        let arkOnDeviceB = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: attemptTracker
+        ) {
+            try AccountKeyCoordinator.unlockARKForDevice(
+                accountID: accountID,
+                deviceID: deviceBID,
+                deviceWrapKey: deviceBWrapKey
+            )
+        }
+        let deviceBStore = makeEnvelopeStore(
             database: database,
             ark: arkOnDeviceB,
             arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
@@ -93,12 +113,16 @@ struct TestDriveTests {
         )
         #expect(String(decoding: revealedLicenseOnDeviceB, as: UTF8.self) == "JETBRAINS-DEMO-LICENSE")
 
-        let arkFromSync = try AccountKeyCoordinator.unlockARKFromSync(
-            metadataStore: metadataStore,
-            accountID: accountID,
-            syncWrapKey: syncWrapKey
-        )
-        let syncStore = EnvelopeStore(
+        let arkFromSync = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: attemptTracker
+        ) {
+            try AccountKeyCoordinator.unlockARKFromSync(
+                accountID: accountID,
+                syncWrapKey: syncWrapKey
+            )
+        }
+        let syncStore = makeEnvelopeStore(
             database: database,
             ark: arkFromSync,
             arkKeyID: EnvelopeKeyID.accountARK(accountID: accountID)
@@ -119,24 +143,30 @@ struct TestDriveTests {
         let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
         defer { try? FileManager.default.removeItem(at: databaseURL) }
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
-        let metadataStore = AccountMetadataStore(database: database)
-        let attemptTracker = RecoveryAttemptTracker(database: database)
-        let bootstrap = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: "correct horse battery staple",
-            initialDeviceID: UUID(),
-            initialDeviceWrapKey: SymmetricKey(size: .bits256),
-            metadataStore: metadataStore
-        )
+        let attemptTracker = makeRecoveryAttemptTracker(database: database)
+        let bootstrap = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: attemptTracker
+        ) {
+            try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: "correct horse battery staple",
+                initialDeviceID: UUID(),
+                initialDeviceWrapKey: SymmetricKey(size: .bits256)
+            )
+        }
 
         var didThrow = false
         do {
-            _ = try AccountKeyCoordinator.recoverARK(
-                metadataStore: metadataStore,
-                accountID: accountID,
-                recoveryCode: "wrong recovery code",
+            _ = try withCoordinatorDependencies(
+                database: database,
                 attemptTracker: attemptTracker
-            )
+            ) {
+                try AccountKeyCoordinator.recoverARK(
+                    accountID: accountID,
+                    recoveryCode: "wrong recovery code"
+                )
+            }
         } catch {
             didThrow = true
         }
@@ -153,23 +183,31 @@ struct TestDriveTests {
         let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
         defer { try? FileManager.default.removeItem(at: databaseURL) }
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
-        let metadataStore = AccountMetadataStore(database: database)
-        let bootstrap = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: "correct horse battery staple",
-            initialDeviceID: deviceID,
-            initialDeviceWrapKey: SymmetricKey(size: .bits256),
-            metadataStore: metadataStore
-        )
+        let attemptTracker = makeRecoveryAttemptTracker(database: database)
+        let bootstrap = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: attemptTracker
+        ) {
+            try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: "correct horse battery staple",
+                initialDeviceID: deviceID,
+                initialDeviceWrapKey: SymmetricKey(size: .bits256)
+            )
+        }
 
         var didThrow = false
         do {
-            _ = try AccountKeyCoordinator.unlockARKForDevice(
-                metadataStore: metadataStore,
-                accountID: accountID,
-                deviceID: deviceID,
-                deviceWrapKey: SymmetricKey(size: .bits256)
-            )
+            _ = try withCoordinatorDependencies(
+                database: database,
+                attemptTracker: attemptTracker
+            ) {
+                try AccountKeyCoordinator.unlockARKForDevice(
+                    accountID: accountID,
+                    deviceID: deviceID,
+                    deviceWrapKey: SymmetricKey(size: .bits256)
+                )
+            }
         } catch {
             didThrow = true
         }
@@ -186,49 +224,61 @@ struct TestDriveTests {
         let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
         defer { try? FileManager.default.removeItem(at: databaseURL) }
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
-        let metadataStore = AccountMetadataStore(database: database)
-        _ = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: recoveryCode,
-            initialDeviceID: UUID(),
-            initialDeviceWrapKey: SymmetricKey(size: .bits256),
-            metadataStore: metadataStore
-        )
 
         var currentDate = Date()
-        let tracker = RecoveryAttemptTracker(
+        let tracker = makeRecoveryAttemptTracker(
             database: database,
             policy: .default,
             now: { currentDate }
         )
+        _ = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: tracker
+        ) {
+            try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: recoveryCode,
+                initialDeviceID: UUID(),
+                initialDeviceWrapKey: SymmetricKey(size: .bits256)
+            )
+        }
 
         // Fail once, then advance past backoff window
         #expect(throws: (any Error).self) {
-            try AccountKeyCoordinator.recoverARK(
-                metadataStore: metadataStore,
-                accountID: accountID,
-                recoveryCode: "wrong code",
+            try withCoordinatorDependencies(
+                database: database,
                 attemptTracker: tracker
-            )
+            ) {
+                try AccountKeyCoordinator.recoverARK(
+                    accountID: accountID,
+                    recoveryCode: "wrong code"
+                )
+            }
         }
         currentDate = currentDate.addingTimeInterval(10)
 
         // Correct code succeeds and resets failure count
-        let ark = try AccountKeyCoordinator.recoverARK(
-            metadataStore: metadataStore,
-            accountID: accountID,
-            recoveryCode: recoveryCode,
+        let ark = try withCoordinatorDependencies(
+            database: database,
             attemptTracker: tracker
-        )
+        ) {
+            try AccountKeyCoordinator.recoverARK(
+                accountID: accountID,
+                recoveryCode: recoveryCode
+            )
+        }
         #expect(ark.bitCount == 256)
 
         // Immediate retry with correct code works (no backoff after reset)
-        let ark2 = try AccountKeyCoordinator.recoverARK(
-            metadataStore: metadataStore,
-            accountID: accountID,
-            recoveryCode: recoveryCode,
+        let ark2 = try withCoordinatorDependencies(
+            database: database,
             attemptTracker: tracker
-        )
+        ) {
+            try AccountKeyCoordinator.recoverARK(
+                accountID: accountID,
+                recoveryCode: recoveryCode
+            )
+        }
         #expect(ark2.bitCount == 256)
     }
 
@@ -239,31 +289,37 @@ struct TestDriveTests {
         let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
         defer { try? FileManager.default.removeItem(at: databaseURL) }
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
-        let metadataStore = AccountMetadataStore(database: database)
-        _ = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: "correct horse battery staple",
-            initialDeviceID: UUID(),
-            initialDeviceWrapKey: SymmetricKey(size: .bits256),
-            metadataStore: metadataStore
-        )
 
         var currentDate = Date()
         let policy = RecoveryAttemptTracker.Policy(baseDelay: 2, maxConsecutiveFailures: 10)
-        let tracker = RecoveryAttemptTracker(
+        let tracker = makeRecoveryAttemptTracker(
             database: database,
             policy: policy,
             now: { currentDate }
         )
+        _ = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: tracker
+        ) {
+            try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: "correct horse battery staple",
+                initialDeviceID: UUID(),
+                initialDeviceWrapKey: SymmetricKey(size: .bits256)
+            )
+        }
 
         // First wrong attempt fails (crypto error, but failure is recorded)
         #expect(throws: (any Error).self) {
-            try AccountKeyCoordinator.recoverARK(
-                metadataStore: metadataStore,
-                accountID: accountID,
-                recoveryCode: "wrong",
+            try withCoordinatorDependencies(
+                database: database,
                 attemptTracker: tracker
-            )
+            ) {
+                try AccountKeyCoordinator.recoverARK(
+                    accountID: accountID,
+                    recoveryCode: "wrong"
+                )
+            }
         }
 
         // Immediate retry is rate-limited (2s backoff after 1 failure)
@@ -289,34 +345,40 @@ struct TestDriveTests {
         let databaseURL = try EnvelopePaths.temporaryDatabaseURL(testName: #function)
         defer { try? FileManager.default.removeItem(at: databaseURL) }
         let database = try EnvelopeStore.openDatabase(at: databaseURL)
-        let metadataStore = AccountMetadataStore(database: database)
-        _ = try AccountKeyCoordinator.bootstrapAccount(
-            accountID: accountID,
-            recoveryCode: "correct horse battery staple",
-            initialDeviceID: UUID(),
-            initialDeviceWrapKey: SymmetricKey(size: .bits256),
-            metadataStore: metadataStore
-        )
 
         var currentDate = Date()
         let maxFailures = 3
         let policy = RecoveryAttemptTracker.Policy(baseDelay: 0.001, maxConsecutiveFailures: maxFailures)
-        let tracker = RecoveryAttemptTracker(
+        let tracker = makeRecoveryAttemptTracker(
             database: database,
             policy: policy,
             now: { currentDate }
         )
+        _ = try withCoordinatorDependencies(
+            database: database,
+            attemptTracker: tracker
+        ) {
+            try AccountKeyCoordinator.bootstrapAccount(
+                accountID: accountID,
+                recoveryCode: "correct horse battery staple",
+                initialDeviceID: UUID(),
+                initialDeviceWrapKey: SymmetricKey(size: .bits256)
+            )
+        }
 
         // Exhaust all allowed attempts
         for _ in 0..<maxFailures {
             currentDate = currentDate.addingTimeInterval(100)
             #expect(throws: (any Error).self) {
-                try AccountKeyCoordinator.recoverARK(
-                    metadataStore: metadataStore,
-                    accountID: accountID,
-                    recoveryCode: "wrong",
+                try withCoordinatorDependencies(
+                    database: database,
                     attemptTracker: tracker
-                )
+                ) {
+                    try AccountKeyCoordinator.recoverARK(
+                        accountID: accountID,
+                        recoveryCode: "wrong"
+                    )
+                }
             }
         }
 
@@ -328,12 +390,15 @@ struct TestDriveTests {
 
         // Manual reset re-enables recovery
         try tracker.resetLockout(accountID: accountID)
-        let ark = try AccountKeyCoordinator.recoverARK(
-            metadataStore: metadataStore,
-            accountID: accountID,
-            recoveryCode: "correct horse battery staple",
+        let ark = try withCoordinatorDependencies(
+            database: database,
             attemptTracker: tracker
-        )
+        ) {
+            try AccountKeyCoordinator.recoverARK(
+                accountID: accountID,
+                recoveryCode: "correct horse battery staple"
+            )
+        }
         #expect(ark.bitCount == 256)
     }
 
@@ -374,5 +439,47 @@ struct TestDriveTests {
         #expect(!SharedVaultProvisioningPolicy.canModifyMembership(actorRole: .viewer))
         #expect(!SharedVaultProvisioningPolicy.canRotateVaultKey(actorRole: .writer))
         #expect(SharedVaultProvisioningPolicy.canRotateVaultKey(actorRole: .owner))
+    }
+}
+
+private func withCoordinatorDependencies<R>(
+    database: any DatabaseWriter,
+    attemptTracker: RecoveryAttemptTracker,
+    operation: () throws -> R
+) rethrows -> R {
+    try withDependencies {
+        $0.defaultDatabase = database
+        let metadataStore = AccountMetadataStore()
+        $0.accountMetadata = metadataStore.client
+        $0.recoveryAttemptTracker = attemptTracker.client
+    } operation: {
+        try operation()
+    }
+}
+
+private func makeRecoveryAttemptTracker(
+    database: any DatabaseWriter,
+    policy: RecoveryAttemptTracker.Policy = .default,
+    now: @escaping () -> Date = { Date() }
+) -> RecoveryAttemptTracker {
+    withDependencies {
+        $0.defaultDatabase = database
+    } operation: {
+        RecoveryAttemptTracker(policy: policy, now: now)
+    }
+}
+
+private func makeEnvelopeStore(
+    database: any DatabaseWriter,
+    ark: SymmetricKey,
+    arkKeyID: String
+) -> EnvelopeStore {
+    withDependencies {
+        $0.defaultDatabase = database
+    } operation: {
+        EnvelopeStore(
+            ark: ark,
+            arkKeyID: arkKeyID
+        )
     }
 }

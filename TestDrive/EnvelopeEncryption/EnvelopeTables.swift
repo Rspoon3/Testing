@@ -31,6 +31,8 @@ struct AccountRootWrapRow: Identifiable {
     let id: UUID
     /// Salt used to derive the recovery wrap key.
     var recoverySalt: Data
+    /// Raw value for the KDF policy used for deriving the recovery wrap key.
+    var recoveryKDFVersion: Int
     /// Identifier of the wrapped ARK key material.
     var arkKeyID: String
     /// Identifier for the key that wrapped `wrappedARKByRecovery`.

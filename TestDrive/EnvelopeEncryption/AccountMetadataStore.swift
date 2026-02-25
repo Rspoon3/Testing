@@ -1,27 +1,24 @@
+import Dependencies
 import Foundation
-import GRDB
 import SQLiteData
 
 /// Persistence adapter for account-level key-wrap metadata.
-final class AccountMetadataStore {
+final class AccountMetadataStore: @unchecked Sendable {
     /// Store-level errors.
     enum StoreError: Error {
         case accountNotFound
         case deviceEnrollmentNotFound
+        case unsupportedRecoveryKDFVersion(Int)
     }
 
-    /// Backing SQLite database connection.
-    let database: DatabaseQueue
-
-    init(database: DatabaseQueue) {
-        self.database = database
-    }
+    @Dependency(\.defaultDatabase) private var database
 
     /// Saves (or replaces) account root wraps for one account.
     func saveRootWraps(_ wraps: AccountRootWraps) throws {
         let row = AccountRootWrapRow(
             id: wraps.accountID,
             recoverySalt: wraps.recoverySalt,
+            recoveryKDFVersion: wraps.recoveryKDFVersion.rawValue,
             arkKeyID: wraps.arkKeyID,
             recoveryWrappedByKeyID: wraps.recoveryWrappedByKeyID,
             recoveryCryptoVersion: wraps.recoveryCryptoVersion,
@@ -49,10 +46,14 @@ final class AccountMetadataStore {
         }) else {
             throw StoreError.accountNotFound
         }
+        guard let recoveryKDFVersion = RecoveryWrapKeyDerivationVersion(rawValue: row.recoveryKDFVersion) else {
+            throw StoreError.unsupportedRecoveryKDFVersion(row.recoveryKDFVersion)
+        }
 
         return AccountRootWraps(
             accountID: row.id,
             recoverySalt: row.recoverySalt,
+            recoveryKDFVersion: recoveryKDFVersion,
             arkKeyID: row.arkKeyID,
             recoveryWrappedByKeyID: row.recoveryWrappedByKeyID,
             recoveryCryptoVersion: row.recoveryCryptoVersion,
@@ -72,10 +73,14 @@ final class AccountMetadataStore {
                 .order { $0.id.asc() }
                 .fetchOne(db)
         }) else { return nil }
+        guard let recoveryKDFVersion = RecoveryWrapKeyDerivationVersion(rawValue: row.recoveryKDFVersion) else {
+            throw StoreError.unsupportedRecoveryKDFVersion(row.recoveryKDFVersion)
+        }
 
         return AccountRootWraps(
             accountID: row.id,
             recoverySalt: row.recoverySalt,
+            recoveryKDFVersion: recoveryKDFVersion,
             arkKeyID: row.arkKeyID,
             recoveryWrappedByKeyID: row.recoveryWrappedByKeyID,
             recoveryCryptoVersion: row.recoveryCryptoVersion,
@@ -147,6 +152,23 @@ final class AccountMetadataStore {
             cryptoVersion: row.cryptoVersion,
             aadVersion: row.aadVersion,
             wrappedARKByDevice: row.wrappedARKByDevice
+        )
+    }
+
+    var client: AccountMetadataClient {
+        AccountMetadataClient(
+            saveRootWraps: { wraps in
+                try self.saveRootWraps(wraps)
+            },
+            loadRootWraps: { accountID in
+                try self.loadRootWraps(accountID: accountID)
+            },
+            saveDeviceEnrollment: { enrollment in
+                try self.saveDeviceEnrollment(enrollment)
+            },
+            loadDeviceEnrollment: { accountID, deviceID in
+                try self.loadDeviceEnrollment(accountID: accountID, deviceID: deviceID)
+            }
         )
     }
 }

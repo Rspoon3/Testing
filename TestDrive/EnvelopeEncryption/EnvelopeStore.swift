@@ -1,6 +1,6 @@
 import CryptoKit
+import Dependencies
 import Foundation
-import GRDB
 import SQLiteData
 
 /// Minimal SQLiteData-backed repository that persists wrapped keys and encrypted item fields.
@@ -19,8 +19,7 @@ final class EnvelopeStore {
         case unsupportedItemType
     }
 
-    /// Backing SQLite database connection.
-    let database: DatabaseQueue
+    @Dependency(\.defaultDatabase) var database
     /// Account root key available in memory for current unlock session.
     let ark: SymmetricKey
     /// Identifier of the account root key in use for this session.
@@ -28,11 +27,9 @@ final class EnvelopeStore {
 
     /// Creates a store with an unlocked ARK.
     init(
-        database: DatabaseQueue,
         ark: SymmetricKey,
         arkKeyID: String = EnvelopeKeyID.implicitAccountARK
     ) {
-        self.database = database
         self.ark = ark
         self.arkKeyID = arkKeyID
     }
@@ -55,6 +52,7 @@ final class EnvelopeStore {
                 CREATE TABLE "accountRootWrapRows" (
                   "id" TEXT PRIMARY KEY NOT NULL,
                   "recoverySalt" BLOB NOT NULL,
+                  "recoveryKDFVersion" INTEGER NOT NULL CHECK ("recoveryKDFVersion" > 0),
                   "arkKeyID" TEXT NOT NULL CHECK (length("arkKeyID") > 0),
                   "recoveryWrappedByKeyID" TEXT NOT NULL CHECK (length("recoveryWrappedByKeyID") > 0),
                   "recoveryCryptoVersion" INTEGER NOT NULL CHECK ("recoveryCryptoVersion" > 0),

@@ -1,5 +1,5 @@
+import Dependencies
 import Foundation
-import GRDB
 import SQLiteData
 
 /// Enforces brute-force protection on recovery code attempts.
@@ -7,7 +7,7 @@ import SQLiteData
 /// Tracks consecutive failures per account in SQLite and applies exponential
 /// backoff before allowing the next attempt. After a configurable maximum
 /// number of failures the account is permanently locked until manually reset.
-final class RecoveryAttemptTracker {
+final class RecoveryAttemptTracker: @unchecked Sendable {
     /// Errors thrown when a recovery attempt is blocked by the rate-limit policy.
     enum TrackerError: Error, Equatable {
         /// The caller must wait before retrying. `retryAfter` is the remaining delay in seconds.
@@ -27,8 +27,8 @@ final class RecoveryAttemptTracker {
         static let `default` = Policy(baseDelay: 2, maxConsecutiveFailures: 10)
     }
 
-    /// Backing SQLite database (shared with the envelope store).
-    let database: DatabaseQueue
+    @Dependency(\.defaultDatabase) private var database
+
     /// Active rate-limit policy.
     let policy: Policy
     /// Clock abstraction for testability.
@@ -36,17 +36,14 @@ final class RecoveryAttemptTracker {
 
     // MARK: - Initializer
 
-    /// Creates a tracker backed by the given database.
+    /// Creates a tracker with a configurable policy and clock.
     /// - Parameters:
-    ///   - database: SQLite database that contains the `recoveryAttemptRows` table.
     ///   - policy: Brute-force protection policy.
     ///   - now: Clock override for deterministic testing.
     init(
-        database: DatabaseQueue,
         policy: Policy = .default,
         now: @escaping () -> Date = { Date() }
     ) {
-        self.database = database
         self.policy = policy
         self.now = now
     }
@@ -133,5 +130,22 @@ final class RecoveryAttemptTracker {
                 .delete()
                 .execute(db)
         }
+    }
+
+    var client: RecoveryAttemptTrackerClient {
+        RecoveryAttemptTrackerClient(
+            checkAttemptAllowed: { accountID in
+                try self.checkAttemptAllowed(accountID: accountID)
+            },
+            recordFailure: { accountID in
+                try self.recordFailure(accountID: accountID)
+            },
+            recordSuccess: { accountID in
+                try self.recordSuccess(accountID: accountID)
+            },
+            resetLockout: { accountID in
+                try self.resetLockout(accountID: accountID)
+            }
+        )
     }
 }
