@@ -11,7 +11,7 @@ import SwiftUI
 struct TestDriveApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            WordSearchView()
         }
     }
 }
