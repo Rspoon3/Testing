@@ -84,10 +84,10 @@ struct WordSearchView: View {
                 ),
                 spacing: 2
             ) {
-                ForEach(0..<grid.count, id: \.self) { row in
-                    ForEach(0..<grid[row].count, id: \.self) { col in
+                ForEach(Array(grid.enumerated()), id: \.offset) { row, rowChars in
+                    ForEach(Array(rowChars.enumerated()), id: \.offset) { col, char in
                         let position = GridPosition(row: row, col: col)
-                        Text(String(grid[row][col]))
+                        Text(String(char))
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
                             .frame(width: cellSize, height: cellSize)
                             .background(
