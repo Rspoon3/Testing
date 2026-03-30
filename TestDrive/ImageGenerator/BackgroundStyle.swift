@@ -10,6 +10,9 @@ enum BackgroundStyle: String, CaseIterable, Identifiable {
     case oceanDots
     case warmConfetti
     case neonGrid
+    case radialBurst
+    case waveform
+    case cosmicSpace
 
     var id: String { rawValue }
 
@@ -24,6 +27,9 @@ enum BackgroundStyle: String, CaseIterable, Identifiable {
         case .oceanDots: "Ocean Dots"
         case .warmConfetti: "Warm Confetti"
         case .neonGrid: "Neon Grid"
+        case .radialBurst: "Radial Burst"
+        case .waveform: "Waveform"
+        case .cosmicSpace: "Cosmic Space"
         }
     }
 }

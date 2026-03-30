@@ -79,6 +79,28 @@ struct BackgroundCanvasView: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
+
+        case .radialBurst:
+            LinearGradient(
+                colors: [Color(red: 0.45, green: 0.2, blue: 0.75), Color(red: 0.3, green: 0.1, blue: 0.55)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+        case .waveform:
+            LinearGradient(
+                colors: [Color(red: 0.1, green: 0.3, blue: 0.7), Color(red: 0.05, green: 0.15, blue: 0.5)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+        case .cosmicSpace:
+            RadialGradient(
+                colors: [Color(red: 0.08, green: 0.05, blue: 0.2), Color(red: 0.02, green: 0.01, blue: 0.08)],
+                center: .center,
+                startRadius: 0,
+                endRadius: 600
+            )
         }
     }
 
@@ -103,11 +125,17 @@ struct BackgroundCanvasView: View {
             WarmConfettiPattern(size: size, rng: rng)
         case .neonGrid:
             NeonGridPattern(size: size, rng: rng)
+        case .radialBurst:
+            RadialBurstPattern(size: size, rng: rng)
+        case .waveform:
+            WaveformPattern(size: size, rng: rng)
+        case .cosmicSpace:
+            CosmicSpacePattern(size: size, rng: rng)
         }
     }
 }
 
 #Preview {
-    BackgroundCanvasView(style: .purplePlus, seed: 42)
+    BackgroundCanvasView(style: .cosmicSpace, seed: 42)
         .padding()
 }
