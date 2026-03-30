@@ -4,6 +4,7 @@ import SwiftUI
 struct MintBlobsPattern: View {
     let size: CGSize
     let rng: SeededRandom
+    var accentColor: Color = Color(red: 0.55, green: 0.85, blue: 0.65)
 
     var body: some View {
         Canvas { context, canvasSize in
@@ -20,7 +21,7 @@ struct MintBlobsPattern: View {
 
                 let rect = CGRect(x: x, y: y, width: w, height: h)
                 let blob = Path(roundedRect: rect, cornerRadius: min(w, h) * 0.4)
-                context.fill(blob, with: .color(Color(red: 0.55, green: 0.85, blue: 0.65).opacity(opacity)))
+                context.fill(blob, with: .color(accentColor.opacity(opacity)))
             }
 
             // Simple flower shapes
@@ -37,7 +38,7 @@ struct MintBlobsPattern: View {
                     let py = cy + sin(angle) * petalSize * 1.2
                     let petalRect = CGRect(x: px - petalSize / 2, y: py - petalSize / 2, width: petalSize, height: petalSize)
                     let petal = Path(ellipseIn: petalRect)
-                    context.fill(petal, with: .color(Color(red: 0.4, green: 0.75, blue: 0.55).opacity(opacity)))
+                    context.fill(petal, with: .color(accentColor.opacity(opacity)))
                 }
             }
         }

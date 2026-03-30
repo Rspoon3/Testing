@@ -4,6 +4,7 @@ import SwiftUI
 struct OceanDotsPattern: View {
     let size: CGSize
     let rng: SeededRandom
+    var accentColor: Color = .cyan
 
     var body: some View {
         Canvas { context, canvasSize in
@@ -37,7 +38,7 @@ struct OceanDotsPattern: View {
                         let dotSize = rng.nextDouble(in: 3...6)
 
                         let dotPath = Path(ellipseIn: CGRect(x: dx - dotSize / 2, y: dy - dotSize / 2, width: dotSize, height: dotSize))
-                        context.fill(dotPath, with: .color(.cyan.opacity(opacity)))
+                        context.fill(dotPath, with: .color(accentColor.opacity(opacity)))
                     }
                 }
             }

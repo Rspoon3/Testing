@@ -4,6 +4,7 @@ import SwiftUI
 struct CosmicSpacePattern: View {
     let size: CGSize
     let rng: SeededRandom
+    var accentColor: Color = Color(red: 0.4, green: 0.1, blue: 0.6)
 
     var body: some View {
         Canvas { context, canvasSize in
@@ -20,7 +21,6 @@ struct CosmicSpacePattern: View {
     // MARK: - Private Helpers
 
     private func drawStars(context: GraphicsContext, width: Double, height: Double) {
-        // Dense star field
         for _ in 0..<120 {
             let x = rng.nextDouble(in: 0...width)
             let y = rng.nextDouble(in: 0...height)
@@ -30,7 +30,6 @@ struct CosmicSpacePattern: View {
             let dot = Path(ellipseIn: CGRect(x: x - starSize / 2, y: y - starSize / 2, width: starSize, height: starSize))
             context.fill(dot, with: .color(.white.opacity(brightness)))
 
-            // Some brighter stars get a subtle glow
             if brightness > 0.75 {
                 let glowSize = starSize * 4
                 let glow = Path(ellipseIn: CGRect(x: x - glowSize / 2, y: y - glowSize / 2, width: glowSize, height: glowSize))
@@ -41,8 +40,8 @@ struct CosmicSpacePattern: View {
 
     private func drawNebulaClouds(context: GraphicsContext, width: Double, height: Double) {
         let nebulaColors: [Color] = [
-            Color(red: 0.4, green: 0.1, blue: 0.6),
-            Color(red: 0.1, green: 0.2, blue: 0.5),
+            accentColor,
+            accentColor.opacity(0.8),
             Color(red: 0.6, green: 0.15, blue: 0.4),
             Color(red: 0.1, green: 0.4, blue: 0.5)
         ]
@@ -76,24 +75,20 @@ struct CosmicSpacePattern: View {
             let radius = rng.nextDouble(in: 15...45)
             let colorPair = planetColors[i % planetColors.count]
 
-            // Planet body
             let planetRect = CGRect(x: cx - radius, y: cy - radius, width: radius * 2, height: radius * 2)
             let planet = Path(ellipseIn: planetRect)
             context.fill(planet, with: .color(colorPair.0.opacity(0.8)))
 
-            // Shadow crescent for 3D effect
             let shadowOffset = radius * 0.3
             let shadowRect = CGRect(x: cx - radius + shadowOffset, y: cy - radius, width: radius * 2, height: radius * 2)
             let shadow = Path(ellipseIn: shadowRect)
             context.fill(shadow, with: .color(colorPair.1.opacity(0.5)))
 
-            // Highlight
             let highlightSize = radius * 0.5
             let highlightRect = CGRect(x: cx - radius * 0.5, y: cy - radius * 0.5, width: highlightSize, height: highlightSize)
             let highlight = Path(ellipseIn: highlightRect)
             context.fill(highlight, with: .color(.white.opacity(0.15)))
 
-            // Optional ring for one planet
             if i == 0 {
                 let ringWidth = radius * 2.5
                 let ringHeight = radius * 0.5
@@ -115,7 +110,6 @@ struct CosmicSpacePattern: View {
         trail.addLine(to: CGPoint(x: startX - cos(angle) * length, y: startY + sin(angle) * length))
         context.stroke(trail, with: .color(.white.opacity(0.5)), lineWidth: 1.5)
 
-        // Bright head
         let headSize: Double = 3
         let head = Path(ellipseIn: CGRect(x: startX - headSize / 2, y: startY - headSize / 2, width: headSize, height: headSize))
         context.fill(head, with: .color(.white.opacity(0.8)))

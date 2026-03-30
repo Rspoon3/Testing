@@ -8,18 +8,29 @@ struct ImageGeneratorView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                BackgroundCanvasView(style: viewModel.selectedStyle, seed: viewModel.seed)
+            ScrollView {
+                VStack(spacing: 20) {
+                    BackgroundCanvasView(
+                        style: viewModel.selectedStyle,
+                        seed: viewModel.seed,
+                        colors: viewModel.colorValues,
+                        symbolName: viewModel.symbolName
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .shadow(radius: 4)
                     .padding(.horizontal)
 
-                stylePicker
-                actionButtons
+                    stylePicker
+                    colorPickers
 
-                Spacer()
+                    if viewModel.showSymbolControls {
+                        symbolControls
+                    }
+
+                    actionButtons
+                }
+                .padding(.vertical)
             }
-            .padding(.top)
             .navigationTitle("Background Generator")
             .alert("Saved!", isPresented: $viewModel.showSavedAlert) {
                 Button("OK", role: .cancel) {}
@@ -53,6 +64,55 @@ struct ImageGeneratorView: View {
             }
             .padding(.horizontal)
         }
+    }
+
+    private var colorPickers: some View {
+        VStack(spacing: 12) {
+            ForEach(viewModel.colorSlots.indices, id: \.self) { index in
+                ColorPicker(
+                    viewModel.colorSlots[index].id,
+                    selection: $viewModel.colorSlots[index].color
+                )
+            }
+
+            Button("Reset Colors") {
+                viewModel.resetColors()
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal)
+    }
+
+    private var symbolControls: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Toggle("SF Symbol", isOn: .init(
+                    get: { viewModel.symbolName != nil },
+                    set: { _ in viewModel.toggleSymbol() }
+                ))
+            }
+
+            if let symbolName = viewModel.symbolName {
+                HStack {
+                    Label(symbolName, systemImage: symbolName)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Button {
+                        viewModel.shuffleSymbol()
+                    } label: {
+                        Label("Shuffle", systemImage: "shuffle")
+                            .font(.subheadline)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.secondary)
+                }
+            }
+        }
+        .padding(.horizontal)
     }
 
     private var actionButtons: some View {

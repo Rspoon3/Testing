@@ -4,6 +4,7 @@ import SwiftUI
 struct GreenCloversPattern: View {
     let size: CGSize
     let rng: SeededRandom
+    var accentColor: Color = Color(red: 0.3, green: 0.65, blue: 0.35)
 
     var body: some View {
         Canvas { context, canvasSize in
@@ -32,14 +33,14 @@ struct GreenCloversPattern: View {
                         height: leafSize
                     )
                     let leaf = Path(ellipseIn: leafRect)
-                    context.fill(leaf, with: .color(Color(red: 0.3, green: 0.65, blue: 0.35)))
+                    context.fill(leaf, with: .color(accentColor))
                 }
 
                 // Stem
                 var stem = Path()
                 stem.move(to: CGPoint(x: x, y: y))
                 stem.addLine(to: CGPoint(x: x, y: y + leafSize * 1.8))
-                context.stroke(stem, with: .color(Color(red: 0.3, green: 0.65, blue: 0.35)), lineWidth: 2 * scale)
+                context.stroke(stem, with: .color(accentColor), lineWidth: 2 * scale)
 
                 context.opacity = 1
             }

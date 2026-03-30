@@ -4,6 +4,7 @@ import SwiftUI
 struct WaveformPattern: View {
     let size: CGSize
     let rng: SeededRandom
+    var accentColor: Color = .white
 
     var body: some View {
         Canvas { context, canvasSize in
@@ -37,7 +38,7 @@ struct WaveformPattern: View {
                     }
                 }
 
-                context.stroke(path, with: .color(.white.opacity(opacity)), lineWidth: 3)
+                context.stroke(path, with: .color(accentColor.opacity(opacity)), lineWidth: 3)
             }
 
             // Scattered small glow dots along the waves
@@ -48,7 +49,7 @@ struct WaveformPattern: View {
                 let opacity = rng.nextDouble(in: 0.15...0.4)
 
                 let dot = Path(ellipseIn: CGRect(x: x - dotSize / 2, y: y - dotSize / 2, width: dotSize, height: dotSize))
-                context.fill(dot, with: .color(.cyan.opacity(opacity)))
+                context.fill(dot, with: .color(accentColor.opacity(opacity)))
             }
         }
     }

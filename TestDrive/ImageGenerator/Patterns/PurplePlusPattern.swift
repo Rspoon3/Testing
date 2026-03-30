@@ -4,6 +4,7 @@ import SwiftUI
 struct PurplePlusPattern: View {
     let size: CGSize
     let rng: SeededRandom
+    var accentColor: Color = .white
 
     var body: some View {
         Canvas { context, canvasSize in
@@ -31,7 +32,7 @@ struct PurplePlusPattern: View {
                         cornerSize: CGSize(width: thickness / 2, height: thickness / 2)
                     )
 
-                    context.fill(path, with: .color(.white.opacity(opacity)))
+                    context.fill(path, with: .color(accentColor.opacity(opacity)))
                 }
             }
         }
