@@ -24,7 +24,7 @@ struct WarmConfettiPattern: View {
                 let opacity = rng.nextDouble(in: 0.15...0.4)
                 let colorIndex = Int(rng.nextDouble() * Double(confettiColors.count)) % confettiColors.count
 
-                var transform = CGAffineTransform.identity
+                let transform = CGAffineTransform.identity
                     .translatedBy(x: x, y: y)
                     .rotated(by: rotation * .pi / 180)
 

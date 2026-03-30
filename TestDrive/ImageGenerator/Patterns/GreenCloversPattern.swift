@@ -14,8 +14,6 @@ struct GreenCloversPattern: View {
                 let y = rng.nextDouble(in: 0...Double(canvasSize.height))
                 let scale = rng.nextDouble(in: 0.4...1.2)
                 let opacity = rng.nextDouble(in: 0.08...0.25)
-                let rotation = Angle.degrees(rng.nextDouble(in: 0...360))
-
                 let leafSize: CGFloat = 12 * scale
                 context.opacity = opacity
 
