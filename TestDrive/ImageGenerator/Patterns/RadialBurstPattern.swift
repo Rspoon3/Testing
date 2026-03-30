@@ -34,21 +34,6 @@ struct RadialBurstPattern: View {
                 let opacity = i.isMultiple(of: 2) ? 0.25 : 0.1
                 context.fill(path, with: .color(.white.opacity(opacity)))
             }
-
-            // Add subtle concentric ring accents
-            let ringCount = Int(rng.nextDouble(in: 3...6))
-            for i in 1...ringCount {
-                let radius = maxRadius * Double(i) / Double(ringCount + 1)
-                let ringRect = CGRect(
-                    x: Double(center.x) - radius,
-                    y: Double(center.y) - radius,
-                    width: radius * 2,
-                    height: radius * 2
-                )
-                let ring = Path(ellipseIn: ringRect)
-                let opacity = rng.nextDouble(in: 0.05...0.12)
-                context.stroke(ring, with: .color(.white.opacity(opacity)), lineWidth: 1.5)
-            }
         }
     }
 }
