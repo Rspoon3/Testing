@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct ProgressBarClockView: View {
     let showMilliseconds: Bool
