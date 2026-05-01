@@ -1,24 +1,29 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Form {
+            ForEach(Item.previewData.sortedByKeyPath()) { item in
+                Section {
+                    LabeledContent("title", value: item.title)
+                    LabeledContent("favoriteRank", value: item.favoriteRank?.formatted() ?? "NA")
+                    LabeledContent("recommended", value: item.isRecommended.description)
+                    LabeledContent("popularityRank", value: item.popularityRank.formatted())
+                }
+            }
         }
-        .padding()
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
