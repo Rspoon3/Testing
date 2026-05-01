@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SwiftUI
+import UIKit
 
 final class Testview : UIInputView {
     override init(frame: CGRect, inputViewStyle: UIInputView.Style) {

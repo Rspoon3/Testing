@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 final class ContentViewModel: ObservableObject {
     let title = "All fields below are required to process your receipt. You can view your receipt by tapping the icon in the upper right."
