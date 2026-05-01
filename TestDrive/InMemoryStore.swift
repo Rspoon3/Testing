@@ -42,18 +42,8 @@ public class InMemoryStore<T: Sendable> {
     }
     
     public func update(_ newValue: T) {
-        mutate { $0 = newValue }
-    }
-    
-//    public func updateValue<Value>(_ newValue: Value, for keyPath: WritableKeyPath<T, Value>) {
-//        mutate { $0[keyPath: keyPath] = newValue }
-//    }
-    
-    /// Performs an atomic read-modify-write operation
-    /// Use this for compound operations like +=, -=, etc. to ensure atomicity
-    private func mutate(_ transform: @Sendable (inout T) -> Void) {
         lock.withLock {
-            transform(&_value)
+            _value = newValue
             subject.send(_value)
         }
     }
