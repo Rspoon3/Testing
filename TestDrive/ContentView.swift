@@ -1,24 +1,107 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
+import LoremSwiftum
 
 struct ContentView: View {
+    @StateObject private var viewModel = ContentViewModel()
+    @ObservedObject var offerIDSHolder = OfferIDSHolder.shared
+
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            HStack(spacing: 3) {
+                Circle()
+                    .foregroundStyle(.yellow)
+                    .frame(width: 15)
+                    .foregroundStyle(.secondary)
+                Text(offerIDSHolder.totalPoints.formatted())
+                    .foregroundStyle(.primary)
+                    .fontWeight(.bold)
+                
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.secondary)
+                    .padding(.leading)
+            }
+            .padding(.vertical)
+            .padding(.leading, 30)
+            .padding(.trailing, 10)
+            .background {
+                Color.black.opacity(0.1)
+            }
+            .cornerRadius(10)
+            
+            HStack(spacing: 3) {
+                Image(systemName: "car.circle.fill")
+                    .foregroundStyle(.blue)
+                
+                Picker(selection: $viewModel.store) {
+                    ForEach(StoreNames.allCases) {
+                        Text($0.rawValue)
+                            .tag($0)
+                            .foregroundStyle(.primary)
+                            .fontWeight(.bold)
+                    }
+                } label: {
+                    EmptyView()
+                }
+            }
+            
+            .padding(.vertical, 5)
+            .padding(.horizontal, 30)
+            .background {
+                Capsule()
+                    .foregroundStyle(.black.opacity(0.1))
+            }
+            
+            List {
+                ForEach(viewModel.items) { item in
+                    ListItemRow(item: item)
+                }
+                
+                TextField(text: $viewModel.newItem) {
+                    HStack {
+                        Text("Add Item")
+                        if viewModel.saving {
+                            ProgressView()
+                        }
+                    }
+                }
+                .onSubmit() {
+                    viewModel.submit()
+                }
+            }
+            .listStyle(.plain)
+            
+            
+            HStack(spacing: 10) {
+                //                Text(viewModel.suggestedOffer.title)
+                
+                HStack(spacing: 3) {
+                    Circle()
+                        .foregroundStyle(.yellow)
+                        .frame(width: 15)
+                        .foregroundStyle(.secondary)
+                    Text(offerIDSHolder.totalPoints.formatted())
+                        .foregroundStyle(.primary)
+                        .fontWeight(.bold)
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background {
+                Color.black.opacity(0.1)
+            }
         }
-        .padding()
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
