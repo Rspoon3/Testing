@@ -1,24 +1,32 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @State private var blur = 0.0
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        VStack{
+            Text(blur.formatted())
+            Slider(value: $blur, in: 0...20)
+            
+            Image("dog")
+                .resizable()
+//                .aspectRatio(contentMode: .fit)
+                .frame(width: 300, height: 300)
+                .blur(radius: blur)
+                .border(Color.black)
         }
-        .padding()
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
