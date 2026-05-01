@@ -1,21 +1,37 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
+import CoreLocation
+import MapKit
 
 struct ContentView: View {
+    @StateObject private var viewModel = MapSheetOverlayViewModel()
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        MapView(
+            startCoordinate: $viewModel.startCoordinate,
+            destinationCoordinate: $viewModel.destinationCoordinate,
+            region: $viewModel.region
+        )
+        .ignoresSafeArea()
+        .sheet(isPresented: $viewModel.showOverlaySheet) {
+            MapSheetOverlay(viewModel: viewModel)
+                .interactiveDismissDisabled()
+                .presentationBackgroundInteraction(.enabled)
+                .presentationDetents(
+                    [
+                        .fraction(0.15),
+                        .fraction(0.45),
+                        .fraction(0.96)
+                    ],
+                    selection: $viewModel.presentationDetent
+                )
         }
-        .padding()
     }
 }
 
