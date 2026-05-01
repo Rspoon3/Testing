@@ -1,24 +1,35 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
+import Models
 
 struct ContentView: View {
+    let item = Item()
+    
+#if DEBUG
+    public let title = "Debug"
+#else
+    public let title = "Else Block"
+#endif
+    
+    
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("Title: \(title)")
+            Text(item.title)
         }
-        .padding()
+            .font(.largeTitle)
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
