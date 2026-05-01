@@ -1,24 +1,36 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
+import Combine
+import PhoneNumberKit
 
 struct ContentView: View {
+    @State private var text = "1234567890"
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        PhoneNumberTextField("Phone Number", text: $text)
+        Test()
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
+}
+
+
+struct Test: UIViewRepresentable {
+    func makeUIView(context: Context) -> some UIView {
+        PhoneNumberKit.PhoneNumberTextField()
+    }
+    
+    func updateUIView(_ uiView: UIViewType, context: Context) {
+        
+    }
 }
