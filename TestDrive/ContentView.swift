@@ -30,5 +30,5 @@ struct ContentView: View {
      # Fetch current labels on the PR
      CURRENT_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels | jq -r '.labels[].name')
 
- 
-\*
+
+*/
