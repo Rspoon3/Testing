@@ -1,24 +1,46 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
 
+enum Tab {
+    case home, settings
+}
+
 struct ContentView: View {
+    @State private var selectedTab: Tab = .home
+    @State private var test = false
+    
+    
+    // MARK: - Body
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView(selection: $selectedTab) {
+            Text("Home")
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                        .accessibility(label: Text("Home"))
+                }
+                .tag(Tab.home)
+            
+            Form {
+                Toggle("Automatically save to files", isOn: $test)
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gear")
+                    .accessibility(label: Text("Settings"))
+            }
+            .tag(Tab.settings)
         }
-        .padding()
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
