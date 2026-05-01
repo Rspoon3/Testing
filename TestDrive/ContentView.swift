@@ -1,24 +1,48 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
 
+@MainActor
 struct ContentView: View {
+    @State private var count = 0
+    @State private var dates: [Date] = []
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            ScrollViewReader { proxy in
+                List {
+                    Text(count.formatted())
+                        .monospaced()
+                        .animation(.default, value: count)
+                        .contentTransition(.numericText())
+                    
+                    ForEach(dates, id: \.self) { date in
+                        Text(date.formatted())
+                            .id(date)
+                    }
+                }
+                .task {
+                    for await date in Timer.stream(every: .seconds(1), endIn: .minutes(1)) {
+                        withAnimation {
+                            proxy.scrollTo(dates.last)
+                        }
+                        dates.append(date)
+                        count += 1
+                    }
+                }
+            }
+            .navigationTitle("List")
         }
-        .padding()
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
