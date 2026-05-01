@@ -7,6 +7,7 @@
 
 import SwiftUI
 import PencilKit
+import Combine
 
 class MyPKCanvasView: PKCanvasView {
     var didUpdate: (() -> Void)?
@@ -88,7 +89,7 @@ final class PKCanvasViewModel: NSObject, PKCanvasViewDelegate, ObservableObject 
 }
 
 struct PKCanvas: UIViewRepresentable {
-    @Observable var viewModel: PKCanvasViewModel
+    @ObservedObject var viewModel: PKCanvasViewModel
     private let toolPicker = PKToolPicker()
 
     func makeUIView(context: Context) -> PKCanvasView {
