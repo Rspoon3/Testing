@@ -1,24 +1,116 @@
 //
 //  ContentView.swift
-//  TestDrive
+//  Shared
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
+import PhotosUI
 
-struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+enum DeviceFrameError: LocalizedError {
+    case noImage, noData
+}
+
+class ContentViewModel: ObservableObject {
+    @Published var state: State = .idle
+    @Published var imageSelection: PhotosPickerItem? = nil {
+        didSet {
+            if let imageSelection {
+                state = .loading
+                loadTransferable(from: imageSelection)
+            }
         }
-        .padding()
+    }
+    
+    enum State {
+        case idle
+        case image(UIImage, URL)
+        case loading
+        case error(Error)
+    }
+    
+    private func loadTransferable(from imageSelection: PhotosPickerItem) {
+        Task {
+            guard
+                let data = try await imageSelection.loadTransferable(type: Data.self),
+                let screenshot = UIImage(data: data)
+            else {
+                state = .error(DeviceFrameError.noData)
+                return
+            }
+            
+            await createDeviceFrame(using: screenshot)
+        }
+    }
+    
+    @MainActor
+    private func createDeviceFrame(using screenshot: UIImage) {
+        guard
+            let device = DeviceInfo.all.first(where: {$0.inputSize == screenshot.size}),
+            let image = device.framed(using: screenshot)
+        else {
+            state = .error(DeviceFrameError.noImage)
+            return
+        }
+        
+        let fileManager = FileManager.default
+        let temporaryDirectory = fileManager.temporaryDirectory
+        let path = "\(UUID().uuidString).png"
+        let url = temporaryDirectory.appending(path: path)
+        
+        guard let data = image.pngData() else {
+            state = .error(DeviceFrameError.noData)
+            return
+        }
+        
+        do {
+            try data.write(to: url)
+            
+            let documentsDirectory = URL.documentsDirectory
+            let documentsURL = documentsDirectory.appending(path: path)
+            
+            try data.write(to: documentsURL)
+        } catch {
+            state = .error(error)
+            return
+        }
+        
+        state = .image(image, url)
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView: View {
+    @StateObject private var viewModel = ContentViewModel()
+    
+    var body: some View {
+        switch viewModel.state {
+        case .error(let error):
+            Text(error.localizedDescription)
+        case .loading:
+            ProgressView()
+        case .idle:
+            PhotosPicker(selection: $viewModel.imageSelection,
+                         matching: .images,
+                         photoLibrary: .shared()) {
+                Text("Start")
+            }
+                         .buttonStyle(.borderless)
+        case .image(let image, let url):
+            VStack {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .padding()
+                
+                ShareLink("Share", item: url)
+            }
+        }
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
