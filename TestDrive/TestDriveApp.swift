@@ -2,7 +2,7 @@
 //  TestDriveApp.swift
 //  TestDrive
 //
-//  Created by Ricky Witherspoon on 10/26/25.
+//  Created by Richard Witherspoon on 8/9/20.
 //
 
 import SwiftUI
@@ -11,7 +11,12 @@ import SwiftUI
 struct TestDriveApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            VStack {
+//                ContentView(offers: ["offer1", "offer2", "offer3"])
+//                ContentView(offers: ["offer1", "offer2"])
+//                ContentView(offers: ["offer1"])
+                ContentView(offers: [])
+            }
         }
     }
 }

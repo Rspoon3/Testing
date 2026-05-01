@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "edited_PDT-991_OFFER-TILE_GMI_CHEERIOS_8497_FAKE.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
