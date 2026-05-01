@@ -7,6 +7,7 @@
 
 import SwiftUI
 import HealthKit
+import Combine
 
 //Useful articles
 //https://www.devfright.com/the-healthkit-hkstatisticsquery/
