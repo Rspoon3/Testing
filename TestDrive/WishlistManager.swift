@@ -8,6 +8,7 @@
 
 import SwiftUI
 import LinkPresentation
+import Combine
 
 class WishlistManager: ObservableObject {
     @Published var wishlists: [Wishlist] = []

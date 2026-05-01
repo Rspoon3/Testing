@@ -6,6 +6,7 @@
 //
 import LinkPresentation
 import SwiftUI
+import Combine
 
 class LinkMetadataManager: ObservableObject {
     @Published var linkItems: [LinkItem] = []
