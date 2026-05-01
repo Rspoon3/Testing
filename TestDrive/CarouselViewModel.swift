@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class CarouselRepresentableViewModel: NSObject, ObservableObject, UICollectionViewDelegate, UICollectionViewDataSource {
     @Published var currentIndex = IndexPath(item: 0, section: 0)
