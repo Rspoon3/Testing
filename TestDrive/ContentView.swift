@@ -18,6 +18,8 @@ struct ContentView: View {
 }
 
 
+nonisolated enum CheckedGridSection: Hashable, Sendable { case main }
+
 struct CheckedGridRepresentable: UIViewRepresentable {
     let collectionView = UICollectionView(
         frame: .zero,
@@ -95,10 +97,8 @@ struct CheckedGridRepresentable: UIViewRepresentable {
     final class Coordinator: NSObject, UICollectionViewDelegate {
         var collectionView: UICollectionView?
         private var items = Array(1...1_000).map{ _ in CheckmarkItem() }
-        private var dataSource: UICollectionViewDiffableDataSource<Section, CheckmarkItem>! = nil
+        private var dataSource: UICollectionViewDiffableDataSource<CheckedGridSection, CheckmarkItem>! = nil
         private var parent: CheckedGridRepresentable
-        
-        enum Section { case main }
         
         // MARK: - Initializer
         
@@ -143,14 +143,14 @@ struct CheckedGridRepresentable: UIViewRepresentable {
                 cell.contentConfiguration = hostingConfiguration
             }
             
-            dataSource = UICollectionViewDiffableDataSource<Section, CheckmarkItem>(collectionView: parent.collectionView) {
+            dataSource = UICollectionViewDiffableDataSource<CheckedGridSection, CheckmarkItem>(collectionView: parent.collectionView) {
                 (collectionView, indexPath, identifier) -> UICollectionViewCell? in
                 return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: identifier)
             }
         }
         
         private func applyInitialSnapshot() {
-            var snapshot = NSDiffableDataSourceSnapshot<Section, CheckmarkItem>()
+            var snapshot = NSDiffableDataSourceSnapshot<CheckedGridSection, CheckmarkItem>()
             snapshot.appendSections([.main])
             snapshot.appendItems(items)
             
@@ -159,7 +159,7 @@ struct CheckedGridRepresentable: UIViewRepresentable {
     }
 }
 
-struct CheckmarkItem: Identifiable, Hashable, Equatable, Sendable {
+nonisolated struct CheckmarkItem: Identifiable, Hashable, Equatable, Sendable {
     let id = UUID()
     var value = Bool.random()
 }
