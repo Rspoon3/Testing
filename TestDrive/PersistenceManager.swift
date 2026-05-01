@@ -7,6 +7,7 @@
 
 import SwiftUI
 import OSLog
+import Combine
 
 @MainActor
 public final class PersistenceManager: ObservableObject, Sendable {
