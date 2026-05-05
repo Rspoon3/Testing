@@ -7,9 +7,21 @@ import SwiftUI
 /// element (path, line widths, dashes, circles, strokes) uniformly so the
 /// map looks consistent at any size.
 struct YumiMapView: View {
-    /// Natural size of the Yumi mascot SVG, used to size the asset in the
-    /// scaled map coordinate space.
-    private static let mascotSize = CGSize(width: 73, height: 75)
+    /// Size of the clip rect used for each Yumi instance in the source SVG,
+    /// in viewBox coordinates.
+    private static let mascotSize = CGSize(width: 72.0513, height: 74.1704)
+
+    /// Rotation applied to each Yumi instance in the source SVG.
+    private static let mascotRotation = Angle.degrees(4.70397)
+
+    /// Top-leading positions for the four Yumi mascots in the source SVG,
+    /// in viewBox coordinates. Mirrors each instance's `translate(...) rotate(...)`.
+    private static let mascotPositions: [CGPoint] = [
+        CGPoint(x: 56.0826, y: 0),
+        CGPoint(x: 259.824, y: 620.98),
+        CGPoint(x: 99.082, y: 1234),
+        CGPoint(x: 260.082, y: 1827),
+    ]
 
     private let waypoints: [YumiMapWaypoint]
     private let routeColor: Color
@@ -46,8 +58,8 @@ struct YumiMapView: View {
                     waypointView(for: waypoint, scale: scale)
                 }
 
-                if let current = waypoints.first(where: { $0.kind == .current }) {
-                    mascotView(at: current.position, scale: scale)
+                ForEach(Array(Self.mascotPositions.enumerated()), id: \.offset) { _, position in
+                    mascotView(at: position, scale: scale)
                 }
             }
         }
@@ -81,19 +93,18 @@ struct YumiMapView: View {
         .position(x: waypoint.position.x * scale, y: waypoint.position.y * scale)
     }
 
-    /// The Yumi mascot, drawn so its feet sit on the given map position.
+    /// The Yumi mascot drawn at a top-leading viewBox position with the
+    /// asset's authored rotation. Mirrors SVG's `translate(x, y) rotate(a)`
+    /// by rotating around the top-leading anchor and then offsetting.
     private func mascotView(at position: CGPoint, scale: CGFloat) -> some View {
-        let width = Self.mascotSize.width * scale
-        let height = Self.mascotSize.height * scale
-
-        return Image(.yumi)
+        Image(.yumi)
             .resizable()
-            .scaledToFit()
-            .frame(width: width, height: height)
-            .position(
-                x: position.x * scale,
-                y: position.y * scale - height / 2
+            .frame(
+                width: Self.mascotSize.width * scale,
+                height: Self.mascotSize.height * scale
             )
+            .rotationEffect(Self.mascotRotation, anchor: .topLeading)
+            .offset(x: position.x * scale, y: position.y * scale)
     }
 }
 
