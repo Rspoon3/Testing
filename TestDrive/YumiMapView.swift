@@ -24,17 +24,28 @@ struct YumiMapView: View {
     ]
 
     private let waypoints: [YumiMapWaypoint]
+    private let labels: [YumiMapLabel]
     private let routeColor: Color
     private let highlightColor: Color
+    private let labelColor: Color
+    private let labelHighlightColor: Color
 
     // MARK: - Initializer
 
     /// Creates a `YumiMapView`.
-    /// - Parameter waypoints: Waypoints to draw on top of the route. Defaults to the full asset set.
-    init(waypoints: [YumiMapWaypoint] = .yumiMap) {
+    /// - Parameters:
+    ///   - waypoints: Waypoints to draw on top of the route. Defaults to the full asset set.
+    ///   - labels: Text labels (levels, XP rewards) to draw over the map. Defaults to the full asset set.
+    init(
+        waypoints: [YumiMapWaypoint] = .yumiMap,
+        labels: [YumiMapLabel] = .yumiMap
+    ) {
         self.waypoints = waypoints
+        self.labels = labels
         self.routeColor = Color(red: 0x51 / 255, green: 0x9E / 255, blue: 0x98 / 255)
         self.highlightColor = Color(red: 0x77 / 255, green: 0xCF / 255, blue: 0xC8 / 255)
+        self.labelColor = Color(red: 0x4B / 255, green: 0x3B / 255, blue: 0x24 / 255)
+        self.labelHighlightColor = Color(red: 0x19 / 255, green: 0x17 / 255, blue: 0x4D / 255)
     }
 
     // MARK: - Body
@@ -60,6 +71,10 @@ struct YumiMapView: View {
 
                 ForEach(Array(Self.mascotPositions.enumerated()), id: \.offset) { _, position in
                     mascotView(at: position, scale: scale)
+                }
+
+                ForEach(labels) { label in
+                    labelView(for: label, scale: scale)
                 }
             }
         }
@@ -91,6 +106,16 @@ struct YumiMapView: View {
         }
         .frame(width: diameter, height: diameter)
         .position(x: waypoint.position.x * scale, y: waypoint.position.y * scale)
+    }
+
+    /// A text label drawn at its top-leading viewBox position.
+    private func labelView(for label: YumiMapLabel, scale: CGFloat) -> some View {
+        Text(label.text)
+            .font(.system(size: label.style.fontSize * scale, weight: label.style.fontWeight))
+            .foregroundStyle(label.style == .levelHighlighted ? labelHighlightColor : labelColor)
+            .fixedSize()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .offset(x: label.position.x * scale, y: label.position.y * scale)
     }
 
     /// The Yumi mascot drawn at a top-leading viewBox position with the
