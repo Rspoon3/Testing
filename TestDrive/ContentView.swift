@@ -11,15 +11,22 @@ struct ContentView: View {
     var body: some View {
         ScrollView {
             Text("Stuff Here")
+                .font(.largeTitle)
 
             ScrollView {
                 YumiMapView()
             }
             .frame(height: 300)
 
-            Text("Stuff There")
+            ContentUnavailableView(
+                "More to come",
+                systemImage: "text.bubble"
+            )
+            .padding()
+            .border(Color.red, width: 1)
+            .padding()
         }
-        .background(Color(red: 0.83, green: 0.93, blue: 0.99))
+        .background(Color.blue.opacity(0.05))
     }
 }
 
