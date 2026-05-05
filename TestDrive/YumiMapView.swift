@@ -7,6 +7,10 @@ import SwiftUI
 /// element (path, line widths, dashes, circles, strokes) uniformly so the
 /// map looks consistent at any size.
 struct YumiMapView: View {
+    /// Natural size of the Yumi mascot SVG, used to size the asset in the
+    /// scaled map coordinate space.
+    private static let mascotSize = CGSize(width: 73, height: 75)
+
     private let waypoints: [YumiMapWaypoint]
     private let routeColor: Color
     private let highlightColor: Color
@@ -41,6 +45,10 @@ struct YumiMapView: View {
                 ForEach(waypoints) { waypoint in
                     waypointView(for: waypoint, scale: scale)
                 }
+
+                if let current = waypoints.first(where: { $0.kind == .current }) {
+                    mascotView(at: current.position, scale: scale)
+                }
             }
         }
         .aspectRatio(YumiMapPath.viewBox.width / YumiMapPath.viewBox.height, contentMode: .fit)
@@ -71,6 +79,21 @@ struct YumiMapView: View {
         }
         .frame(width: diameter, height: diameter)
         .position(x: waypoint.position.x * scale, y: waypoint.position.y * scale)
+    }
+
+    /// The Yumi mascot, drawn so its feet sit on the given map position.
+    private func mascotView(at position: CGPoint, scale: CGFloat) -> some View {
+        let width = Self.mascotSize.width * scale
+        let height = Self.mascotSize.height * scale
+
+        return Image(.yumi)
+            .resizable()
+            .scaledToFit()
+            .frame(width: width, height: height)
+            .position(
+                x: position.x * scale,
+                y: position.y * scale - height / 2
+            )
     }
 }
 
