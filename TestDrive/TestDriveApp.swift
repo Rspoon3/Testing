@@ -9,9 +9,14 @@ import SwiftUI
 
 @main
 struct TestDriveApp: App {
+    @State private var viewModel = AppViewModel()
+
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        MenuBarExtra {
+            MenuBarContentView(viewModel: viewModel)
+        } label: {
+            Image(systemName: "puzzlepiece.extension")
         }
+        .menuBarExtraStyle(.window)
     }
 }

@@ -7,15 +7,10 @@
 
 import SwiftUI
 
+/// Unused once the app is a `MenuBarExtra`-only target. Kept for SwiftUI previews.
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        MenuBarContentView(viewModel: AppViewModel())
     }
 }
 
