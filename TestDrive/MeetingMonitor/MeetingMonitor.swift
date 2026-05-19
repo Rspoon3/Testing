@@ -40,6 +40,14 @@ final class MeetingMonitor {
         didSet { settings.glowColor = glowColor }
     }
 
+    /// Whether the menu bar item is shown. Persisted across launches.
+    var showMenuBarItem: Bool {
+        didSet {
+            settings.showMenuBarItem = showMenuBarItem
+            updateMenuBarCountdown()
+        }
+    }
+
     /// Current calendar authorization status.
     var authorizationStatus: EKAuthorizationStatus
 
@@ -51,6 +59,10 @@ final class MeetingMonitor {
 
     /// Whether the meeting toast is currently visible.
     var isToastVisible: Bool = false
+
+    /// Pre-formatted countdown string shown in the menu bar label. `nil` when
+    /// there is no upcoming meeting or the menu bar item is hidden.
+    var menuBarCountdown: String?
 
     @ObservationIgnored private let store = EKEventStore()
     @ObservationIgnored private let overlay: GlowingBorderController
@@ -77,6 +89,7 @@ final class MeetingMonitor {
         self.warningLead = settings.warningLead
         self.warningDuration = settings.warningDuration
         self.glowColor = settings.glowColor
+        self.showMenuBarItem = settings.showMenuBarItem
         self.authorizationStatus = EKEventStore.authorizationStatus(for: .event)
 
         changeObserver = NotificationCenter.default.addObserver(
@@ -171,6 +184,23 @@ final class MeetingMonitor {
             refreshEvents(force: false)
         }
         checkForUpcomingMeetings()
+        updateMenuBarCountdown()
+    }
+
+    private func updateMenuBarCountdown() {
+        guard showMenuBarItem, let nextEvent else {
+            if menuBarCountdown != nil { menuBarCountdown = nil }
+            return
+        }
+        let secondsUntil = Int(nextEvent.startDate.timeIntervalSinceNow.rounded())
+        guard secondsUntil > 0, secondsUntil <= 60 * 60 else {
+            if menuBarCountdown != nil { menuBarCountdown = nil }
+            return
+        }
+        let formatted = Duration.seconds(secondsUntil).formatted(.time(pattern: .minuteSecond))
+        if menuBarCountdown != formatted {
+            menuBarCountdown = formatted
+        }
     }
 
     private func refreshEvents(force: Bool) {
@@ -191,6 +221,8 @@ final class MeetingMonitor {
         // Prune fired IDs that no longer correspond to upcoming events.
         let liveIDs = Set(fetched.compactMap(\.eventIdentifier))
         firedEventIDs.formIntersection(liveIDs)
+
+        updateMenuBarCountdown()
     }
 
     private func checkForUpcomingMeetings() {

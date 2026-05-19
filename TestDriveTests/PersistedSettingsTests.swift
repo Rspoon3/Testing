@@ -28,6 +28,18 @@ struct PersistedSettingsTests {
         #expect(settings.warningDuration == 45)
     }
 
+    @Test func roundTripsShowMenuBarItem() {
+        let settings = makeSettings()
+
+        #expect(settings.showMenuBarItem == PersistedSettings.defaultShowMenuBarItem)
+
+        settings.showMenuBarItem = true
+        #expect(settings.showMenuBarItem == true)
+
+        settings.showMenuBarItem = false
+        #expect(settings.showMenuBarItem == false)
+    }
+
     @Test func roundTripsGlowColor() {
         let settings = makeSettings()
 

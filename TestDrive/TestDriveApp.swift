@@ -21,5 +21,17 @@ struct TestDriveApp: App {
         Settings {
             DebugSettingsView(monitor: monitor)
         }
+
+        MenuBarExtra(
+            isInserted: Binding(
+                get: { monitor.showMenuBarItem },
+                set: { monitor.showMenuBarItem = $0 }
+            )
+        ) {
+            MenuBarContent(monitor: monitor)
+        } label: {
+            MenuBarLabel(countdown: monitor.menuBarCountdown)
+        }
+        .menuBarExtraStyle(.menu)
     }
 }

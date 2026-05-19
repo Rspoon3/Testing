@@ -27,6 +27,9 @@ struct DebugSettingsView: View {
                                                set: { monitor.glowColor = $0 }),
                             supportsOpacity: false)
                 ResetColorButton()
+                Toggle("Show menu bar item",
+                       isOn: Binding(get: { monitor.showMenuBarItem },
+                                     set: { monitor.showMenuBarItem = $0 }))
             }
 
             Section("Glow") {
