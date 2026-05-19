@@ -33,7 +33,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Meeting Border")
                 .font(.title2.weight(.semibold))
-            Text("A red glow appears around your screen \(formattedSeconds(monitor.warningLead)) before each meeting and stays for \(formattedSeconds(monitor.warningDuration)).")
+            Text("A red glow appears around your screen \(Duration.seconds(monitor.warningLead), format: .units(allowed: [.minutes, .seconds], width: .abbreviated)) before each meeting and stays for \(Duration.seconds(monitor.warningDuration), format: .units(allowed: [.minutes, .seconds], width: .abbreviated)).")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -68,10 +68,17 @@ struct ContentView: View {
                 Text(event.title ?? "Untitled")
                     .frame(maxWidth: .infinity, alignment: .leading)
                 TimelineView(.periodic(from: .now, by: 1)) { context in
-                    Text(countdown(to: event.startDate, from: context.date))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
+                    let remaining = event.startDate.timeIntervalSince(context.date)
+                    if remaining <= 0 {
+                        Text("Starting now")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Starts in \(Duration.seconds(remaining), format: .time(pattern: .minuteSecond))")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
                 }
             } else {
                 Text("Nothing scheduled in the next 6 hours.")
@@ -117,30 +124,6 @@ struct ContentView: View {
         @unknown default:
             return "Unknown."
         }
-    }
-
-    /// Returns a short countdown string from `now` to `target`.
-    private func countdown(to target: Date, from now: Date) -> String {
-        let remaining = Int(target.timeIntervalSince(now).rounded())
-        if remaining <= 0 {
-            return "Starting now"
-        }
-        let minutes = remaining / 60
-        let seconds = remaining % 60
-        if minutes > 0 {
-            return String(format: "Starts in %d:%02d", minutes, seconds)
-        }
-        return "Starts in \(seconds)s"
-    }
-
-    /// Formats a time interval as a human-friendly seconds/minutes string.
-    private func formattedSeconds(_ value: TimeInterval) -> String {
-        let seconds = Int(value.rounded())
-        if seconds >= 60, seconds % 60 == 0 {
-            let m = seconds / 60
-            return "\(m) min"
-        }
-        return "\(seconds)s"
     }
 
     private func openCalendarPrivacySettings() {

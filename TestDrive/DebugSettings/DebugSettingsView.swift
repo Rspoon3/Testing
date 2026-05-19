@@ -49,7 +49,8 @@ struct DebugSettingsView: View {
             HStack {
                 Text("Show how early")
                 Spacer()
-                Text(formattedSeconds(monitor.warningLead))
+                Text(Duration.seconds(monitor.warningLead),
+                     format: .units(allowed: [.minutes, .seconds], width: .abbreviated))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
@@ -66,7 +67,8 @@ struct DebugSettingsView: View {
             HStack {
                 Text("Stay on screen")
                 Spacer()
-                Text(formattedSeconds(monitor.warningDuration))
+                Text(Duration.seconds(monitor.warningDuration),
+                     format: .units(allowed: [.minutes, .seconds], width: .abbreviated))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
@@ -112,22 +114,6 @@ struct DebugSettingsView: View {
             }
             .disabled(!monitor.isToastVisible)
         }
-    }
-
-    // MARK: - Private Helpers
-
-    /// Formats a time interval as a human-friendly seconds/minutes string.
-    private func formattedSeconds(_ value: TimeInterval) -> String {
-        let seconds = Int(value.rounded())
-        let minutes = seconds / 60
-        let remainder = seconds % 60
-        if minutes == 0 {
-            return "\(seconds)s"
-        }
-        if remainder == 0 {
-            return "\(minutes) min"
-        }
-        return "\(minutes)m \(remainder)s"
     }
 }
 

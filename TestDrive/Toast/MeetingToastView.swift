@@ -81,23 +81,17 @@ struct MeetingToastView: View {
 
     /// Returns "Starts in 0:47", "Starting now", or "Started 0:12 ago" based on the offset to `start`.
     private func subtitle(for start: Date, now: Date) -> String {
-        let remaining = Int(start.timeIntervalSince(now).rounded())
-        if remaining > 0 {
-            return "Starts in \(Self.formatted(seconds: remaining))"
+        let remaining = start.timeIntervalSince(now)
+        let elapsed = -remaining
+        if remaining >= 1 {
+            let formatted = Duration.seconds(remaining).formatted(.time(pattern: .minuteSecond))
+            return "Starts in \(formatted)"
         }
-        if remaining == 0 {
+        if abs(remaining) < 1 {
             return "Starting now"
         }
-        return "Started \(Self.formatted(seconds: -remaining)) ago"
-    }
-
-    private static func formatted(seconds: Int) -> String {
-        let m = seconds / 60
-        let s = seconds % 60
-        if m > 0 {
-            return String(format: "%d:%02d", m, s)
-        }
-        return "\(s)s"
+        let formatted = Duration.seconds(elapsed).formatted(.time(pattern: .minuteSecond))
+        return "Started \(formatted) ago"
     }
 }
 
