@@ -48,6 +48,11 @@ final class MeetingMonitor {
         }
     }
 
+    /// Visual treatment used for the warning overlay. Persisted across launches.
+    var borderStyle: BorderStyle {
+        didSet { settings.borderStyle = borderStyle }
+    }
+
     /// Current calendar authorization status.
     var authorizationStatus: EKAuthorizationStatus
 
@@ -90,6 +95,7 @@ final class MeetingMonitor {
         self.warningDuration = settings.warningDuration
         self.glowColor = settings.glowColor
         self.showMenuBarItem = settings.showMenuBarItem
+        self.borderStyle = settings.borderStyle
         self.authorizationStatus = EKEventStore.authorizationStatus(for: .event)
 
         changeObserver = NotificationCenter.default.addObserver(
@@ -239,7 +245,7 @@ final class MeetingMonitor {
     }
 
     private func showOverlay() {
-        overlay.show(color: glowColor)
+        overlay.show(color: glowColor, style: borderStyle)
         isOverlayVisible = true
         overlayDismissTimer?.invalidate()
         let timer = Timer(timeInterval: warningDuration, repeats: false) { [weak self] _ in

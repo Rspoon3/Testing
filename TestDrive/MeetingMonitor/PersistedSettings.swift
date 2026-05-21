@@ -17,12 +17,14 @@ struct PersistedSettings {
         static let warningDuration = "MeetingMonitor.warningDuration"
         static let glowColorRGBA = "MeetingMonitor.glowColorRGBA"
         static let showMenuBarItem = "MeetingMonitor.showMenuBarItem"
+        static let borderStyle = "MeetingMonitor.borderStyle"
     }
 
     static let defaultWarningLead: TimeInterval = 60
     static let defaultWarningDuration: TimeInterval = 60
     static let defaultGlowColor: Color = .red
     static let defaultShowMenuBarItem: Bool = false
+    static let defaultBorderStyle: BorderStyle = .colored
 
     private let defaults: UserDefaults
 
@@ -81,5 +83,16 @@ struct PersistedSettings {
             return defaults.bool(forKey: Key.showMenuBarItem)
         }
         nonmutating set { defaults.set(newValue, forKey: Key.showMenuBarItem) }
+    }
+
+    var borderStyle: BorderStyle {
+        get {
+            guard let raw = defaults.string(forKey: Key.borderStyle),
+                  let style = BorderStyle(rawValue: raw) else {
+                return Self.defaultBorderStyle
+            }
+            return style
+        }
+        nonmutating set { defaults.set(newValue.rawValue, forKey: Key.borderStyle) }
     }
 }

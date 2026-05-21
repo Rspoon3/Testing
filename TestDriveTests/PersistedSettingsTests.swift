@@ -40,6 +40,18 @@ struct PersistedSettingsTests {
         #expect(settings.showMenuBarItem == false)
     }
 
+    @Test func roundTripsBorderStyle() {
+        let settings = makeSettings()
+
+        #expect(settings.borderStyle == PersistedSettings.defaultBorderStyle)
+
+        settings.borderStyle = .glow
+        #expect(settings.borderStyle == .glow)
+
+        settings.borderStyle = .colored
+        #expect(settings.borderStyle == .colored)
+    }
+
     @Test func roundTripsGlowColor() {
         let settings = makeSettings()
 

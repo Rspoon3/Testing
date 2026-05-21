@@ -22,11 +22,14 @@ struct DebugSettingsView: View {
             }
 
             Section("Appearance") {
-                ColorPicker("Glow color",
-                            selection: Binding(get: { monitor.glowColor },
-                                               set: { monitor.glowColor = $0 }),
-                            supportsOpacity: false)
-                ResetColorButton()
+                StylePicker()
+                if monitor.borderStyle == .colored {
+                    ColorPicker("Glow color",
+                                selection: Binding(get: { monitor.glowColor },
+                                                   set: { monitor.glowColor = $0 }),
+                                supportsOpacity: false)
+                    ResetColorButton()
+                }
                 Toggle("Show menu bar item",
                        isOn: Binding(get: { monitor.showMenuBarItem },
                                      set: { monitor.showMenuBarItem = $0 }))
@@ -80,6 +83,16 @@ struct DebugSettingsView: View {
                 in: Self.durationRange,
                 step: 5
             )
+        }
+    }
+
+    private func StylePicker() -> some View {
+        Picker("Border style",
+               selection: Binding(get: { monitor.borderStyle },
+                                  set: { monitor.borderStyle = $0 })) {
+            ForEach(BorderStyle.allCases) { style in
+                Text(style.title).tag(style)
+            }
         }
     }
 

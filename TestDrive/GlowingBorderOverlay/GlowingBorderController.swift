@@ -11,6 +11,7 @@ import SwiftUI
 final class GlowingBorderController {
     private var windows: [GlowingBorderWindow] = []
     private var currentColor: Color = .red
+    private var currentStyle: BorderStyle = .colored
     private var screenChangeObserver: (any NSObjectProtocol)?
 
     // MARK: - Initializer
@@ -33,10 +34,13 @@ final class GlowingBorderController {
 
     // MARK: - Public Helpers
 
-    /// Reveals the glow on every connected display using the supplied color.
-    /// - Parameter color: The glow color.
-    func show(color: Color) {
+    /// Reveals the glow on every connected display using the supplied color and style.
+    /// - Parameters:
+    ///   - color: The glow color. Ignored by ``BorderStyle/glow``.
+    ///   - style: The visual treatment to use.
+    func show(color: Color, style: BorderStyle) {
         currentColor = color
+        currentStyle = style
         rebuildWindows()
         for window in windows {
             window.orderFrontRegardless()
@@ -59,7 +63,7 @@ final class GlowingBorderController {
         }
         windows = NSScreen.screens.map { screen in
             let window = GlowingBorderWindow(screen: screen)
-            let host = NSHostingView(rootView: GlowingBorderView(color: currentColor))
+            let host = NSHostingView(rootView: BorderOverlay(style: currentStyle, color: currentColor))
             host.frame = window.contentView?.bounds ?? screen.frame
             host.autoresizingMask = [.width, .height]
             window.contentView = host
@@ -69,6 +73,6 @@ final class GlowingBorderController {
 
     private func refreshWindowsIfVisible() {
         guard !windows.isEmpty else { return }
-        show(color: currentColor)
+        show(color: currentColor, style: currentStyle)
     }
 }
