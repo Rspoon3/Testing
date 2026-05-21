@@ -40,7 +40,9 @@ final class GlowingBorderController {
     ///   - style: The visual treatment to use.
     func show(color: Color, style: BorderStyle) {
         currentColor = color
-        currentStyle = style
+        // Resolve meta-cases (e.g. `.random`) once per show so every screen renders
+        // the same concrete effect and screen-change refreshes don't re-roll.
+        currentStyle = style.resolved()
         rebuildWindows()
         for window in windows {
             window.orderFrontRegardless()
