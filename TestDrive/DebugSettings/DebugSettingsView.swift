@@ -23,8 +23,8 @@ struct DebugSettingsView: View {
 
             Section("Appearance") {
                 StylePicker()
-                if monitor.borderStyle == .colored {
-                    ColorPicker("Glow color",
+                if monitor.borderStyle.usesGlowColor {
+                    ColorPicker(monitor.borderStyle.colorPickerLabel,
                                 selection: Binding(get: { monitor.glowColor },
                                                    set: { monitor.glowColor = $0 }),
                                 supportsOpacity: false)
@@ -35,8 +35,8 @@ struct DebugSettingsView: View {
                                      set: { monitor.showMenuBarItem = $0 }))
             }
 
-            Section("Glow") {
-                GlowControls()
+            Section("Overlay") {
+                OverlayControls()
             }
 
             Section("Toast") {
@@ -104,14 +104,14 @@ struct DebugSettingsView: View {
         .foregroundStyle(.tint)
     }
 
-    private func GlowControls() -> some View {
+    private func OverlayControls() -> some View {
         HStack {
-            Button("Trigger Glow") {
+            Button("Trigger Overlay") {
                 monitor.triggerOverlayForTesting()
             }
             .disabled(monitor.isOverlayVisible)
 
-            Button("Hide Glow") {
+            Button("Hide Overlay") {
                 monitor.dismissOverlay()
             }
             .disabled(!monitor.isOverlayVisible)

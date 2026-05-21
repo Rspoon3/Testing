@@ -63,7 +63,7 @@ final class GlowingBorderController {
         }
         windows = NSScreen.screens.map { screen in
             let window = GlowingBorderWindow(screen: screen)
-            let host = NSHostingView(rootView: BorderOverlay(style: currentStyle, color: currentColor))
+            let host = NSHostingView(rootView: BorderOverlay(style: currentStyle, color: currentColor, screen: screen))
             host.frame = window.contentView?.bounds ?? screen.frame
             host.autoresizingMask = [.width, .height]
             window.contentView = host

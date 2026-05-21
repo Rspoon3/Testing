@@ -3,6 +3,7 @@
 //  TestDrive
 //
 
+import AppKit
 import SwiftUI
 
 /// Dispatches to the concrete border view for a given ``BorderStyle``.
@@ -12,6 +13,7 @@ import SwiftUI
 struct BorderOverlay: View {
     let style: BorderStyle
     let color: Color
+    let screen: NSScreen?
 
     // MARK: - Body
 
@@ -21,6 +23,8 @@ struct BorderOverlay: View {
             GlowingBorderView(color: color)
         case .glow:
             SiriGlowBorderView()
+        case .boids:
+            BoidsBorderView(color: color, screen: screen)
         }
     }
 }
