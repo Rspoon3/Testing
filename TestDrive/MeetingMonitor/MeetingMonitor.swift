@@ -209,7 +209,7 @@ final class MeetingMonitor {
             if menuBarCountdown != nil { menuBarCountdown = nil }
             return
         }
-        let formatted = Duration.seconds(secondsUntil).formatted(.time(pattern: .minuteSecond))
+        let formatted = Duration.seconds(secondsUntil).formattedCountdown()
         if menuBarCountdown != formatted {
             menuBarCountdown = formatted
         }

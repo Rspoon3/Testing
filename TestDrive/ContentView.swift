@@ -74,7 +74,7 @@ struct ContentView: View {
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("Starts in \(Duration.seconds(remaining), format: .time(pattern: .minuteSecond))")
+                        Text("Starts in \(Duration.seconds(remaining).formattedCountdown())")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                             .monospacedDigit()

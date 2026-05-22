@@ -84,14 +84,12 @@ struct MeetingToastView: View {
         let remaining = start.timeIntervalSince(now)
         let elapsed = -remaining
         if remaining >= 1 {
-            let formatted = Duration.seconds(remaining).formatted(.time(pattern: .minuteSecond))
-            return "Starts in \(formatted)"
+            return "Starts in \(Duration.seconds(remaining).formattedCountdown())"
         }
         if abs(remaining) < 1 {
             return "Starting now"
         }
-        let formatted = Duration.seconds(elapsed).formatted(.time(pattern: .minuteSecond))
-        return "Started \(formatted) ago"
+        return "Started \(Duration.seconds(elapsed).formattedCountdown()) ago"
     }
 }
 
