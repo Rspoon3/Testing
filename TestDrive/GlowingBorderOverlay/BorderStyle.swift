@@ -37,6 +37,15 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     /// unless the `fireworksRandomColor` setting is on (then it uses a varied palette).
     case fireworks
 
+    /// Flames licking up from the bottom edge of the screen. Honours `glowColor`.
+    case fire
+
+    /// A column of smoke rising from the bottom edge. Honours `glowColor`.
+    case smoke
+
+    /// Splashes of droplets kicking up from the bottom edge. Honours `glowColor`.
+    case splash
+
     /// Meta-case: each time the overlay is shown, picks a random concrete style.
     case random
 
@@ -54,6 +63,9 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
         case .snow: "Snow"
         case .magic: "Magic"
         case .fireworks: "Fireworks"
+        case .fire: "Fire"
+        case .smoke: "Smoke"
+        case .splash: "Splash"
         case .random: "Random"
         }
     }
@@ -64,7 +76,7 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     /// color is forwarded to whichever concrete style is rolled.
     var usesGlowColor: Bool {
         switch self {
-        case .colored, .boids, .fireflies, .rain, .snow, .magic, .fireworks, .random: true
+        case .colored, .boids, .fireflies, .rain, .snow, .magic, .fireworks, .fire, .smoke, .splash, .random: true
         case .glow, .confetti: false
         }
     }
@@ -81,6 +93,9 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
         case .snow: "Snow color"
         case .magic: "Magic color"
         case .fireworks: "Fireworks color"
+        case .fire: "Fire color"
+        case .smoke: "Smoke color"
+        case .splash: "Splash color"
         case .random: "Color"
         }
     }
@@ -88,7 +103,7 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     /// Whether this case is a concrete, renderable style (vs a meta-case like `.random`).
     var isConcrete: Bool {
         switch self {
-        case .colored, .glow, .boids, .confetti, .fireflies, .rain, .snow, .magic, .fireworks: true
+        case .colored, .glow, .boids, .confetti, .fireflies, .rain, .snow, .magic, .fireworks, .fire, .smoke, .splash: true
         case .random: false
         }
     }

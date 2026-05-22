@@ -40,6 +40,12 @@ struct BorderOverlay: View {
             MagicBorderView(color: color)
         case .fireworks:
             FireworksBorderView(colorMode: fireworksColorMode, color: color)
+        case .fire:
+            FireBorderView(color: color)
+        case .smoke:
+            SmokeBorderView(color: color)
+        case .splash:
+            SplashBorderView(color: color)
         case .random:
             // Defensive — the controller resolves `.random` before constructing
             // this view, so the same concrete effect renders across every screen.
