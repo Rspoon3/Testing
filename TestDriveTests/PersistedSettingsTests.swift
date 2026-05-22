@@ -52,6 +52,21 @@ struct PersistedSettingsTests {
         #expect(settings.borderStyle == .colored)
     }
 
+    @Test func roundTripsFireworksColorMode() {
+        let settings = makeSettings()
+
+        #expect(settings.fireworksColorMode == PersistedSettings.defaultFireworksColorMode)
+
+        settings.fireworksColorMode = .multicolor
+        #expect(settings.fireworksColorMode == .multicolor)
+
+        settings.fireworksColorMode = .random
+        #expect(settings.fireworksColorMode == .random)
+
+        settings.fireworksColorMode = .fixed
+        #expect(settings.fireworksColorMode == .fixed)
+    }
+
     @Test func roundTripsGlowColor() {
         let settings = makeSettings()
 

@@ -23,7 +23,10 @@ struct DebugSettingsView: View {
 
             Section("Appearance") {
                 StylePicker()
-                if monitor.borderStyle.usesGlowColor {
+                if monitor.borderStyle == .fireworks {
+                    FireworksColorModePicker()
+                }
+                if showsColorPicker {
                     ColorPicker(monitor.borderStyle.colorPickerLabel,
                                 selection: Binding(get: { monitor.glowColor },
                                                    set: { monitor.glowColor = $0 }),
@@ -46,6 +49,17 @@ struct DebugSettingsView: View {
         .formStyle(.grouped)
         .frame(width: 480)
         .frame(minHeight: 460)
+    }
+
+    // MARK: - Private Helpers
+
+    /// The color picker is hidden for styles that don't use the chosen color, and
+    /// also hidden when fireworks aren't on the `.fixed` mode (since the chosen
+    /// color is then unused).
+    private var showsColorPicker: Bool {
+        guard monitor.borderStyle.usesGlowColor else { return false }
+        if monitor.borderStyle == .fireworks, monitor.fireworksColorMode != .fixed { return false }
+        return true
     }
 
     // MARK: - Private Views
@@ -92,6 +106,16 @@ struct DebugSettingsView: View {
                                   set: { monitor.borderStyle = $0 })) {
             ForEach(BorderStyle.allCases) { style in
                 Text(style.title).tag(style)
+            }
+        }
+    }
+
+    private func FireworksColorModePicker() -> some View {
+        Picker("Color mode",
+               selection: Binding(get: { monitor.fireworksColorMode },
+                                  set: { monitor.fireworksColorMode = $0 })) {
+            ForEach(FireworksColorMode.allCases) { mode in
+                Text(mode.title).tag(mode)
             }
         }
     }

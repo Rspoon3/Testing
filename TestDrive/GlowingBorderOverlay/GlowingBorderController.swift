@@ -12,6 +12,7 @@ final class GlowingBorderController {
     private var windows: [GlowingBorderWindow] = []
     private var currentColor: Color = .red
     private var currentStyle: BorderStyle = .colored
+    private var currentFireworksColorMode: FireworksColorMode = .fixed
     private var screenChangeObserver: (any NSObjectProtocol)?
 
     // MARK: - Initializer
@@ -36,13 +37,17 @@ final class GlowingBorderController {
 
     /// Reveals the glow on every connected display using the supplied color and style.
     /// - Parameters:
-    ///   - color: The glow color. Ignored by ``BorderStyle/glow``.
+    ///   - color: The glow color. Ignored by styles whose `usesGlowColor` is false.
     ///   - style: The visual treatment to use.
-    func show(color: Color, style: BorderStyle) {
+    ///   - fireworksColorMode: When `style` resolves to `.fireworks`, controls
+    ///     whether explosions use the chosen color, a varied palette, or a new
+    ///     random color per launch.
+    func show(color: Color, style: BorderStyle, fireworksColorMode: FireworksColorMode) {
         currentColor = color
         // Resolve meta-cases (e.g. `.random`) once per show so every screen renders
         // the same concrete effect and screen-change refreshes don't re-roll.
         currentStyle = style.resolved()
+        currentFireworksColorMode = fireworksColorMode
         rebuildWindows()
         for window in windows {
             window.orderFrontRegardless()
@@ -65,7 +70,12 @@ final class GlowingBorderController {
         }
         windows = NSScreen.screens.map { screen in
             let window = GlowingBorderWindow(screen: screen)
-            let host = NSHostingView(rootView: BorderOverlay(style: currentStyle, color: currentColor, screen: screen))
+            let host = NSHostingView(rootView: BorderOverlay(
+                style: currentStyle,
+                color: currentColor,
+                screen: screen,
+                fireworksColorMode: currentFireworksColorMode
+            ))
             host.frame = window.contentView?.bounds ?? screen.frame
             host.autoresizingMask = [.width, .height]
             window.contentView = host
@@ -75,6 +85,6 @@ final class GlowingBorderController {
 
     private func refreshWindowsIfVisible() {
         guard !windows.isEmpty else { return }
-        show(color: currentColor, style: currentStyle)
+        show(color: currentColor, style: currentStyle, fireworksColorMode: currentFireworksColorMode)
     }
 }

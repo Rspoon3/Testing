@@ -18,6 +18,25 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     /// A flock of bird-like boids that swarm across the desktop and chase the cursor. Honours `glowColor`.
     case boids
 
+    /// Multicolored confetti bursting across the screen. Ignores `glowColor`.
+    case confetti
+
+    /// Drifting fireflies that glow and fade. Honours `glowColor`.
+    case fireflies
+
+    /// Streaks of rain falling top-to-bottom. Honours `glowColor`.
+    case rain
+
+    /// Gently drifting snow flakes. Honours `glowColor`.
+    case snow
+
+    /// A ring of sparkly particles flying outward. Honours `glowColor`.
+    case magic
+
+    /// Fireworks launching from the bottom edge and exploding overhead. Honours `glowColor`,
+    /// unless the `fireworksRandomColor` setting is on (then it uses a varied palette).
+    case fireworks
+
     /// Meta-case: each time the overlay is shown, picks a random concrete style.
     case random
 
@@ -29,6 +48,12 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
         case .colored: "Colored border"
         case .glow: "Glow"
         case .boids: "Birds"
+        case .confetti: "Confetti"
+        case .fireflies: "Fireflies"
+        case .rain: "Rain"
+        case .snow: "Snow"
+        case .magic: "Magic"
+        case .fireworks: "Fireworks"
         case .random: "Random"
         }
     }
@@ -39,8 +64,8 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     /// color is forwarded to whichever concrete style is rolled.
     var usesGlowColor: Bool {
         switch self {
-        case .colored, .boids, .random: true
-        case .glow: false
+        case .colored, .boids, .fireflies, .rain, .snow, .magic, .fireworks, .random: true
+        case .glow, .confetti: false
         }
     }
 
@@ -50,6 +75,12 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
         case .colored: "Border color"
         case .glow: "Glow color"
         case .boids: "Birds color"
+        case .confetti: "Confetti color"
+        case .fireflies: "Firefly color"
+        case .rain: "Rain color"
+        case .snow: "Snow color"
+        case .magic: "Magic color"
+        case .fireworks: "Fireworks color"
         case .random: "Color"
         }
     }
@@ -57,7 +88,7 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     /// Whether this case is a concrete, renderable style (vs a meta-case like `.random`).
     var isConcrete: Bool {
         switch self {
-        case .colored, .glow, .boids: true
+        case .colored, .glow, .boids, .confetti, .fireflies, .rain, .snow, .magic, .fireworks: true
         case .random: false
         }
     }

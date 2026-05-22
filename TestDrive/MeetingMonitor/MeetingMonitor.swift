@@ -53,6 +53,11 @@ final class MeetingMonitor {
         didSet { settings.borderStyle = borderStyle }
     }
 
+    /// How the fireworks overlay colors its explosions. Persisted.
+    var fireworksColorMode: FireworksColorMode {
+        didSet { settings.fireworksColorMode = fireworksColorMode }
+    }
+
     /// Current calendar authorization status.
     var authorizationStatus: EKAuthorizationStatus
 
@@ -96,6 +101,7 @@ final class MeetingMonitor {
         self.glowColor = settings.glowColor
         self.showMenuBarItem = settings.showMenuBarItem
         self.borderStyle = settings.borderStyle
+        self.fireworksColorMode = settings.fireworksColorMode
         self.authorizationStatus = EKEventStore.authorizationStatus(for: .event)
 
         changeObserver = NotificationCenter.default.addObserver(
@@ -245,7 +251,7 @@ final class MeetingMonitor {
     }
 
     private func showOverlay() {
-        overlay.show(color: glowColor, style: borderStyle)
+        overlay.show(color: glowColor, style: borderStyle, fireworksColorMode: fireworksColorMode)
         isOverlayVisible = true
         overlayDismissTimer?.invalidate()
         let timer = Timer(timeInterval: warningDuration, repeats: false) { [weak self] _ in
