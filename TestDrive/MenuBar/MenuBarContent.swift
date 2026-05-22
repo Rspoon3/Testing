@@ -11,6 +11,8 @@ import SwiftUI
 struct MenuBarContent: View {
     @Bindable var monitor: MeetingMonitor
 
+    @Environment(\.openWindow) private var openWindow
+
     // MARK: - Body
 
     var body: some View {
@@ -30,8 +32,11 @@ struct MenuBarContent: View {
 
         Divider()
 
-        SettingsLink {
-            Text("Open Settings…")
+        // The settings panel lives in the main window now (Settings tab), so
+        // opening the main window covers what the old `SettingsLink` did.
+        Button("Open Window…") {
+            openWindow(id: TestDriveApp.mainWindowID)
+            NSApp.activate(ignoringOtherApps: true)
         }
 
         Button("Quit TestDrive") {

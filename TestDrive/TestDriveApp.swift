@@ -11,16 +11,16 @@ import SwiftUI
 struct TestDriveApp: App {
     @State private var monitor = MeetingMonitor()
 
+    /// Stable id so the menu bar item (and anyone else) can call
+    /// `openWindow(id:)` to bring the main window to front.
+    static let mainWindowID = "main"
+
     var body: some Scene {
-        WindowGroup {
+        Window("Meeting Border", id: Self.mainWindowID) {
             ContentView(monitor: monitor)
                 .task { await monitor.start() }
         }
         .windowResizability(.contentSize)
-
-        Settings {
-            DebugSettingsView(monitor: monitor)
-        }
 
         MenuBarExtra(
             isInserted: Binding(

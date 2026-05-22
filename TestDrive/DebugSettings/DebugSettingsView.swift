@@ -47,8 +47,6 @@ struct DebugSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 480)
-        .frame(minHeight: 460)
     }
 
     // MARK: - Private Helpers

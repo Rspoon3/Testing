@@ -8,7 +8,27 @@
 import EventKit
 import SwiftUI
 
+/// Main window — combines the status info and the debug settings panel into a
+/// single window via a two-tab `TabView`.
 struct ContentView: View {
+    @Bindable var monitor: MeetingMonitor
+
+    // MARK: - Body
+
+    var body: some View {
+        TabView {
+            StatusTab(monitor: monitor)
+                .tabItem { Label("Status", systemImage: "info.circle") }
+
+            DebugSettingsView(monitor: monitor)
+                .tabItem { Label("Settings", systemImage: "gearshape") }
+        }
+        .frame(width: 480, height: 540)
+    }
+}
+
+/// Status pane — shows app description, calendar authorization, and the next meeting.
+private struct StatusTab: View {
     @Bindable var monitor: MeetingMonitor
 
     // MARK: - Body
@@ -20,11 +40,10 @@ struct ContentView: View {
             AuthorizationRow()
             Divider()
             NextMeetingRow()
-            Divider()
-            SettingsHintRow()
+            Spacer(minLength: 0)
         }
         .padding(24)
-        .frame(width: 460)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     // MARK: - Private Views
@@ -87,24 +106,6 @@ struct ContentView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func SettingsHintRow() -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Debug")
-                    .font(.headline)
-                Text("Open Settings (⌘,) to tweak timing or fire the glow on demand.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            SettingsLink {
-                Text("Open Settings")
-            }
-            .buttonStyle(.bordered)
-        }
     }
 
     // MARK: - Private Helpers
