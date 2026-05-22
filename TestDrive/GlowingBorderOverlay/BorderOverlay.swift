@@ -52,6 +52,8 @@ struct BorderOverlay: View {
             VirusBorderView()
         case .strobe:
             StrobeBorderView()
+        case .slime:
+            SlimeBorderView()
         case .random:
             // Defensive — the controller resolves `.random` before constructing
             // this view, so the same concrete effect renders across every screen.

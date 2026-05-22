@@ -57,6 +57,10 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     /// Strobes the screen white in a Morse-code SOS pattern. Ignores `glowColor`.
     case strobe
 
+    /// Dripping bright-green slime hanging from the top of the screen, with
+    /// droplets pinching off and falling. Ignores `glowColor`.
+    case slime
+
     /// Meta-case: each time the overlay is shown, picks a random concrete style.
     case random
 
@@ -80,6 +84,7 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
         case .bouncyBalls: "Bouncy balls"
         case .virus: "90s Virus"
         case .strobe: "Strobe (SOS)"
+        case .slime: "Slime"
         case .random: "Random"
         }
     }
@@ -91,7 +96,7 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     var usesGlowColor: Bool {
         switch self {
         case .colored, .boids, .fireflies, .rain, .snow, .magic, .fireworks, .fire, .smoke, .splash, .random: true
-        case .glow, .confetti, .bouncyBalls, .virus, .strobe: false
+        case .glow, .confetti, .bouncyBalls, .virus, .strobe, .slime: false
         }
     }
 
@@ -113,6 +118,7 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
         case .bouncyBalls: "Color"
         case .virus: "Color"
         case .strobe: "Color"
+        case .slime: "Color"
         case .random: "Color"
         }
     }
@@ -120,7 +126,7 @@ enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
     /// Whether this case is a concrete, renderable style (vs a meta-case like `.random`).
     var isConcrete: Bool {
         switch self {
-        case .colored, .glow, .boids, .confetti, .fireflies, .rain, .snow, .magic, .fireworks, .fire, .smoke, .splash, .bouncyBalls, .virus, .strobe: true
+        case .colored, .glow, .boids, .confetti, .fireflies, .rain, .snow, .magic, .fireworks, .fire, .smoke, .splash, .bouncyBalls, .virus, .strobe, .slime: true
         case .random: false
         }
     }
