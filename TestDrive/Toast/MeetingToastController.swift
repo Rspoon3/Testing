@@ -53,6 +53,12 @@ final class MeetingToastController {
         } else {
             let host = NSHostingView(rootView: view)
             host.autoresizingMask = [.width, .height]
+            // Round the corners at the AppKit layer so the entire host view
+            // (not just the SwiftUI content) is clipped to a rounded shape.
+            host.wantsLayer = true
+            host.layer?.cornerRadius = 16
+            host.layer?.cornerCurve = .continuous
+            host.layer?.masksToBounds = true
             hostingView = host
         }
 

@@ -17,7 +17,7 @@ struct MeetingToastView: View {
         HStack(spacing: 14) {
             Image(systemName: "video.fill")
                 .font(.title3)
-                .foregroundStyle(.red)
+                .foregroundStyle(.green)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -54,12 +54,11 @@ struct MeetingToastView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(Color.red.opacity(0.45), lineWidth: 1)
-        }
-        .shadow(color: .black.opacity(0.35), radius: 18, y: 8)
+        .background(.regularMaterial)
+        // Corner rounding is applied to the hosting view's layer in
+        // `MeetingToastController` so the round propagates to whatever AppKit
+        // view the SwiftUI content actually sits inside, not just the SwiftUI
+        // bounds.
         .accessibilityIdentifier("toast.root")
     }
 
