@@ -46,6 +46,8 @@ struct BorderOverlay: View {
             SmokeBorderView(color: color)
         case .splash:
             SplashBorderView(color: color)
+        case .bouncyBalls:
+            BallsBorderView()
         case .random:
             // Defensive — the controller resolves `.random` before constructing
             // this view, so the same concrete effect renders across every screen.
