@@ -19,6 +19,11 @@ import SwiftUI
 @Observable
 final class MeetingMonitor {
 
+    /// Process-wide instance — used by the App Intents extension so Shortcuts
+    /// can reach the live state. The SwiftUI scene also resolves to this
+    /// same instance via `@State`, so the UI and Shortcuts stay in sync.
+    static let shared = MeetingMonitor()
+
     /// How far ahead we look for upcoming meetings.
     private static let lookAheadWindow: TimeInterval = 60 * 60 * 6
 

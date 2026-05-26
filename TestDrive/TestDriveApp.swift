@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct TestDriveApp: App {
-    @State private var monitor = MeetingMonitor()
+    @State private var monitor = MeetingMonitor.shared
 
     /// Stable id so the menu bar item (and anyone else) can call
     /// `openWindow(id:)` to bring the main window to front.
