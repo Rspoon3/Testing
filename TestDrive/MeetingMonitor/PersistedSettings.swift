@@ -19,6 +19,7 @@ struct PersistedSettings {
         static let showMenuBarItem = "MeetingMonitor.showMenuBarItem"
         static let borderStyle = "MeetingMonitor.borderStyle"
         static let fireworksColorMode = "MeetingMonitor.fireworksColorMode"
+        static let timerDuration = "MeetingMonitor.timerDuration"
     }
 
     static let defaultWarningLead: TimeInterval = 60
@@ -27,6 +28,7 @@ struct PersistedSettings {
     static let defaultShowMenuBarItem: Bool = false
     static let defaultBorderStyle: BorderStyle = .colored
     static let defaultFireworksColorMode: FireworksColorMode = .fixed
+    static let defaultTimerDuration: TimeInterval = 300  // 5 min
 
     private let defaults: UserDefaults
 
@@ -107,5 +109,13 @@ struct PersistedSettings {
             return mode
         }
         nonmutating set { defaults.set(newValue.rawValue, forKey: Key.fireworksColorMode) }
+    }
+
+    var timerDuration: TimeInterval {
+        get {
+            let value = defaults.double(forKey: Key.timerDuration)
+            return value > 0 ? value : Self.defaultTimerDuration
+        }
+        nonmutating set { defaults.set(newValue, forKey: Key.timerDuration) }
     }
 }

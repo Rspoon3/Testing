@@ -58,6 +58,20 @@ final class MeetingMonitor {
         didSet { settings.fireworksColorMode = fireworksColorMode }
     }
 
+    /// Last-used countdown timer duration in seconds. Persisted so the
+    /// settings form remembers the user's last pick across launches.
+    var timerDuration: TimeInterval {
+        didSet { settings.timerDuration = timerDuration }
+    }
+
+    /// If a countdown timer is currently running, the absolute moment at
+    /// which it will fire the overlay. `nil` otherwise. The per-second
+    /// `tick()` reads this and fires + clears it when reached.
+    var timerFireDate: Date?
+
+    /// Convenience: whether a countdown timer is currently armed.
+    var isTimerRunning: Bool { timerFireDate != nil }
+
     /// Current calendar authorization status.
     var authorizationStatus: EKAuthorizationStatus
 
@@ -102,6 +116,7 @@ final class MeetingMonitor {
         self.showMenuBarItem = settings.showMenuBarItem
         self.borderStyle = settings.borderStyle
         self.fireworksColorMode = settings.fireworksColorMode
+        self.timerDuration = settings.timerDuration
         self.authorizationStatus = EKEventStore.authorizationStatus(for: .event)
 
         changeObserver = NotificationCenter.default.addObserver(
@@ -160,6 +175,25 @@ final class MeetingMonitor {
         isToastVisible = false
     }
 
+    /// Arms a countdown timer that fires the overlay after `timerDuration`
+    /// seconds. If a timer is already running, restarts it.
+    ///
+    /// Driven by the existing per-second `tick()` loop — no extra Timer
+    /// needed. Starting the timer also kicks off ticking if it isn't
+    /// already running (i.e. calendar access wasn't granted) so the user
+    /// can use the timer independently.
+    func startTimer() {
+        timerFireDate = Date().addingTimeInterval(timerDuration)
+        if tickTimer == nil {
+            startTicking()
+        }
+    }
+
+    /// Cancels a running countdown timer without firing the overlay.
+    func cancelTimer() {
+        timerFireDate = nil
+    }
+
     /// Whether calendar access has been granted at any level the app can use.
     var isAuthorized: Bool {
         switch authorizationStatus {
@@ -196,7 +230,16 @@ final class MeetingMonitor {
             refreshEvents(force: false)
         }
         checkForUpcomingMeetings()
+        checkTimerFire()
         updateMenuBarCountdown()
+    }
+
+    /// If a countdown timer is armed and its fire date has passed, clear the
+    /// timer and trigger the overlay.
+    private func checkTimerFire() {
+        guard let fireDate = timerFireDate, Date() >= fireDate else { return }
+        timerFireDate = nil
+        showOverlay()
     }
 
     private func updateMenuBarCountdown() {
