@@ -77,6 +77,18 @@ final class MeetingMonitor {
     /// Convenience: whether a countdown timer is currently armed.
     var isTimerRunning: Bool { timerFireDate != nil }
 
+    /// User-configured time-of-day alarms. Persisted across launches.
+    /// Each alarm carries its own border style + color so different alarms
+    /// can produce different visual effects when they fire.
+    var alarms: [Alarm] {
+        didSet { settings.alarms = alarms }
+    }
+
+    /// Tracks the last minute key (YYYY-MM-DD-HH-MM) each alarm fired in so
+    /// we don't fire the same alarm twice during a single matching minute
+    /// (the tick runs every second).
+    @ObservationIgnored private var alarmsLastFiredKeys: [UUID: String] = [:]
+
     /// Current calendar authorization status.
     var authorizationStatus: EKAuthorizationStatus
 
@@ -122,6 +134,7 @@ final class MeetingMonitor {
         self.borderStyle = settings.borderStyle
         self.fireworksColorMode = settings.fireworksColorMode
         self.timerDuration = settings.timerDuration
+        self.alarms = settings.alarms
         self.authorizationStatus = EKEventStore.authorizationStatus(for: .event)
 
         changeObserver = NotificationCenter.default.addObserver(
@@ -141,11 +154,15 @@ final class MeetingMonitor {
 
     // MARK: - Public Helpers
 
-    /// Requests calendar access and begins monitoring upcoming meetings.
+    /// Requests calendar access and begins the tick loop. Ticking starts
+    /// unconditionally — alarms and the timer should work even if the user
+    /// hasn't granted calendar access. Calendar-specific work inside the
+    /// tick is gated by `isAuthorized` on its own.
     func start() async {
         await requestAccessIfNeeded()
-        guard isAuthorized else { return }
-        refreshEvents(force: true)
+        if isAuthorized {
+            refreshEvents(force: true)
+        }
         startTicking()
     }
 
@@ -236,7 +253,48 @@ final class MeetingMonitor {
         }
         checkForUpcomingMeetings()
         checkTimerFire()
+        checkAlarms()
         updateMenuBarCountdown()
+    }
+
+    /// Fires any enabled alarm whose hour/minute matches the current time and
+    /// (for repeating alarms) whose weekday set contains today. Each alarm is
+    /// fired at most once per matching minute via `alarmsLastFiredKeys`.
+    /// One-shot alarms (no weekdays) disable themselves after firing.
+    private func checkAlarms() {
+        guard !alarms.isEmpty else { return }
+        let now = Date()
+        let comps = Calendar.current.dateComponents([.year, .month, .day, .weekday, .hour, .minute], from: now)
+        guard let weekdayRaw = comps.weekday,
+              let weekday = Weekday(rawValue: weekdayRaw),
+              let nowHour = comps.hour,
+              let nowMinute = comps.minute,
+              let year = comps.year,
+              let month = comps.month,
+              let day = comps.day
+        else { return }
+        let minuteKey = "\(year)-\(month)-\(day)-\(nowHour)-\(nowMinute)"
+
+        for index in alarms.indices {
+            let alarm = alarms[index]
+            guard alarm.isEnabled,
+                  alarm.hour == nowHour,
+                  alarm.minute == nowMinute
+            else { continue }
+            if !alarm.isOneShot, !alarm.weekdays.contains(weekday) { continue }
+            if alarmsLastFiredKeys[alarm.id] == minuteKey { continue }
+            alarmsLastFiredKeys[alarm.id] = minuteKey
+
+            showOverlay(
+                color: alarm.glowColor,
+                style: alarm.borderStyle,
+                fireworksColorMode: alarm.fireworksColorMode
+            )
+
+            if alarm.isOneShot {
+                alarms[index].isEnabled = false
+            }
+        }
     }
 
     /// If a countdown timer is armed and its fire date has passed, clear the
@@ -298,8 +356,16 @@ final class MeetingMonitor {
         }
     }
 
+    /// Shows the overlay using the current global settings.
     private func showOverlay() {
-        overlay.show(color: glowColor, style: borderStyle, fireworksColorMode: fireworksColorMode)
+        showOverlay(color: glowColor, style: borderStyle, fireworksColorMode: fireworksColorMode)
+    }
+
+    /// Shows the overlay with explicit per-fire overrides. Used by alarms so
+    /// each alarm can produce its own visual effect regardless of the global
+    /// border-style selection.
+    private func showOverlay(color: Color, style: BorderStyle, fireworksColorMode: FireworksColorMode) {
+        overlay.show(color: color, style: style, fireworksColorMode: fireworksColorMode)
         isOverlayVisible = true
         overlayDismissTimer?.invalidate()
         let timer = Timer(timeInterval: warningDuration, repeats: false) { [weak self] _ in

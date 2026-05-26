@@ -8,7 +8,7 @@ import Foundation
 /// The visual treatment used by the meeting-warning overlay.
 ///
 /// Add a new case here and handle it in ``BorderOverlay`` — call sites stay unchanged.
-enum BorderStyle: String, CaseIterable, Identifiable, Hashable {
+enum BorderStyle: String, CaseIterable, Identifiable, Hashable, Codable {
     /// A solid colored border that pulses outward — honours `glowColor`.
     case colored
 

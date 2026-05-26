@@ -6,7 +6,7 @@
 import Foundation
 
 /// How the fireworks overlay decides what color each explosion is.
-enum FireworksColorMode: String, CaseIterable, Identifiable, Hashable {
+enum FireworksColorMode: String, CaseIterable, Identifiable, Hashable, Codable {
     /// Every firework explodes in the user's chosen `glowColor`.
     case fixed
 

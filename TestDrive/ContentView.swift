@@ -20,10 +20,16 @@ struct ContentView: View {
             StatusTab(monitor: monitor)
                 .tabItem { Label("Status", systemImage: "info.circle") }
 
+            AlarmsView(monitor: monitor)
+                .tabItem { Label("Alarms", systemImage: "alarm") }
+
+            TimerView(monitor: monitor)
+                .tabItem { Label("Timer", systemImage: "timer") }
+
             DebugSettingsView(monitor: monitor)
                 .tabItem { Label("Settings", systemImage: "gearshape") }
         }
-        .frame(width: 480, height: 540)
+        .frame(width: 540, height: 580)
     }
 }
 

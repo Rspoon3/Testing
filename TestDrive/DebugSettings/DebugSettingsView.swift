@@ -11,7 +11,6 @@ struct DebugSettingsView: View {
 
     private static let leadRange: ClosedRange<Double> = 5...600
     private static let durationRange: ClosedRange<Double> = 5...300
-    private static let timerRange: ClosedRange<Double> = 5...3600
 
     // MARK: - Body
 
@@ -41,10 +40,6 @@ struct DebugSettingsView: View {
 
             Section("Overlay") {
                 OverlayControls()
-            }
-
-            Section("Timer") {
-                TimerControls()
             }
 
             Section("Toast") {
@@ -142,43 +137,6 @@ struct DebugSettingsView: View {
                 monitor.dismissOverlay()
             }
             .disabled(!monitor.isOverlayVisible)
-        }
-    }
-
-    private func TimerControls() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("Duration")
-                Spacer()
-                Text(Duration.seconds(monitor.timerDuration),
-                     format: .units(allowed: [.minutes, .seconds], width: .abbreviated))
-                    .monospacedDigit()
-                    .foregroundStyle(.secondary)
-            }
-            Slider(
-                value: Binding(get: { monitor.timerDuration }, set: { monitor.timerDuration = $0 }),
-                in: Self.timerRange,
-                step: 5
-            )
-            .disabled(monitor.isTimerRunning)
-
-            HStack {
-                if monitor.isTimerRunning {
-                    Button("Cancel Timer") { monitor.cancelTimer() }
-                } else {
-                    Button("Start Timer") { monitor.startTimer() }
-                }
-                Spacer()
-                if let fireDate = monitor.timerFireDate {
-                    TimelineView(.periodic(from: .now, by: 1)) { context in
-                        let remaining = max(0, fireDate.timeIntervalSince(context.date))
-                        Text("Fires in \(Duration.seconds(remaining).formattedCountdown())")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .monospacedDigit()
-                    }
-                }
-            }
         }
     }
 

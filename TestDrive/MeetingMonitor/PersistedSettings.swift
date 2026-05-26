@@ -20,6 +20,7 @@ struct PersistedSettings {
         static let borderStyle = "MeetingMonitor.borderStyle"
         static let fireworksColorMode = "MeetingMonitor.fireworksColorMode"
         static let timerDuration = "MeetingMonitor.timerDuration"
+        static let alarms = "MeetingMonitor.alarms"
     }
 
     static let defaultWarningLead: TimeInterval = 60
@@ -117,5 +118,18 @@ struct PersistedSettings {
             return value > 0 ? value : Self.defaultTimerDuration
         }
         nonmutating set { defaults.set(newValue, forKey: Key.timerDuration) }
+    }
+
+    var alarms: [Alarm] {
+        get {
+            guard let data = defaults.data(forKey: Key.alarms),
+                  let alarms = try? JSONDecoder().decode([Alarm].self, from: data)
+            else { return [] }
+            return alarms
+        }
+        nonmutating set {
+            guard let data = try? JSONEncoder().encode(newValue) else { return }
+            defaults.set(data, forKey: Key.alarms)
+        }
     }
 }
