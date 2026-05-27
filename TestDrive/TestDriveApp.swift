@@ -133,9 +133,15 @@ struct BouncingBallsView: NSViewRepresentable {
 final class BouncingBallsScene: SCNScene {
 
     // Tuning knobs — feel free to tweak.
-    private let ballRadius: CGFloat = 40
+    private let minBallRadius: CGFloat = 22
+    private let maxBallRadius: CGFloat = 55
     private let maxBalls = 100
     private let spawnInterval: TimeInterval = 0.35
+
+    /// Reference radius used to derive each ball's mass from a base mass.
+    /// Mass scales with r³ so the big balls have realistic heft.
+    private let referenceRadius: CGFloat = 40
+    private let referenceMass: CGFloat = 0.8
     private let screenSize: CGSize
 
     private var halfWidth: CGFloat { screenSize.width / 2 }
@@ -163,9 +169,10 @@ final class BouncingBallsScene: SCNScene {
         super.init()
 
         // Default SceneKit gravity (-9.8 units/s²) is too gentle when
-        // 1 unit ≈ 1 pixel. Tuned low enough that the iterative solver
-        // can keep a 100-ball pile from squashing into itself.
-        physicsWorld.gravity = SCNVector3(0, -1200, 0)
+        // 1 unit ≈ 1 pixel. This setting gives a satisfying weight to
+        // the drop; if the pile starts to misbehave again, this is the
+        // first knob to turn back down.
+        physicsWorld.gravity = SCNVector3(0, -2000, 0)
 
         // Finer physics steps so fast-falling balls don't tunnel through
         // each other between render frames. At our scale, balls can travel
@@ -260,7 +267,7 @@ final class BouncingBallsScene: SCNScene {
     private func setUpWalls() {
         let sideThickness: CGFloat = 80
         let floorThickness: CGFloat = 1000
-        let zClearance: CGFloat = ballRadius + 5    // ball center can move ±5 in Z
+        let zClearance: CGFloat = maxBallRadius + 5    // largest ball can move ±5 in Z
 
         // Floor — top face stays flush with the visible bottom (y = -halfHeight).
         addWall(
@@ -310,7 +317,7 @@ final class BouncingBallsScene: SCNScene {
             type: .static,
             shape: SCNPhysicsShape(geometry: box, options: nil)
         )
-        node.physicsBody?.restitution = 0.2     // soak up bounce energy
+        node.physicsBody?.restitution = 0.85    // hard, lively surface
         node.physicsBody?.friction = 0.9        // grippy floor
         rootNode.addChildNode(node)
     }
@@ -335,7 +342,8 @@ final class BouncingBallsScene: SCNScene {
             return
         }
 
-        let sphere = SCNSphere(radius: ballRadius)
+        let radius = CGFloat.random(in: minBallRadius...maxBallRadius)
+        let sphere = SCNSphere(radius: radius)
         sphere.segmentCount = 48        // smoother silhouette
 
         let material = SCNMaterial()
@@ -351,8 +359,8 @@ final class BouncingBallsScene: SCNScene {
         ball.castsShadow = true
         // Start above the visible area so the ball drops *into* the screen.
         ball.position = SCNVector3(
-            CGFloat.random(in: -halfWidth + ballRadius ... halfWidth - ballRadius),
-            halfHeight + ballRadius * CGFloat.random(in: 2...4),
+            CGFloat.random(in: -halfWidth + radius ... halfWidth - radius),
+            halfHeight + radius * CGFloat.random(in: 2...4),
             0
         )
 
@@ -363,16 +371,17 @@ final class BouncingBallsScene: SCNScene {
         // Stacking-friendly tuning. Higher friction + damping +
         // moderate restitution keeps the pile stable; the solver only
         // has to fight a little overlap per frame instead of a lot.
-        body.mass = 0.8
-        body.restitution = 0.4          // bouncy enough to feel rubbery, not bouncy enough to inject energy into the pile
+        // Mass scales with volume (r³) so bigger balls actually feel heavier.
+        body.mass = referenceMass * pow(radius / referenceRadius, 3)
+        body.restitution = 0.95         // near-perfectly elastic super-ball
         body.friction = 0.8             // grippy surfaces so balls don't slide into wedges
         body.rollingFriction = 0.3      // resists rolling forever after coming to rest
-        body.damping = 0.1              // bleeds linear energy each step
+        body.damping = 0.02             // barely any drag so bounces persist
         body.angularDamping = 0.2       // bleeds spin
         body.allowsResting = true
         // Swept-collision threshold: if the ball moves more than half its
         // radius in one step, SceneKit uses CCD to catch the collision.
-        body.continuousCollisionDetectionThreshold = ballRadius * 0.5
+        body.continuousCollisionDetectionThreshold = radius * 0.5
 
         // A little random horizontal kick + spin for character.
         body.velocity = SCNVector3(CGFloat.random(in: -150...150), 0, 0)
@@ -411,14 +420,29 @@ final class BouncingBallsScene: SCNScene {
 
     private func catchEscapees() {
         for node in rootNode.childNodes where node.physicsBody?.type == .dynamic {
+            guard let body = node.physicsBody else { continue }
             let pos = node.presentation.position
-            guard pos.y < -halfHeight else { continue }
-            let clampedX = min(max(pos.x, -halfWidth + ballRadius), halfWidth - ballRadius)
-            node.physicsBody?.clearAllForces()
-            node.physicsBody?.velocity = SCNVector3(0, 0, 0)
-            node.physicsBody?.angularVelocity = SCNVector4(0, 1, 0, 0)
-            node.position = SCNVector3(clampedX, -halfHeight + ballRadius, 0)
-            node.physicsBody?.resetTransform()
+            let radius = (node.geometry as? SCNSphere)?.radius ?? referenceRadius
+
+            if pos.y < -halfHeight {
+                // Ball fell through the floor — fully reset to a safe spot.
+                let clampedX = min(max(pos.x, -halfWidth + radius), halfWidth - radius)
+                body.clearAllForces()
+                body.velocity = SCNVector3(0, 0, 0)
+                body.angularVelocity = SCNVector4(0, 1, 0, 0)
+                node.position = SCNVector3(clampedX, -halfHeight + radius, 0)
+                body.resetTransform()
+            } else if abs(pos.z) > 0.5 {
+                // Pin the ball back onto the z = 0 plane. Required because
+                // the orthographic camera projects 3D depth out, so any z
+                // drift shows up on screen as false ball-to-ball overlap.
+                // Static Z walls can't do this for us once we vary ball
+                // sizes — a wall sized for the biggest ball is too far
+                // away to constrain the smallest one.
+                body.velocity = SCNVector3(body.velocity.x, body.velocity.y, 0)
+                node.position = SCNVector3(pos.x, pos.y, 0)
+                body.resetTransform()
+            }
         }
     }
 
