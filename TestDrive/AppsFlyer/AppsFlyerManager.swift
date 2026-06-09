@@ -20,17 +20,20 @@ final class AppsFlyerManager {
     // MARK: - Listeners
 
     /// AppsFlyer's conversion-data listener. Fires on every app load.
-    func onConversionDataSuccess() {
+    /// - Returns: The referral code provided by AppsFlyer.
+    func onConversionDataSuccess() -> String {
         send("RICKY1", source: .conversion)
     }
 
     /// AppsFlyer's legacy attribution listener. Fires on deep link only.
-    func onAppOpenAttribution() {
+    /// - Returns: The referral code provided by AppsFlyer.
+    func onAppOpenAttribution() -> String {
         send("RICKY1", source: .deeplink)
     }
 
     /// AppsFlyer's unified deep link listener. Fires on deep link only.
-    func onDeeplink() {
+    /// - Returns: The referral code provided by AppsFlyer.
+    func onDeeplink() -> String {
         send("RICKY1", source: .deeplink)
     }
 
@@ -40,7 +43,9 @@ final class AppsFlyerManager {
     /// - Parameters:
     ///   - value: The payload to send.
     ///   - source: The AppsFlyer listener that produced the value.
-    private func send(_ value: String, source: AnalyticsSource) {
+    /// - Returns: The sent value.
+    private func send(_ value: String, source: AnalyticsSource) -> String {
         print("Sending \"\(value)\" from \(source)")
+        return value
     }
 }

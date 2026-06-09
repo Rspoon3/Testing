@@ -8,7 +8,7 @@
 import Foundation
 
 /// Identifies which AppsFlyer callback triggered a value being sent.
-enum AnalyticsSource {
+enum AnalyticsSource: String, Codable {
     /// Produced by `onConversionDataSuccess`, which fires on every app load.
     case conversion
 

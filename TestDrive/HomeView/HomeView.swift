@@ -10,27 +10,47 @@ import SwiftUI
 /// The app's home screen, which runs a short countdown on appearance.
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
+    @State private var showsSettings = false
 
     // MARK: - Body
 
     var body: some View {
-        TimelineView(.animation) { context in
-            let remaining = viewModel.remainingSeconds(at: context.date)
+        NavigationStack {
+            TimelineView(.animation) { context in
+                let remaining = viewModel.remainingSeconds(at: context.date)
 
-            countdown(remaining)
-                .onChange(of: remaining == 0) { _, isFinished in
-                    if isFinished {
-                        viewModel.timerDidFinish()
+                countdown(remaining)
+                    .onChange(of: remaining == 0) { _, isFinished in
+                        if isFinished {
+                            viewModel.timerDidFinish()
+                        }
+                    }
+            }
+            .overlay {
+                if viewModel.showsIneligibleWarning {
+                    ineligibleWarning
+                }
+            }
+            .animation(.default, value: viewModel.showsIneligibleWarning)
+            .onOpenURL { _ in
+                viewModel.handleDeeplink()
+            }
+            .padding()
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showsSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
                     }
                 }
-        }
-        .overlay {
-            if viewModel.showsIneligibleWarning {
-                ineligibleWarning
+            }
+            .sheet(isPresented: $showsSettings) {
+                viewModel.settingsDidDismiss()
+            } content: {
+                SettingsView()
             }
         }
-        .animation(.default, value: viewModel.showsIneligibleWarning)
-        .padding()
     }
 
     // MARK: - Private Views

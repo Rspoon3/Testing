@@ -15,19 +15,17 @@ struct TestDriveApp: App {
 
     init() {
         // `onConversionDataSuccess` fires on every app load.
-        appsFlyer.onConversionDataSuccess()
+        let code = appsFlyer.onConversionDataSuccess()
+        ReferralCodeStore.shared.record(code: code, source: .conversion)
     }
 
     // MARK: - Body
 
     var body: some Scene {
         WindowGroup {
+            // Deep links are handled in `HomeView` so they can restart the
+            // countdown that drives the backend eligibility check.
             HomeView()
-                .onOpenURL { _ in
-                    // Deep link listeners fire only when opened via a deep link.
-                    appsFlyer.onAppOpenAttribution()
-                    appsFlyer.onDeeplink()
-                }
         }
     }
 }
