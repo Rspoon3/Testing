@@ -8,14 +8,17 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var urls: [URL] = []
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            Tab("UIKit (works)", systemImage: "checkmark.circle") {
+                DropCollectionView(droppedURLs: $urls)
+            }
+            Tab("SwiftUI (broken)", systemImage: "xmark.circle") {
+                SwiftUIDropListView()
+            }
         }
-        .padding()
     }
 }
 
