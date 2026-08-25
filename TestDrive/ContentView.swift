@@ -170,24 +170,24 @@ struct ContentView: View {
     private func itemRowDropDestinations(_ view: some View, itemID: Int) -> some View {
         if #available(iOS 27, *) {
             view
-                .dropDestination(for: URL.self) { urls, _ in
-                    guard let url = urls.first else { return }
-                    droppedURLs.append(url)
-                }
                 .dropDestination(for: ItemPayload.self) { payloads, _ in
                     guard let payload = payloads.first else { return }
                     droppedItemPayloads.append(payload.itemID)
                 }
+                .dropDestination(for: URL.self) { urls, _ in
+                    guard let url = urls.first else { return }
+                    droppedURLs.append(url)
+                }
         } else {
             view
-                .dropDestination(for: URL.self) { urls, _ in
-                    guard let url = urls.first else { return false }
-                    droppedURLs.append(url)
-                    return true
-                }
                 .dropDestination(for: ItemPayload.self) { payloads, _ in
                     guard let payload = payloads.first else { return false }
                     droppedItemPayloads.append(payload.itemID)
+                    return true
+                }
+                .dropDestination(for: URL.self) { urls, _ in
+                    guard let url = urls.first else { return false }
+                    droppedURLs.append(url)
                     return true
                 }
         }
