@@ -38,12 +38,25 @@ enum SupportedRangeDecoder {
             )
 
         case GATTIdentifier.Characteristic.supportedResistanceLevelRange:
-            return scaledFields(
-                &reader,
-                unit: "",
-                scale: 0.1,
-                readSigned: true
-            )
+            // The specification gives resistance level a 0.1 resolution, but machines
+            // that expose integer levels (a STEPR's SPEED 1–25, say) read as
+            // "0.1 to 2.5" under that scale, so the raw values are shown too.
+            guard let minimum = reader.int16(), let maximum = reader.int16(), let increment = reader.uint16() else {
+                return [DecodedField(label: "Error", value: "Payload too short for a 6-byte range")]
+            }
+            return [
+                DecodedField(
+                    label: "Minimum Resistance",
+                    value: "\(minimum)",
+                    detail: String(format: "%.1f at the spec's 0.1 resolution", Double(minimum) * 0.1)
+                ),
+                DecodedField(
+                    label: "Maximum Resistance",
+                    value: "\(maximum)",
+                    detail: String(format: "%.1f at the spec's 0.1 resolution", Double(maximum) * 0.1)
+                ),
+                DecodedField(label: "Minimum Increment", value: "\(increment)")
+            ]
 
         case GATTIdentifier.Characteristic.supportedPowerRange:
             return scaledFields(
@@ -57,11 +70,21 @@ enum SupportedRangeDecoder {
             guard let minimum = reader.uint8(), let maximum = reader.uint8(), let increment = reader.uint8() else {
                 return [DecodedField(label: "Error", value: "Payload too short for a heart rate range")]
             }
-            return [
+            var fields: [DecodedField] = [
                 .measurement("Minimum Heart Rate", minimum, unit: "bpm"),
                 .measurement("Maximum Heart Rate", maximum, unit: "bpm"),
                 .measurement("Minimum Increment", increment, unit: "bpm")
             ]
+            // The LiXuan controller writes these two the wrong way round, which
+            // otherwise reads as a minimum of 200 bpm and a maximum of 50.
+            if minimum > maximum {
+                fields.append(DecodedField(
+                    label: "⚠️ Reversed Bounds",
+                    value: "Firmware sent maximum before minimum",
+                    detail: "Actual range is \(maximum)–\(minimum) bpm"
+                ))
+            }
+            return fields
 
         default:
             return [DecodedField(label: "Error", value: "Not a supported-range characteristic")]

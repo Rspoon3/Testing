@@ -25,6 +25,11 @@ enum GATTIdentifier {
         static let cyclingPower = CBUUID(string: "1818")
         static let userData = CBUUID(string: "181C")
         static let fitnessMachine = CBUUID(string: "1826")
+
+        /// Nordic Semiconductor Secure DFU, present on modules built around a
+        /// Nordic SoC. Its appearance identifies the controller family and means
+        /// the machine accepts firmware updates over the air.
+        static let nordicSecureDFU = CBUUID(string: "FE59")
     }
 
     // MARK: - Characteristics
@@ -71,6 +76,10 @@ enum GATTIdentifier {
         static let supportedPowerRange = CBUUID(string: "2AD8")
         static let fitnessMachineControlPoint = CBUUID(string: "2AD9")
         static let fitnessMachineStatus = CBUUID(string: "2ADA")
+
+        /// Nordic buttonless DFU control point, used to reboot a device into its
+        /// bootloader.
+        static let nordicButtonlessDFU = CBUUID(string: "8EC90003-F315-4F60-9FB8-838830DAEA50")
     }
 
     // MARK: - Descriptors
@@ -131,6 +140,8 @@ enum GATTIdentifier {
         Service.cyclingPower: "Cycling Power",
         Service.userData: "User Data",
         Service.fitnessMachine: "Fitness Machine",
+        Service.nordicSecureDFU: "Nordic Secure DFU",
+        Characteristic.nordicButtonlessDFU: "Nordic Buttonless DFU Control Point",
 
         Characteristic.deviceName: "Device Name",
         Characteristic.appearance: "Appearance",

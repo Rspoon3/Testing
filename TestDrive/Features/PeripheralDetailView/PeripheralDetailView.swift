@@ -97,7 +97,7 @@ struct PeripheralDetailView: View {
             }
 
             if viewModel.isReady {
-                Button("Re-read Everything", symbol: .arrowTriangle2Circlepath) {
+                Button("Re-read Everything", symbol: .arrowTrianglehead2ClockwiseRotate90) {
                     viewModel.refreshAll()
                 }
 
@@ -236,7 +236,7 @@ struct PeripheralDetailView: View {
                 }
             }
         } header: {
-            Label("Capture Log", symbol: .docText)
+            Label("Capture Log", symbol: .textDocument)
         } footer: {
             Text("Every advertisement, discovery, read, and notification is appended to a text file on disk as it happens, with raw bytes alongside each decode. Share it any time — the file is complete up to this moment, and the session does not need to end first.")
         }

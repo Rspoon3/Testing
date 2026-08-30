@@ -28,10 +28,13 @@ enum TrainingStatusDecoder {
             ),
             DecodedField(
                 label: "Flags",
-                value: [
-                    flags & 0x01 != 0 ? "Training Status String present" : nil,
-                    flags & 0x02 != 0 ? "Extended String present" : nil
-                ].compactMap(\.self).joined(separator: ", "),
+                value: {
+                    let set = [
+                        flags & 0x01 != 0 ? "Training Status String present" : nil,
+                        flags & 0x02 != 0 ? "Extended String present" : nil
+                    ].compactMap(\.self)
+                    return set.isEmpty ? "None set" : set.joined(separator: ", ")
+                }(),
                 detail: "0x\(String(format: "%02X", flags))"
             )
         ]

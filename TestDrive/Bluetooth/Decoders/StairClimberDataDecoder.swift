@@ -31,6 +31,24 @@ enum StairClimberDataDecoder {
 
     // MARK: - Public Helpers
 
+    /// The payload length the specification requires for a given flags value.
+    /// - Parameter flags: The flags field.
+    /// - Returns: The expected total byte count, including the flags themselves.
+    static func expectedPayloadLength(forFlags flags: UInt16) -> Int? {
+        var length = 2
+        if flags & 0x0001 == 0 { length += 4 }   // Floors + Step Count
+        if flags & 0x0002 != 0 { length += 2 }   // Step Per Minute
+        if flags & 0x0004 != 0 { length += 2 }   // Average Step Rate
+        if flags & 0x0008 != 0 { length += 2 }   // Positive Elevation Gain
+        if flags & 0x0010 != 0 { length += 2 }   // Stride Count
+        if flags & 0x0020 != 0 { length += 5 }   // Expended Energy block
+        if flags & 0x0040 != 0 { length += 1 }   // Heart Rate
+        if flags & 0x0080 != 0 { length += 1 }   // Metabolic Equivalent
+        if flags & 0x0100 != 0 { length += 2 }   // Elapsed Time
+        if flags & 0x0200 != 0 { length += 2 }   // Remaining Time
+        return length
+    }
+
     /// Decodes a Stair Climber Data payload.
     /// - Parameter data: The raw characteristic value.
     /// - Returns: The decoded fields, or a single diagnostic field when the payload is too short.
@@ -39,6 +57,13 @@ enum StairClimberDataDecoder {
 
         guard let flags = reader.uint16() else {
             return [DecodedField(label: "Error", value: "Payload too short for the 2-byte flags field")]
+        }
+
+        // Some controllers set every presence flag but ship a shorter, re-ordered
+        // payload. Parsing those with the specification layout shifts every field
+        // after Floors, so they are routed to a layout-specific decoder instead.
+        if LiXuanStairClimberDataDecoder.matches(data, flags: flags) {
+            return LiXuanStairClimberDataDecoder.decode(data)
         }
 
         var fields: [DecodedField] = [
@@ -103,6 +128,16 @@ enum StairClimberDataDecoder {
                 label: "Undecoded Trailing Bytes",
                 value: "\(reader.remainingByteCount) byte(s)",
                 detail: reader.remainingBytes.hexDescription
+            ))
+        }
+
+        // Running out of bytes mid-decode means the flags promised fields the
+        // firmware did not send, so every field after the shortfall is suspect.
+        if let expectedLength = Self.expectedPayloadLength(forFlags: flags), data.count < expectedLength {
+            fields.append(DecodedField(
+                label: "⚠️ Layout Mismatch",
+                value: "Flags promise \(expectedLength) bytes, received \(data.count)",
+                detail: "Fields above may be shifted. Trust the raw bytes."
             ))
         }
 

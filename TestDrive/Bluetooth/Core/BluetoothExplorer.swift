@@ -74,6 +74,10 @@ final class BluetoothExplorer: NSObject {
     @ObservationIgnored
     private var hasDeferredScanRequest = false
 
+    /// Derives a live step rate, which this machine's firmware does not transmit.
+    @ObservationIgnored
+    private var stepRateTracker = StepRateTracker()
+
     /// The maximum number of log lines mirrored on screen.
     private static let maximumMirroredLogLines = 200
 
@@ -128,6 +132,7 @@ final class BluetoothExplorer: NSObject {
         connectedPeripheral = discovered
         connectionState = .connecting
         services = []
+        stepRateTracker.reset()
 
         let writer = SessionLogWriter(deviceName: discovered.displayName)
         logWriter = writer
@@ -270,7 +275,24 @@ final class BluetoothExplorer: NSObject {
         for characteristic: CBCharacteristic,
         isNotification: Bool
     ) {
-        let fields = GATTDecoderRegistry.decode(data, for: characteristic.uuid)
+        var fields = GATTDecoderRegistry.decode(data, for: characteristic.uuid)
+
+        // The console shows a live steps-per-minute figure that appears nowhere in
+        // the packet, so it is reconstructed from successive step counts and
+        // appended alongside the transmitted fields.
+        if GATTIdentifier.fitnessMachineDataCharacteristics.contains(characteristic.uuid),
+           let sample = LiXuanStairClimberDataDecoder.parse(data) {
+            stepRateTracker.record(stepCount: Int(sample.stepCount))
+
+            if let stepsPerMinute = stepRateTracker.stepsPerMinute {
+                fields.append(DecodedField(
+                    label: "Step Per Minute (derived)",
+                    value: "\(stepsPerMinute) step/min",
+                    detail: "computed from step-count deltas over \(Int(StepRateTracker.windowDuration)) s; the firmware does not transmit this"
+                ))
+            }
+        }
+
         let reading = CharacteristicReading(data: data, fields: fields, isNotification: isNotification)
 
         node(for: characteristic)?.append(reading)
