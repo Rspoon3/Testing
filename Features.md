@@ -16,7 +16,7 @@ and release momentum. Drag to spin; on a device, tilting also moves the highligh
 | 2 | Glass | iOS 26 `.glassEffect(.regular.interactive())` | **Rejected.** Detaches from rotated content past ~30°. |
 | 3 | Shader | Stitchable Metal `layerEffect` faking IBL | Best flat option. Machined metal, grid-safe. |
 | 4 | RealityView | Generated geometry + procedural IBL | **Ship this for detail screens.** The only real silhouette. |
-| 5 | ARView | The Medium article's `UIViewRepresentable` + USDZ | Works, but duller and needs heavy assets. |
+| 5 | ARView | The Medium article's `UIViewRepresentable` + a generated badge USDZ | Works, but duller and one file per finish. |
 
 ### Findings
 
@@ -46,9 +46,39 @@ and release momentum. Drag to spin; on a device, tilting also moves the highligh
   model orbits instead of spinning.
 - **Real USDZ assets are heavy.** Apple's sample teapot is 9MB and the baseball is
   10.5MB, against the article's own "1–5MB" advice. Five badges would be ~50MB.
-- Apple's AR Quick Look gallery has no medal or badge, and every free medal USDZ
-  found required an account. The teapot and baseball are stand-ins that exercise
-  the real `ModelEntity(named:)` path.
+- **The badge USDZ is generated, not downloaded.** The article's `rozet.usdz` is
+  not public, Apple's AR Quick Look gallery has no medal, and every free medal USDZ
+  found needed an account. `Tools/make-badge-usdz.py` authors the geometry in USDA
+  and wraps it around the artwork `ArtworkExporter` dumps from the live SwiftUI
+  views, then packages it with `/usr/bin/usdzip`. So the USDZ and the on-screen
+  badge cannot drift apart, and approach 5 loads a real *badge* through the real
+  `ModelEntity(named:)` path rather than displaying a stand-in object.
+- **A USDZ bakes its textures in, so it is one file per design.** 1.9MB for the gold
+  finish; four finishes would be four files and ~7.6MB. Approach 4 builds all four
+  at runtime from one set of SwiftUI views. That asymmetry, not the visual quality,
+  is the strongest argument against shipping USDZ badges.
+- **The article's `-90°` yaw fix is a property of its asset, not of the technique.**
+  The generated medallion is authored facing +z and needs no correction; applying
+  the article's constant turns it edge-on. It belongs beside the asset.
+- `usdzip --arkitAsset <layer>` is the mode that embeds dependencies. Passing the
+  layer positionally with `-r` produced a 60KB package with the PNGs silently left
+  out, which loads as an untextured grey coin — the script now fails on a
+  suspiciously small output. Its `-c` compliance check dies with SIGBUS on this
+  input, so it is skipped.
+- Authoring the disc at 128 segments removes the faceting that
+  `MeshResource.generateCylinder` shows at full-screen size.
+
+### Regenerating the badge USDZ
+
+```bash
+# 1. Dump the artwork from the live SwiftUI views.
+xcrun simctl launch <device> com.rspoon3.TestDrive -exportBadgeArtwork 1
+CONTAINER=$(xcrun simctl get_app_container <device> com.rspoon3.TestDrive data)
+
+# 2. Author the geometry and package it.
+python3 Tools/make-badge-usdz.py "$CONTAINER/Documents" \
+    TestDrive/BadgeSpike/ArticleARView/Models/badge_medallion.usdz --finish gold
+```
 
 ### Evaluating
 
@@ -66,7 +96,10 @@ date).
 
 - CoreMotion tilt is untested — the simulator has no gyroscope, so the tabs fall
   back to a slow automatic drift. Needs a device.
-- The generated cylinder's silhouette is faintly faceted at large sizes.
-  `MeshResource(extruding:)` over a circular path would give a smooth, chamfered
-  coin in one mesh.
+- Approach 4's runtime cylinder is still faintly faceted at large sizes (the USDZ
+  in approach 5 is not, being authored at 128 segments). `MeshResource(extruding:)`
+  over a circular path would fix it in one mesh.
+- Only the gold finish is baked to USDZ. The other three fall back to the
+  procedural medallion in approach 5, which demonstrates the one-file-per-design
+  cost rather than hiding it.
 - Nothing here is wired to real data; badges are hardcoded samples.

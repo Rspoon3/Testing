@@ -12,6 +12,12 @@ struct TestDriveApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    // Debug-only, launch-argument gated. See `ArtworkExporter`.
+                    if ArtworkExporter.isRequested {
+                        ArtworkExporter.exportAll()
+                    }
+                }
         }
     }
 }

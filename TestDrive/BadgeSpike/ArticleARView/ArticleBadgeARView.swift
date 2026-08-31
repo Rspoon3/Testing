@@ -17,10 +17,11 @@ import SwiftUI
 /// to be compared against approach 4, which adds exactly those things.
 ///
 /// Two deliberate deviations, both flagged in the tab's notes:
-/// - **No `rozet.usdz` in this repo.** When the named model is missing, the same
-///   procedural medallion the other tabs use is substituted with a *non-metallic*
-///   material, which is how a typical textured USDZ behaves. Drop a USDZ in and
-///   named loading takes over.
+/// - **No `rozet.usdz` in this repo.** The article's asset is not public, so
+///   `badge_medallion.usdz` is generated instead — see `Tools/make-badge-usdz.py`.
+///   It wraps the same artwork the other tabs draw around authored USD geometry, so
+///   this tab loads a real badge through the real `ModelEntity(named:)` path rather
+///   than displaying a stand-in object.
 /// - `ARView` is legacy surface for new code on iOS 26; `RealityView` in approach 4
 ///   is the supported path. Included because it is what the article specifies.
 struct ArticleBadgeARView: UIViewRepresentable {
@@ -100,10 +101,12 @@ extension ArticleBadgeARView {
                 let name = source.modelName,
                 let loaded = try? await ModelEntity(named: name)
             {
-                // The article's axis correction: its exported model faces along the
-                // wrong axis, so it is yawed a quarter turn before anything else.
-                let yawFix = simd_quatf(angle: -.pi / 2, axis: SIMD3<Float>(0, 1, 0))
-                loaded.transform.rotation = simd_mul(yawFix, loaded.transform.rotation)
+                // The article's axis correction, but per-asset — see
+                // `BadgeModelSource.yawCorrection` for why it cannot be a constant.
+                loaded.transform.rotation = simd_mul(
+                    source.yawCorrection,
+                    loaded.transform.rotation
+                )
                 model = loaded
             } else {
                 if let name = source.modelName {
