@@ -28,6 +28,14 @@ enum BitFieldFormatter {
         setFlags(in: UInt32(value), names: names)
     }
 
+    /// A binary rendering of an 8-bit value, most significant bit first.
+    /// - Parameter value: The value to render.
+    /// - Returns: An 8-character binary string, e.g. `"00011000"`.
+    static func binaryDescription(_ value: UInt8) -> String {
+        let bits = String(value, radix: 2)
+        return String(repeating: "0", count: 8 - bits.count) + bits
+    }
+
     /// A binary rendering of a 16-bit value, most significant bit first.
     /// - Parameter value: The value to render.
     /// - Returns: A 16-character binary string grouped into bytes, e.g. `"00000001 01000110"`.

@@ -50,6 +50,17 @@ enum GATTDecoderRegistry {
         case Characteristic.heartRateMeasurement:
             return HeartRateMeasurementDecoder.decode(data)
 
+        case Characteristic.pitPatState:
+            return PitPatTreadmillDataDecoder.decode(data)
+
+        case Characteristic.fitShowNotify,
+             Characteristic.fitShowAlternateNotify,
+             Characteristic.fitShowNobleProNotify:
+            // These are generic vendor UUIDs that unrelated devices also use, so a
+            // value that is not a valid FitShow frame falls back to a hex dump
+            // rather than being presented as a misparsed treadmill packet.
+            return FitShowTreadmillDataDecoder.decode(data) ?? RawValueInspector.inspect(data)
+
         case Characteristic.batteryLevel:
             return DeviceInformationDecoder.decodeBatteryLevel(data)
 
@@ -110,6 +121,10 @@ enum GATTDecoderRegistry {
             Characteristic.supportedHeartRateRange,
             Characteristic.supportedPowerRange,
             Characteristic.heartRateMeasurement,
+            Characteristic.pitPatState,
+            Characteristic.fitShowNotify,
+            Characteristic.fitShowAlternateNotify,
+            Characteristic.fitShowNobleProNotify,
             Characteristic.batteryLevel,
             Characteristic.pnpID,
             Characteristic.systemID,

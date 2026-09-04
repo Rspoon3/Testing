@@ -62,6 +62,37 @@ struct AdvertisementSnapshot: Sendable {
             || serviceData.keys.contains(GATTIdentifier.Service.fitnessMachine)
     }
 
+    /// Indicates whether the peripheral advertises the proprietary PitPat treadmill
+    /// service, or names itself as one.
+    ///
+    /// The name prefix is checked as well as the service UUID because a PitPat pad
+    /// usually advertises only its local name (`PitPat-T01`) and reveals service
+    /// `FBA0` after connecting.
+    var advertisesPitPatTreadmill: Bool {
+        let all = serviceUUIDs + overflowServiceUUIDs
+        if all.contains(GATTIdentifier.Service.pitPatTreadmill)
+            || serviceData.keys.contains(GATTIdentifier.Service.pitPatTreadmill) {
+            return true
+        }
+        guard let localName else { return false }
+        return localName.localizedCaseInsensitiveContains(Self.pitPatNamePrefix)
+    }
+
+    /// The local-name prefix PitPat treadmills advertise under.
+    static let pitPatNamePrefix = "PitPat"
+
+    /// Indicates whether the peripheral advertises a service UUID a FitShow-app
+    /// treadmill uses.
+    ///
+    /// Only ever a hint, never a conclusion: `FFF0` and `FFE0` are generic vendor
+    /// UUIDs shared with a great many unrelated BLE devices. Confirmation comes
+    /// after connecting, when the notify characteristic produces a frame whose
+    /// checksum verifies — see ``FitShowFrame``.
+    var advertisesFitShowService: Bool {
+        let all = Set(serviceUUIDs + overflowServiceUUIDs).union(serviceData.keys)
+        return !all.isDisjoint(with: GATTIdentifier.Service.fitShowServices)
+    }
+
     /// The machine types declared in the Fitness Machine Service advertising data,
     /// e.g. `["Stair Climber"]`.
     var declaredFitnessMachineTypes: [String] {

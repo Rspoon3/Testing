@@ -80,6 +80,14 @@ final class ScannerViewModel {
             return declaredTypes.joined(separator: ", ")
         }
 
+        if peripheral.isPitPatTreadmill {
+            return "PitPat treadmill — vendor protocol, not FTMS"
+        }
+
+        if peripheral.advertisement.advertisesFitShowService {
+            return "Possible FitShow treadmill — connect to confirm"
+        }
+
         let serviceCount = peripheral.advertisement.serviceUUIDs.count
         if serviceCount > 0 {
             return "\(serviceCount) advertised service\(serviceCount == 1 ? "" : "s")"

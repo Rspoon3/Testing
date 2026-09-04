@@ -31,8 +31,12 @@ final class BluetoothExplorer: NSObject {
     var isScanning = false
 
     /// When `true`, the scan only reports peripherals advertising the Fitness Machine
-    /// Service. When `false`, every advertising peripheral is reported, which is how
-    /// you find a machine that hides its service UUIDs from the advertisement.
+    /// Service or a recognised vendor equipment service. When `false`, every
+    /// advertising peripheral is reported, which is how you find a machine that hides
+    /// its service UUIDs from the advertisement.
+    ///
+    /// Leave this `false` for a PitPat treadmill: those pads advertise their local
+    /// name only, so a service-filtered scan never sees them at all.
     var scansFitnessMachinesOnly = false {
         didSet {
             guard isScanning, oldValue != scansFitnessMachinesOnly else { return }
@@ -107,7 +111,9 @@ final class BluetoothExplorer: NSObject {
         discoveredPeripherals.removeAll()
         isScanning = true
 
-        let serviceFilter = scansFitnessMachinesOnly ? [GATTIdentifier.Service.fitnessMachine] : nil
+        let serviceFilter = scansFitnessMachinesOnly
+            ? [GATTIdentifier.Service.fitnessMachine, GATTIdentifier.Service.pitPatTreadmill]
+            : nil
         centralManager.scanForPeripherals(
             withServices: serviceFilter,
             options: [CBCentralManagerScanOptionAllowDuplicatesKey: true]

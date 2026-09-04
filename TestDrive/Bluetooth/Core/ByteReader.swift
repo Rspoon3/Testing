@@ -78,6 +78,30 @@ struct ByteReader {
         return Int32(bitPattern: value)
     }
 
+    /// Reads a big-endian unsigned 16-bit integer.
+    ///
+    /// The GATT specifications are little-endian throughout, but vendor protocols
+    /// riding on custom characteristics are not obliged to follow suit — the
+    /// PitPat treadmill framing is big-endian in every field.
+    mutating func uint16BigEndian() -> UInt16? {
+        guard let bytes = take(2) else { return nil }
+        return UInt16(bytes[0]) << 8 | UInt16(bytes[1])
+    }
+
+    /// Reads a big-endian unsigned 32-bit integer.
+    mutating func uint32BigEndian() -> UInt32? {
+        guard let bytes = take(4) else { return nil }
+        return UInt32(bytes[0]) << 24 | UInt32(bytes[1]) << 16 | UInt32(bytes[2]) << 8 | UInt32(bytes[3])
+    }
+
+    /// Advances past `count` bytes without interpreting them.
+    /// - Parameter count: The number of bytes to skip.
+    /// - Returns: `true` when the bytes were available and skipped.
+    @discardableResult
+    mutating func skip(_ count: Int) -> Bool {
+        take(count) != nil
+    }
+
     /// Consumes the rest of the buffer as a UTF-8 string.
     mutating func utf8String() -> String? {
         let bytes = remainingBytes

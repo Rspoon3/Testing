@@ -40,8 +40,20 @@ final class DiscoveredPeripheral: Identifiable {
         return "Unnamed (\(peripheral.identifier.uuidString.prefix(8)))"
     }
 
-    /// Whether this peripheral looks like a fitness machine, based on its advertisement.
-    var isFitnessMachine: Bool { advertisement.advertisesFitnessMachineService }
+    /// Whether this peripheral looks like fitness equipment this app can decode,
+    /// either through the standard Fitness Machine Service or a recognised vendor
+    /// protocol.
+    var isFitnessMachine: Bool {
+        advertisement.advertisesFitnessMachineService || isPitPatTreadmill
+    }
+
+    /// Whether this peripheral is a PitPat-app treadmill or walking pad, which
+    /// speaks a vendor protocol instead of the Fitness Machine Service.
+    var isPitPatTreadmill: Bool {
+        if advertisement.advertisesPitPatTreadmill { return true }
+        guard let name = peripheral.name else { return false }
+        return name.localizedCaseInsensitiveContains(AdvertisementSnapshot.pitPatNamePrefix)
+    }
 
     // MARK: - Initializer
 

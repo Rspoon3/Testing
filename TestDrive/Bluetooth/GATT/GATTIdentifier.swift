@@ -30,6 +30,33 @@ enum GATTIdentifier {
         /// Nordic SoC. Its appearance identifies the controller family and means
         /// the machine accepts firmware updates over the air.
         static let nordicSecureDFU = CBUUID(string: "FE59")
+
+        /// The proprietary service used by PitPat-app treadmills and walking pads,
+        /// such as the SupeRun `BA10-B`.
+        ///
+        /// These machines do **not** implement the Fitness Machine Service at all.
+        /// They advertise as `PitPat-T01` and carry all telemetry and control
+        /// through this one vendor service, which is why the scanner has to be left
+        /// unfiltered to find them.
+        static let pitPatTreadmill = CBUUID(string: "FBA0")
+
+        /// The primary service used by FitShow-app treadmills, such as the maksone
+        /// `SL-Z01` (Ningbo Kangruida `AMA005726`).
+        ///
+        /// `FFF0` is a generic vendor UUID that plenty of unrelated cheap BLE
+        /// devices also use, so its presence alone is only a hint. Proof comes from
+        /// the notify characteristic: a FitShow frame is self-validating, with a
+        /// fixed header, footer, and XOR checksum.
+        static let fitShow = CBUUID(string: "FFF0")
+
+        /// The alternate FitShow service UUID, used by some firmware builds.
+        static let fitShowAlternate = CBUUID(string: "FFE0")
+
+        /// The FitShow service UUID used by NoblePro-branded machines.
+        static let fitShowNoblePro = CBUUID(string: "AE00")
+
+        /// Every service UUID a FitShow machine is known to expose.
+        static let fitShowServices: Set<CBUUID> = [fitShow, fitShowAlternate, fitShowNoblePro]
     }
 
     // MARK: - Characteristics
@@ -80,6 +107,46 @@ enum GATTIdentifier {
         /// Nordic buttonless DFU control point, used to reboot a device into its
         /// bootloader.
         static let nordicButtonlessDFU = CBUUID(string: "8EC90003-F315-4F60-9FB8-838830DAEA50")
+
+        // PitPat vendor service
+
+        /// The PitPat command characteristic, which accepts 23-byte start, stop,
+        /// pause, and set-speed frames. Never written by this app.
+        static let pitPatCommand = CBUUID(string: "FBA1")
+
+        /// The PitPat state characteristic, which notifies a 31-byte telemetry
+        /// frame carrying speed, distance, steps, calories, and elapsed time.
+        static let pitPatState = CBUUID(string: "FBA2")
+
+        // FitShow vendor service. Each service variant pairs one write
+        // characteristic with one notify characteristic.
+
+        /// The FitShow command characteristic on an `FFF0` machine. Never written
+        /// by this app.
+        static let fitShowCommand = CBUUID(string: "FFF2")
+
+        /// The FitShow notify characteristic on an `FFF0` machine, which streams the
+        /// framed status and sport-data packets.
+        static let fitShowNotify = CBUUID(string: "FFF1")
+
+        /// The FitShow command characteristic on an `FFE0` machine.
+        static let fitShowAlternateCommand = CBUUID(string: "FFE1")
+
+        /// The FitShow notify characteristic on an `FFE0` machine.
+        static let fitShowAlternateNotify = CBUUID(string: "FFE4")
+
+        /// The FitShow command characteristic on a NoblePro machine.
+        static let fitShowNobleProCommand = CBUUID(string: "AE01")
+
+        /// The FitShow notify characteristic on a NoblePro machine.
+        static let fitShowNobleProNotify = CBUUID(string: "AE02")
+
+        /// Every characteristic a FitShow machine streams framed telemetry on.
+        static let fitShowNotifyCharacteristics: Set<CBUUID> = [
+            fitShowNotify,
+            fitShowAlternateNotify,
+            fitShowNobleProNotify
+        ]
     }
 
     // MARK: - Descriptors
@@ -142,6 +209,20 @@ enum GATTIdentifier {
         Service.fitnessMachine: "Fitness Machine",
         Service.nordicSecureDFU: "Nordic Secure DFU",
         Characteristic.nordicButtonlessDFU: "Nordic Buttonless DFU Control Point",
+
+        Service.pitPatTreadmill: "PitPat Treadmill (vendor)",
+        Characteristic.pitPatCommand: "PitPat Command",
+        Characteristic.pitPatState: "PitPat Treadmill State",
+
+        Service.fitShow: "FitShow Treadmill (vendor)",
+        Service.fitShowAlternate: "FitShow Treadmill (vendor, alternate)",
+        Service.fitShowNoblePro: "FitShow Treadmill (vendor, NoblePro)",
+        Characteristic.fitShowCommand: "FitShow Command",
+        Characteristic.fitShowNotify: "FitShow Status Stream",
+        Characteristic.fitShowAlternateCommand: "FitShow Command (alternate)",
+        Characteristic.fitShowAlternateNotify: "FitShow Status Stream (alternate)",
+        Characteristic.fitShowNobleProCommand: "FitShow Command (NoblePro)",
+        Characteristic.fitShowNobleProNotify: "FitShow Status Stream (NoblePro)",
 
         Characteristic.deviceName: "Device Name",
         Characteristic.appearance: "Appearance",

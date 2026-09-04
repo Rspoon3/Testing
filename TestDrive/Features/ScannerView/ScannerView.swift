@@ -28,7 +28,7 @@ struct ScannerView: View {
                     } header: {
                         Label("Fitness Machines", symbol: .figureStairStepper)
                     } footer: {
-                        Text("These peripherals advertise the standard Fitness Machine Service, so their workout data can be read without any vendor SDK.")
+                        Text("These peripherals either advertise the standard Fitness Machine Service or match a vendor protocol this app decodes, so their workout data can be read without any vendor SDK.")
                     }
                 }
 
